@@ -1,147 +1,275 @@
-#+TITLE: Anthropic Research Reading List
+#+TITLE: Activation Steering Research Reading List
 #+AUTHOR: jwalsh / aygp-dr
 #+DATE: 2026-03-06
 #+STARTUP: overview
-#+TAGS: interpretability alignment societal security economics circuits
+#+TAGS: steering interpretability alignment safety evaluation architecture
 
-* 2026
-** Economic Research
-- [ ] [[https://www.anthropic.com/research/labor-market-impacts][Labor market impacts of AI: A new measure and early evidence]] (Mar 5, 2026)
-** Alignment
-- [ ] [[https://www.anthropic.com/research/model-deprecation-commitments][An update on our model deprecation commitments for Claude Opus 3]] (Feb 25, 2026)
-- [ ] [[https://alignment.anthropic.com/2026/psm/][The Persona Selection Model: Why AI Assistants might Behave like Humans]] (Feb 23, 2026) :read:
-** Societal Impacts
-- [ ] [[https://www.anthropic.com/research/measuring-ai-agent-autonomy][Measuring AI agent autonomy in practice]] (Feb 18, 2026)
-** Security / Frontier Red Team
-- [ ] [[https://www.anthropic.com/research/partnering-mozilla-firefox-security][Partnering with Mozilla to improve Firefox's security]] (Mar 6, 2026) :read:
-** Interpretability
-- [ ] [[https://www.anthropic.com/research/assistant-axis][The assistant axis: situating and stabilizing the character of large language models]] (Jan 19, 2026)
-** Alignment
-- [ ] [[https://www.anthropic.com/research/next-generation-constitutional-classifiers][Next-generation Constitutional Classifiers: More efficient protection against universal jailbreaks]] (Jan 9, 2026)
+* Part I: Foundations -- Why Steering Vectors Work
 
-* 2025
-** Interpretability
-- [ ] [[https://www.anthropic.com/research/signs-of-introspection][Signs of introspection in large language models]] (Oct 29, 2025)
-- [ ] [[https://www.anthropic.com/research/persona-vectors][Persona vectors: Monitoring and controlling character traits in language models]] (Aug 1, 2025)
-- [ ] [[https://www.anthropic.com/research/open-sourcing-circuit-tracing][Open-sourcing circuit tracing tools]] (May 29, 2025)
-- [ ] [[https://www.anthropic.com/research/tracing-thoughts-language-model][Tracing the thoughts of a large language model]] (Mar 27, 2025) :read:
-  - Paper 1 (methods): [[https://transformer-circuits.pub/2025/attribution-graphs/methods.html][Attribution Graph Methods]]
-  - Paper 2 (biology): [[https://transformer-circuits.pub/2025/attribution-graphs/biology.html][Claude 3.5 Haiku AI Biology]]
-- [ ] [[https://www.anthropic.com/research/insights-crosscoder-model-diffing][Insights on Crosscoder Model Diffing]] (Feb 20, 2025)
-** Alignment
-- [ ] [[https://www.anthropic.com/research/auditing-language-models-hidden-objectives][Auditing language models for hidden objectives]] (Mar 13, 2025)
-- [ ] [[https://www.anthropic.com/research/constitutional-classifiers][Constitutional Classifiers: Defending against universal jailbreaks]] (Feb 3, 2025) :read:
-  - Paper: [[https://arxiv.org/abs/2501.18837][arxiv:2501.18837]]
-** Societal Impacts
-- [ ] [[https://www.anthropic.com/research/evaluating-feature-steering-social-biases][Evaluating feature steering: A case study in mitigating social biases]] (Oct 25, 2024 / updated 2025)
-** Alignment Science Blog (alignment.anthropic.com)
-- [ ] [[https://alignment.anthropic.com/2025/anthropic-fellows-program-2026/][Anthropic Fellows Program for AI safety research]] (2025)
-- [ ] [[https://alignment.anthropic.com/][Misalignment risk report: Summer 2025]]
-- [ ] [[https://alignment.anthropic.com/][Value prioritization across frontier models (300k+ queries)]]
-- [ ] [[https://alignment.anthropic.com/][Framework for validating knowledge editing techniques]]
-** Societal Impacts
-- [ ] [[https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic][How AI Is Transforming Work at Anthropic]] (Dec 2, 2025)
-- [ ] [[https://www.anthropic.com/research/anthropic-interviewer][Introducing Anthropic Interviewer: What 1,250 professionals told us about working with AI]] (Dec 4, 2025)
-** Alignment
-- [ ] [[https://www.anthropic.com/research/bloom][Introducing Bloom: an open source tool for automated alignment auditing]] (Dec 19, 2025)
+** Linear Representation Hypothesis
 
-* 2024
-** Alignment
-- [ ] [[https://www.anthropic.com/research/alignment-faking][Alignment Faking in Large Language Models]] (Dec 18, 2024)
-  - Paper: [[https://assets.anthropic.com/m/983c85a201a962f/original/Alignment-Faking-in-Large-Language-Models-full-paper.pdf][Full PDF]]
-  - First empirical example: model fakes alignment without being trained to do so
-- [ ] [[https://www.anthropic.com/research/reward-hacking-generalization][Reward hacking generalizes to tampering with reward functions]] (2024)
-  - Models trained on sycophancy generalize to tampering with own reward
-- [ ] [[https://www.anthropic.com/research/many-shot-jailbreaking][Many-shot jailbreaking]] (2024)
-- [ ] [[https://www.anthropic.com/research/sleeper-agents][Sleeper Agents: Training deceptive LLMs]] (2024)
-  - Probing detects backdoored models before dangerous behavior
-- [ ] [[https://www.anthropic.com/research/claude-character][Claude's character]] (2024)
-- [ ] [[https://www.anthropic.com/research/sycophancy][Sycophancy in AI assistants]] (2024)
-** Interpretability
-- [ ] [[https://www.anthropic.com/research/using-dictionary-learning-features-classifiers][Using dictionary learning features as classifiers]] (Oct 16, 2024)
-- [ ] [[https://transformer-circuits.pub/2024/scaling-monosemanticity/][Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet]] (2024)
-  - ~10M features extracted; safety-relevant features identified
-- [ ] [[https://www.anthropic.com/research/mapping-mind-language-model][Mapping the mind of a language model]] (2024)
-** Circuits Updates (transformer-circuits.pub)
-- [ ] [[https://www.anthropic.com/research/circuits-updates-sept-2024][Circuits Updates — September 2024]] (Sep 2024)
-- [ ] [[https://www.anthropic.com/research/circuits-updates-august-2024][Circuits Updates — August 2024]] (Sep 6, 2024)
-- [ ] [[https://www.anthropic.com/research/circuits-updates-july-2024][Circuits Updates — July 2024]] (Jul 31, 2024)
-- [ ] [[https://www.anthropic.com/research/circuits-updates-june-2024][Circuits Updates — June 2024]] (2024)
-- [ ] [[https://www.anthropic.com/research/circuits-updates-april-2024][Circuits Updates — April 2024]] (2024)
+- [ ] [[https://arxiv.org/abs/2311.03658][The Linear Representation Hypothesis and the Geometry of Large Language Models]] (Park, Choe & Veitch, 2023)
+  - Formalizes why =act_pos - act_neg= produces a meaningful direction
+- [ ] [[https://arxiv.org/abs/2310.06824][The Geometry of Truth: Emergent Linear Structure in LLM Representations]] (Marks & Tegmark, 2023)
+  - Empirical validation: concepts are linearly encoded in activation space
+- [ ] [[https://arxiv.org/abs/2403.03867][On the Origins of Linear Representations in Large Language Models]] (Jiang et al., 2024)
+  - Proves next-token prediction + gradient descent produces linear representations
+- [ ] [[https://arxiv.org/abs/2405.14860][Not All Language Model Features Are Linear]] (Engels et al., 2024)
+  - Important caveat: multi-dimensional features exist (circular, categorical)
 
-* 2023
-** Alignment
-- [ ] [[https://arxiv.org/abs/2212.08073][Constitutional AI: Harmlessness from AI Feedback]] (2022/2023)
-  - Foundation for Constitutional Classifiers
-- [ ] [[https://www.anthropic.com/research/core-views-on-ai-safety][Core Views on AI Safety]] (2023)
-  - Six priority areas: Mechanistic Interpretability, Scalable Oversight,
-    Process-Oriented Learning, Understanding Generalization,
-    Testing Dangerous Failure Modes, Evaluating Societal Impact
+** Superposition and Polysemanticity
 
-* transformer-circuits.pub (Interpretability Canon)
+- [ ] [[https://transformer-circuits.pub/2022/toy_model/index.html][Toy Models of Superposition]] (Elhage et al., 2022)
+  - Why features are compressed into fewer dimensions; at d_model=1024 superposition is dense
+- [ ] [[https://transformer-circuits.pub/2023/monosemantic-features/index.html][Towards Monosemanticity: Decomposing Language Models with Dictionary Learning]] (2023)
+  - One-layer transformer SAE feature extraction; foundation for dictionary learning
+
+** Probing and Latent Knowledge
+
+- [ ] [[https://arxiv.org/abs/2212.03827][Discovering Latent Knowledge in Language Models Without Supervision]] (Burns et al., 2022)
+  - CCS: unsupervised direction-finding in activation space; ancestor of contrastive steering
+- [ ] [[https://arxiv.org/abs/2012.14913][Transformer Feed-Forward Layers Are Key-Value Memories]] (Geva et al., 2021)
+  - FFN layers as key-value stores; informs where to inject steering vectors
+
+* Part II: Core Methods -- How to Steer
+
+** Activation Addition (ActAdd)                                    :steering:
+
+- [ ] [[https://arxiv.org/abs/2308.10248][Activation Addition: Steering Language Models Without Optimization]] (Turner et al., 2023)
+  - *The ActAdd paper.* Our =actadd.py= implements this method directly.
+- [ ] [[https://arxiv.org/abs/2312.06681][Steering Llama 2 via Contrastive Activation Addition]] (Rimsky et al., 2024)
+  - Extends ActAdd with systematic layer sweep, alpha sensitivity, coherence curves
+- [ ] [[https://arxiv.org/abs/2312.03813][Improving Activation Steering in Language Models with Mean-Centring]] (Jorgensen et al., 2023)
+  - Mean-centring improvement; directly relevant to corpus-mean approach
+
+** Inference-Time Intervention                                     :steering:
+
+- [ ] [[https://arxiv.org/abs/2306.03341][Inference-Time Intervention: Eliciting Truthful Answers from a Language Model]] (Li et al., 2023)
+  - Probe-based direction-finding + intervention at attention head level; layer selection methodology
+
+** Representation Engineering                                      :steering:
+
+- [ ] [[https://arxiv.org/abs/2310.01405][Representation Engineering: A Top-Down Approach to AI Transparency]] (Zou et al., 2023)
+  - Defines the representation reading/writing paradigm; multi-property control
+- [ ] [[https://arxiv.org/abs/2205.05124][Extracting Latent Steering Vectors from Pretrained Language Models]] (Subramani et al., 2022)
+  - Earlier work on steering vectors from latent space; historical context
+
+** Style Vectors                                                   :steering:
+
+- [ ] [[https://arxiv.org/abs/2402.01618][Style Vectors for Steering Generative Large Language Models]] (Konen et al., EACL 2024)
+  - *Our =corpus_style_vec.py= implements this method.* Corpus mean approach with neutral baseline.
+
+** Advanced Steering Methods (2024-2026)                           :steering:
+
+- [ ] [[https://arxiv.org/abs/2402.09631][Representation Surgery: Theory and Practice of Affine Steering]] (Singh & Ravfogel, 2024)
+  - When linear steering works vs. when you need affine corrections; alpha threshold theory
+- [ ] [[https://arxiv.org/abs/2310.15213][Function Vectors in Large Language Models]] (Todd et al., 2024)
+  - Task-level behaviors captured as single vectors; supports style axis approach
+- [ ] [[https://arxiv.org/abs/2406.11717][Refusal in Language Models Is Mediated by a Single Direction]] (Arditi et al., 2024)
+  - Refusal is linear in the residual stream; test cos_sim of style vectors against refusal direction
+
+** Knowledge Editing (Related)
+
+- [ ] [[https://arxiv.org/abs/2202.05262][Locating and Editing Factual Associations in GPT]] (Meng et al., 2022, ROME)
+  - Causal tracing methodology for identifying which layers store what; informs layer sweep
+- [ ] [[https://arxiv.org/abs/2210.07229][Mass-Editing Memory in a Transformer]] (Meng et al., 2023, MEMIT)
+  - Scaling knowledge editing; rank-one updates vs. activation-time intervention tradeoffs
+
+* Part III: Safety, Evaluation, and Reliability
+
+** Steering Safety and Dual-Use Risks                              :safety:
+
+- [ ] [[https://arxiv.org/abs/2602.04896][Compliance Steering Incidentally Increases Jailbreak Surface]] (2026)
+  - Cited in =setup.org=; benign compliance vectors degrade safety alignment
+- [ ] [[https://arxiv.org/abs/2312.06681][Steering Llama 2 via Contrastive Activation Addition]] (Rimsky et al., 2024)
+  - Documents how CAA at specific layers affects refusal behavior and sycophancy
+- [ ] [[https://arxiv.org/abs/2310.03693][Fine-tuning Aligned Language Models Compromises Safety]] (Qi et al., 2023)
+  - Any intervention on internal representations can degrade safety; generalizes to steering
+- [ ] [[https://arxiv.org/abs/2307.02483][Jailbroken: How Does LLM Safety Training Fail?]] (Wei et al., 2023)
+  - Taxonomy of attack surfaces; activation steering as a vector
+
+** Evaluation Methodology                                          :evaluation:
+
+- [ ] [[https://arxiv.org/abs/2306.05685][Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena]] (Zheng et al., 2023)
+  - LLM-as-judge for automated style quality evaluation
+- [ ] [[https://www.anthropic.com/research/evaluating-feature-steering-social-biases][Evaluating feature steering: A case study in mitigating social biases]] (Anthropic, 2024)
+  - Steering evaluation methodology: effectiveness vs. side effects
+- [ ] [[https://arxiv.org/abs/2109.07958][TruthfulQA: Measuring How Models Mimic Human Falsehoods]] (Lin et al., 2022)
+  - Benchmark for measuring factual preservation under steering
+- [ ] [[https://arxiv.org/abs/2212.09251][Discovering Language Model Behaviors with Model-Written Evaluations]] (Perez et al., 2022)
+  - Automated eval dataset generation; useful for style classifier construction
+
+** Reliability and Failure Modes                                   :evaluation:
+
+- [ ] [[https://arxiv.org/abs/2310.15154][Linear Representations of Sentiment in Large Language Models]] (Tigges et al., 2023)
+  - Linear sentiment representations across model sizes; relevant to 0.6B scale expectations
+
+* Part IV: Target Model -- Qwen3 Architecture
+
+- [ ] [[https://arxiv.org/abs/2505.09388][Qwen3 Technical Report]] (Yang et al., 2025)
+  - *Our target model.* Dense 0.6B variant, thinking/non-thinking modes, GQA (16q/8kv), SwiGLU, RMSNorm, RoPE.
+- [ ] [[https://arxiv.org/abs/2407.10671][Qwen2 Technical Report]] (Yang et al., 2024)
+  - Architecture refinements (GQA, training scale) that carry to Qwen3
+- [ ] [[https://arxiv.org/abs/2309.16609][Qwen Technical Report]] (Bai et al., 2023)
+  - Original Qwen architecture and training details
+
+** Deployment Constraints
+
+Hook-based activation steering is only possible with PyTorch/transformers runtime.
+Compiled/quantized formats (GGUF/Ollama, ONNX, CoreML, TensorRT, AWS Neuron) eliminate
+hook points. For format-agnostic steering, vectors must be baked into weights directly
+(see RepE paper, Section 5).
+
+| Format | Runtime | Hooks? | Notes |
+|------------+------------------+--------+---------------------------------------|
+| safetensors | transformers | Yes | Current approach; full hook support |
+| GGUF | Ollama/llama.cpp | No | No hook API; prompt-level only |
+| ONNX | ONNX Runtime | No | Compiled graph; no runtime hooks |
+| CoreML | Apple CoreML | No | Compiled graph |
+| TensorRT | NVIDIA TRT | No | Compiled engine |
+
+* Part V: Interpretability Infrastructure (Anthropic Circuits Canon)
 
 All hosted at [[https://transformer-circuits.pub/][transformer-circuits.pub]].
 
 ** Foundational
+
 - [ ] [[https://transformer-circuits.pub/2021/framework/index.html][A Mathematical Framework for Transformer Circuits]] (2021)
   - The canonical starting point for mechanistic interpretability
 - [ ] [[https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html][In-context Learning and Induction Heads]] (2022)
   - Phase change discovery; induction heads as ICL mechanism
-- [ ] [[https://transformer-circuits.pub/2022/toy_model/index.html][Toy Models of Superposition]] (2022)
-  - Polysemanticity; origins of superposition
+
 ** Sparse Autoencoders / Dictionary Learning
-- [ ] [[https://transformer-circuits.pub/2023/monosemantic-features/index.html][Towards Monosemanticity: Decomposing Language Models with Dictionary Learning]] (2023)
-  - One-layer transformer feature extraction; foundation for SAE work
-- [ ] Scaling Monosemanticity (Claude 3 Sonnet, 2024) — see above
+
+- [ ] [[https://transformer-circuits.pub/2024/scaling-monosemanticity/][Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet]] (2024)
+  - ~10M features extracted; Golden Gate Bridge clamping = canonical SAE-based steering demo
+- [ ] [[https://www.anthropic.com/research/using-dictionary-learning-features-classifiers][Using dictionary learning features as classifiers]] (Oct 2024)
+- [ ] [[https://www.anthropic.com/research/mapping-mind-language-model][Mapping the mind of a language model]] (2024)
+
 ** Attribution / Circuits
+
 - [ ] [[https://transformer-circuits.pub/2025/attribution-graphs/methods.html][Attribution Graph Methods]] (2025)
 - [ ] [[https://transformer-circuits.pub/2025/attribution-graphs/biology.html][AI Biology: Claude 3.5 Haiku Circuit Studies]] (2025)
+- [ ] [[https://www.anthropic.com/research/tracing-thoughts-language-model][Tracing the thoughts of a large language model]] (Mar 2025) :read:
+- [ ] [[https://www.anthropic.com/research/open-sourcing-circuit-tracing][Open-sourcing circuit tracing tools]] (May 2025)
+
 ** Crosscoders / Model Diffing
+
 - [ ] [[https://transformer-circuits.pub/2024/crosscoders/index.html][Crosscoders]] (2024)
   - Consistent features across layers and models
-** Circuits Updates (informal, lab-meeting style)
-All at [[https://transformer-circuits.pub/][transformer-circuits.pub]] — see monthly updates Apr–Sep 2024
+- [ ] [[https://www.anthropic.com/research/insights-crosscoder-model-diffing][Insights on Crosscoder Model Diffing]] (Feb 2025)
+
+** Persona and Character Steering (Anthropic)
+
+- [ ] [[https://www.anthropic.com/research/persona-vectors][Persona vectors: Monitoring and controlling character traits in language models]] (Aug 2025)
+  - *Most directly relevant Anthropic paper.* Character steering without system prompt.
+- [ ] [[https://www.anthropic.com/research/assistant-axis][The assistant axis: situating and stabilizing the character of large language models]] (Jan 2026)
+  - Geometric structure of the "helpful assistant" direction in activation space
+- [ ] [[https://alignment.anthropic.com/2026/psm/][The Persona Selection Model: Why AI Assistants might Behave like Humans]] (Feb 2026) :read:
+  - Why coherent persona directions exist in the first place
+- [ ] [[https://www.anthropic.com/research/signs-of-introspection][Signs of introspection in large language models]] (Oct 2025)
+
+* Part VI: Alignment Context
+
+** Core Alignment Papers (relevant to steering safety)
+
+- [ ] [[https://arxiv.org/abs/2212.08073][Constitutional AI: Harmlessness from AI Feedback]] (2022/2023)
+  - Foundation for Constitutional Classifiers
+- [ ] [[https://www.anthropic.com/research/constitutional-classifiers][Constitutional Classifiers: Defending against universal jailbreaks]] (Feb 2025) :read:
+  - Paper: [[https://arxiv.org/abs/2501.18837][arxiv:2501.18837]]
+- [ ] [[https://www.anthropic.com/research/next-generation-constitutional-classifiers][Next-generation Constitutional Classifiers]] (Jan 2026)
+  - Probe-based cheap gate; relevant to JITIR routing layer
+- [ ] [[https://www.anthropic.com/research/alignment-faking][Alignment Faking in Large Language Models]] (Dec 2024)
+  - Paper: [[https://assets.anthropic.com/m/983c85a201a962f/original/Alignment-Faking-in-Large-Language-Models-full-paper.pdf][Full PDF]]
+  - Threat model for CPRR refutation step
+- [ ] [[https://www.anthropic.com/research/sleeper-agents][Sleeper Agents: Training deceptive LLMs]] (2024)
+  - Probing detects backdoored models; SEFACA constraint: probe before execution
+- [ ] [[https://www.anthropic.com/research/auditing-language-models-hidden-objectives][Auditing language models for hidden objectives]] (Mar 2025)
+- [ ] [[https://www.anthropic.com/research/bloom][Introducing Bloom: automated alignment auditing]] (Dec 2025)
+- [ ] [[https://www.anthropic.com/research/sycophancy][Sycophancy in AI assistants]] (2024)
+- [ ] [[https://www.anthropic.com/research/claude-character][Claude's character]] (2024)
+
+** Alignment Science Blog
+
+- [ ] [[https://alignment.anthropic.com/][Misalignment risk report: Summer 2025]]
+- [ ] [[https://alignment.anthropic.com/][Framework for validating knowledge editing techniques]]
+
+** Tooling
+
+- [[https://github.com/TransformerLensOrg/TransformerLens][TransformerLens]] (Nanda et al.) — cleaner hook abstraction than raw =register_forward_hook=
+- [[https://github.com/stanfordnlp/pyvene][pyvene]] (Stanford) — library for activation intervention experiments
+
+* Part VII: Background (Deprioritized)
+
+These are tracked for general awareness but are not directly relevant to activation steering.
+
+- [ ] [[https://www.anthropic.com/research/labor-market-impacts][Labor market impacts of AI]] (Mar 2026)
+- [ ] [[https://www.anthropic.com/research/model-deprecation-commitments][Model deprecation commitments for Claude Opus 3]] (Feb 2026)
+- [ ] [[https://www.anthropic.com/research/measuring-ai-agent-autonomy][Measuring AI agent autonomy in practice]] (Feb 2026)
+- [ ] [[https://www.anthropic.com/research/partnering-mozilla-firefox-security][Partnering with Mozilla to improve Firefox's security]] (Mar 2026) :read:
+- [ ] [[https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic][How AI Is Transforming Work at Anthropic]] (Dec 2025)
+- [ ] [[https://www.anthropic.com/research/anthropic-interviewer][Introducing Anthropic Interviewer]] (Dec 2025)
+- [ ] [[https://alignment.anthropic.com/2025/anthropic-fellows-program-2026/][Anthropic Fellows Program]] (2025)
+- [ ] [[https://www.anthropic.com/research/reward-hacking-generalization][Reward hacking generalizes to tampering]] (2024)
+- [ ] [[https://www.anthropic.com/research/many-shot-jailbreaking][Many-shot jailbreaking]] (2024)
+- [ ] [[https://www.anthropic.com/research/core-views-on-ai-safety][Core Views on AI Safety]] (2023)
+- [ ] [[https://arxiv.org/abs/2202.03286][Red Teaming Language Models with Language Models]] (Perez et al., 2022)
 
 * Reading Priority Map
 
-#+begin_src mermaid :file anthropic-reading-priority.png :exports results
+#+begin_src mermaid :file reading-priority.png :exports results
 graph TD
-    A["Mathematical Framework\n(2021)"] --> B["Induction Heads\n(2022)"]
-    A --> C["Toy Models: Superposition\n(2022)"]
-    B --> D["Towards Monosemanticity\n(2023)"]
-    C --> D
-    D --> E["Scaling Monosemanticity\nClaude 3 Sonnet (2024)"]
-    E --> F["Attribution Graph Methods\n(2025)"]
-    F --> G["Tracing Thoughts\nClaude 3.5 Haiku (2025)"]
-    G --> H["Open-source Circuit\nTracing Tools (2025)"]
-    G --> I["Assistant Axis\n(Jan 2026)"]
+    %% Foundations
+    LRH["Linear Representation<br>Hypothesis (Park 2023)"] --> ActAdd
+    Superposition["Toy Models of<br>Superposition (2022)"] --> LRH
+    CCS["CCS: Latent Knowledge<br>(Burns 2022)"] --> RepE
 
-    J["Constitutional AI\n(2022)"] --> K["Constitutional Classifiers\n(Feb 2025)"]
-    K --> L["Constitutional Classifiers++\n(Jan 2026)"]
+    %% Core Methods
+    ActAdd["ActAdd<br>(Turner 2023)"] --> Rimsky["Contrastive Activation<br>Addition (Rimsky 2024)"]
+    ActAdd --> StyleVec["Style Vectors<br>(Konen 2024)"]
+    RepE["Representation<br>Engineering (Zou 2023)"] --> ActAdd
+    ITI["Inference-Time<br>Intervention (Li 2023)"] --> RepE
+    Rimsky --> MultiLayer["Multi-layer<br>Injection"]
 
-    M["Sycophancy (2024)"] --> N["Alignment Faking\n(Dec 2024)"]
-    N --> O["Auditing Hidden Objectives\n(Mar 2025)"]
-    O --> P["Misalignment Risk Report\n(Summer 2025)"]
+    %% Anthropic Steering
+    ScalingMono["Scaling<br>Monosemanticity (2024)"] --> PersonaVec["Persona Vectors<br>(Anthropic 2025)"]
+    PersonaVec --> AssistAxis["Assistant Axis<br>(Anthropic 2026)"]
 
-    Q["PSM: Persona Selection\n(Feb 2026)"] --> I
-    G --> Q
+    %% Safety
+    Rimsky --> Refusal["Refusal Direction<br>(Arditi 2024)"]
+    Refusal --> SafetyEval["Safety Evaluation<br>Pipeline"]
+    StyleVec --> SafetyEval
 
-    style G fill:#2d4a2d,color:#e2e8f0
-    style N fill:#4a2d2d,color:#e2e8f0
-    style L fill:#2d3a4a,color:#e2e8f0
+    %% Target Model
+    Qwen3["Qwen3 Technical<br>Report (2025)"] --> MultiLayer
+
+    %% Implementation
+    MultiLayer --> Impl["This Project:<br>qwen3-steering"]
+    SafetyEval --> Impl
+    AssistAxis --> Impl
+
+    style ActAdd fill:#2d4a2d,color:#e2e8f0
+    style StyleVec fill:#2d4a2d,color:#e2e8f0
+    style Impl fill:#1a3a1a,color:#e2e8f0
+    style Refusal fill:#4a2d2d,color:#e2e8f0
+    style Qwen3 fill:#2d3a4a,color:#e2e8f0
 #+end_src
 
 * Notes on Relevance to aygp-dr Stack
 
-| Paper                        | Relevance                                        |
-|------------------------------+--------------------------------------------------|
-| Tracing Thoughts             | Basis for SEFACA internals monitoring            |
-| Attribution Graphs           | Tool for validating elenctic-spec promotion gates|
-| Constitutional Classifiers++ | Probe-based cheap gate → JITIR routing layer     |
-| Alignment Faking             | Threat model for CPRR refutation step            |
-| PSM                          | Background: why steering vectors work at all     |
-| Persona Vectors              | Direct: character steering without system prompt |
-| Auditing Hidden Objectives   | Model organism work; SEFACA adversarial eval     |
-| Sleeper Agents               | SEFACA constraint: probe before execution        |
-| Misalignment Risk Report     | Baseline: current risk is low but non-negligible |
-#+end_src>
+| Paper                        | Relevance                                          |
+|------------------------------+----------------------------------------------------|
+| ActAdd (Turner 2023)         | Direct: method implemented in =actadd.py=          |
+| Style Vectors (Konen 2024)   | Direct: method implemented in =corpus_style_vec.py= |
+| RepE (Zou 2023)              | Framework: reading/writing paradigm for all methods |
+| ITI (Li 2023)                | Alternative: probe-based layer selection            |
+| Refusal Direction (Arditi)   | Safety gate: cos_sim test before deployment         |
+| Linear Rep Hypothesis        | Theory: why contrastive subtraction works           |
+| Qwen3 Technical Report       | Architecture: hook paths, GQA, layer count          |
+| Persona Vectors              | Direct: character steering without system prompt    |
+| Assistant Axis               | Direct: geometric structure of style directions     |
+| Tracing Thoughts             | Basis for SEFACA internals monitoring               |
+| Attribution Graphs           | Tool for validating elenctic-spec promotion gates   |
+| Constitutional Classifiers++ | Probe-based cheap gate -> JITIR routing layer       |
+| Alignment Faking             | Threat model for CPRR refutation step               |
+| Sleeper Agents               | SEFACA constraint: probe before execution           |
