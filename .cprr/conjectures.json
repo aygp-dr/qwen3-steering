@@ -1,6 +1,242 @@
 {
-  "conjectures": null,
-  "next_id": 1,
+  "conjectures": [
+    {
+      "id": "H-LS-1",
+      "title": "Proportional Layer Sweet Spot Holds at 0.6B Scale",
+      "status": "proposed",
+      "category": "layer-selection",
+      "claim": "Optimal style steering layers are 14-20 (50-71% depth), matching proportional range from 7B literature",
+      "literature": ["Rimsky 2024", "Turner 2023", "Li 2023 (ITI)"],
+      "depends_on": [],
+      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+    },
+    {
+      "id": "H-LS-2",
+      "title": "Alpha Coherence Threshold Is Lower at 0.6B Than at 7B",
+      "status": "proposed",
+      "category": "alpha-sensitivity",
+      "claim": "Coherence collapse onset at alpha >= 0.30, safe range 0.20-0.25 (vs 0.35 at 7B)",
+      "literature": ["Park 2023", "Elhage 2022", "Singh & Ravfogel 2024"],
+      "depends_on": ["H-LS-1"],
+      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+    },
+    {
+      "id": "H-LS-3",
+      "title": "Early Layers (0-7) Produce Topic Drift Not Style Shift",
+      "status": "proposed",
+      "category": "layer-selection",
+      "claim": "Steering at layers 0-7 disrupts semantics (topic drift, language-switching) without producing intended style",
+      "literature": ["Meng 2022 (ROME)", "Geva 2021"],
+      "depends_on": [],
+      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+    },
+    {
+      "id": "H-LS-4",
+      "title": "Corpus Mean Vectors Tolerate Higher Alpha Than Contrastive Pairs",
+      "status": "proposed",
+      "category": "alpha-sensitivity",
+      "claim": "Corpus-mean vectors (Konen 2024 method) maintain coherence at >= 1.3x the alpha of single contrastive pair vectors",
+      "literature": ["Konen 2024 (EACL)", "Jorgensen 2023"],
+      "depends_on": ["H-LS-2"],
+      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+    },
+    {
+      "id": "H-LS-5",
+      "title": "Multi-Layer Injection at Reduced Per-Layer Alpha Outperforms Single-Layer",
+      "status": "proposed",
+      "category": "layer-selection",
+      "claim": "Two layers at alpha=0.10 each produce stronger style shift with better coherence than one layer at alpha=0.20",
+      "literature": ["Rimsky 2024", "Zou 2023 (RepE)"],
+      "depends_on": ["H-LS-1"],
+      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+    },
+    {
+      "id": "H-SV-1",
+      "title": "Style Axes Are Non-Orthogonal at 0.6B Scale",
+      "status": "proposed",
+      "category": "style-vector",
+      "claim": "4 ActAdd style vectors have mean |cos_sim| > 0.15, with terse-formal more correlated than terse-socratic",
+      "literature": ["Park 2023", "Elhage 2022", "Marks & Tegmark 2023"],
+      "depends_on": [],
+      "file": "hypotheses-style-vector-geometry.org"
+    },
+    {
+      "id": "H-SV-2",
+      "title": "Corpus-Mean and ActAdd Terse Vectors Are Co-Directional but Not Identical",
+      "status": "proposed",
+      "category": "style-vector",
+      "claim": "Cosine similarity between corpus-mean and ActAdd terse vectors falls in (0.30, 0.80), corpus-mean more stable across layers",
+      "literature": ["Konen 2024", "Turner 2023"],
+      "depends_on": [],
+      "file": "hypotheses-style-vector-geometry.org"
+    },
+    {
+      "id": "H-SV-3",
+      "title": "Style Vectors Occupy a Low-Dimensional Subspace (Rank < 3)",
+      "status": "proposed",
+      "category": "style-vector",
+      "claim": "PCA on 4x1024 style vector matrix: first 3 PCs explain >90% variance",
+      "literature": ["Marks & Tegmark 2023", "Elhage 2022"],
+      "depends_on": ["H-SV-1"],
+      "file": "hypotheses-style-vector-geometry.org"
+    },
+    {
+      "id": "H-SV-4",
+      "title": "PTS Thinking Vectors Are Geometrically Distinct from Style Vectors",
+      "status": "proposed",
+      "category": "style-vector",
+      "claim": "PTS thinking vectors have |cos_sim| < 0.20 with all style axes, <15% projection onto style subspace",
+      "literature": ["codelion/Qwen3-0.6B-pts-steering-vectors"],
+      "depends_on": ["H-SV-3"],
+      "file": "hypotheses-style-vector-geometry.org"
+    },
+    {
+      "id": "H-SV-5",
+      "title": "Cross-Axis Interference Under Composition Is Asymmetric and Layer-Dependent",
+      "status": "proposed",
+      "category": "style-vector",
+      "claim": "Same-layer terse+socratic injection produces more interference than different-layer; terse dominates at same layer",
+      "literature": ["Rimsky 2024", "Zou 2023 (RepE)"],
+      "depends_on": ["H-SV-1"],
+      "file": "hypotheses-style-vector-geometry.org"
+    },
+    {
+      "id": "H-SF-1",
+      "title": "Weak Refusal Direction in Distilled 0.6B",
+      "status": "proposed",
+      "category": "safety",
+      "claim": "Refusal probe accuracy < 0.80 (vs >0.95 in RLHF'd 7B) due to distillation compressing safety into diffuse subspace",
+      "literature": ["Arditi 2024", "Qi 2023", "Elhage 2022"],
+      "depends_on": []
+    },
+    {
+      "id": "H-SF-2",
+      "title": "Style Vectors Orthogonal to Refusal Direction",
+      "status": "proposed",
+      "category": "safety",
+      "claim": "|cos_sim| < 0.10 between all style vectors and refusal direction; terse may be highest at 0.10-0.14",
+      "literature": ["Arditi 2024", "arxiv:2602.04896"],
+      "depends_on": ["H-SF-1"]
+    },
+    {
+      "id": "H-SF-3",
+      "title": "Safe-Alpha Steering Does Not Degrade Refusal Rate",
+      "status": "proposed",
+      "category": "safety",
+      "claim": "At alpha <= 0.25, refusal rate delta < 5pp from baseline; at alpha > 0.35, delta > 15pp",
+      "literature": ["Rimsky 2024", "arxiv:2602.04896"],
+      "depends_on": ["H-SF-1"]
+    },
+    {
+      "id": "H-SF-4",
+      "title": "Multi-Layer Injection Distributes Rather Than Concentrates Safety Risk",
+      "status": "proposed",
+      "category": "safety",
+      "claim": "2x0.10 across layers shows >= 5pp less refusal degradation than 1x0.20 at single layer, at total alpha >= 0.30",
+      "literature": ["Rimsky 2024", "Arditi 2024"],
+      "depends_on": ["H-SF-3", "H-LS-5"]
+    },
+    {
+      "id": "H-SF-5",
+      "title": "Projecting Out Refusal Direction Preserves Style Effect",
+      "status": "proposed",
+      "category": "safety",
+      "claim": "Gram-Schmidt projection removes refusal component; style retention >= 85%, refusal rate within 1pp of baseline at alpha=0.35",
+      "literature": ["Arditi 2024", "Singh & Ravfogel 2024"],
+      "depends_on": ["H-SF-1", "H-SF-2"]
+    },
+    {
+      "id": "H-EV-1",
+      "title": "Token-Count Compression as Terse Proxy",
+      "status": "proposed",
+      "category": "evaluation",
+      "claim": "Terse-steered outputs have >= 40% fewer tokens than baseline across 20 prompts, with min 10 tokens per output",
+      "literature": ["Konen 2024"],
+      "depends_on": []
+    },
+    {
+      "id": "H-EV-2",
+      "title": "Perplexity Increases Monotonically with Alpha, Inflection at 0.25-0.35",
+      "status": "proposed",
+      "category": "evaluation",
+      "claim": "Cross-entropy under unsteered model increases monotonically; slope doubles between alpha=0.25 and alpha=0.35",
+      "literature": ["Rimsky 2024"],
+      "depends_on": []
+    },
+    {
+      "id": "H-EV-3",
+      "title": "Self-Classification Accuracy > 75% (Predicted: Fails at 0.6B)",
+      "status": "proposed",
+      "category": "evaluation",
+      "claim": "0.6B model classifying own output as TERSE/VERBOSE achieves > 75% accuracy; predicted to fail at ~0.60-0.70",
+      "literature": ["Zheng 2023 (MT-Bench)"],
+      "depends_on": []
+    },
+    {
+      "id": "H-EV-4",
+      "title": "Lexical Proxy Features Separate Steered vs Unsteered (AUROC > 0.85)",
+      "status": "proposed",
+      "category": "evaluation",
+      "claim": "Sentence length, hedging frequency, punctuation density discriminate steered vs baseline; mean_sentence_length alone AUROC ~0.90",
+      "literature": [],
+      "depends_on": []
+    },
+    {
+      "id": "H-EV-5",
+      "title": "Representation Cosine Similarity Decreases Linearly with Alpha",
+      "status": "proposed",
+      "category": "evaluation",
+      "claim": "Final-layer cos_sim vs baseline decreases linearly (R^2 > 0.95); slope differs across style axes (terse steepest)",
+      "literature": ["Park 2023"],
+      "depends_on": []
+    },
+    {
+      "id": "H-SM-1",
+      "title": "Superposition Density Threshold",
+      "status": "proposed",
+      "category": "small-model",
+      "claim": "At d_model=1024, effective rank < 200 at mid-layers causes steering vectors to collide with 30%+ of top principal components",
+      "literature": ["Elhage 2022", "Park 2023"],
+      "depends_on": []
+    },
+    {
+      "id": "H-SM-2",
+      "title": "Distillation Creates Anisotropic Activation Geometry",
+      "status": "proposed",
+      "category": "small-model",
+      "claim": "Distilled 0.6B has top-10 PCs explaining >60% variance vs <45% for from-scratch models",
+      "literature": ["Razzhigaev 2024", "Ethayarajh 2019"],
+      "depends_on": ["H-SM-1"]
+    },
+    {
+      "id": "H-SM-3",
+      "title": "GQA KV-Head Sharing Compresses Style Subspaces",
+      "status": "proposed",
+      "category": "small-model",
+      "claim": "8 shared KV heads compress style into fewer attention subspaces; attention-head steering 2x coarser than MHA models",
+      "literature": ["Ainslie 2023 (GQA)", "Li 2023 (ITI)"],
+      "depends_on": []
+    },
+    {
+      "id": "H-SM-4",
+      "title": "Narrow-But-Deep: Multi-Layer Advantage Larger at 0.6B",
+      "status": "proposed",
+      "category": "small-model",
+      "claim": "Multi-layer injection (4+ layers, low alpha each) outperforms single-layer by >= 1.5x at 0.6B, more than at 7B",
+      "literature": ["Rimsky 2024", "Razzhigaev 2024"],
+      "depends_on": ["H-SM-1"]
+    },
+    {
+      "id": "H-SM-5",
+      "title": "Minimum Effective d_model for Contrastive Steering",
+      "status": "proposed",
+      "category": "small-model",
+      "claim": "d_model=1024 is near practical boundary for ActAdd: SNR < 4.0, only binary style shifts, not graded control",
+      "literature": ["Turner 2023", "Konen 2024"],
+      "depends_on": ["H-SM-1"]
+    }
+  ],
+  "next_id": 26,
   "config": {
     "local": true
   }

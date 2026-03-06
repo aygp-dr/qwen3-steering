@@ -1,0 +1,437 @@
+================================================================================
+CPRR HYPOTHESES: SMALL MODEL STEERING (Qwen3-0.6B)
+What Makes Sub-1B Activation Steering Fundamentally Different
+================================================================================
+
+Generated: 2026-03-06
+Model: Qwen/Qwen3-0.6B (28 layers, d_model=1024, 16q/8kv GQA, SwiGLU, 751M params)
+Base model: Qwen/Qwen3-0.6B-Base (distilled from larger Qwen3 family)
+Framework: CPRR (Conjecture -> Proof -> Refutation -> Refinement)
+
+Context references:
+  - setup.org: alpha > 0.35 degrades coherence; layers 14-20 best; cross-model
+    transfer fails; multi-property steering causes coherence collapse
+  - Elhage et al. 2022 (Toy Models of Superposition): lower d_model => denser
+    superposition => more feature interference per direction
+  - Razzhigaev et al. 2024 (Your Transformer is Secretly Linear): near-perfect
+    linear inter-layer relationships (Procrustes ~0.99); smaller models may be
+    MORE linear, reducing effective layer diversity
+  - Queiroz Da Silva et al. 2025 (Steering off Course): steering methods show
+    "substantial variability" across models; tested 1.5B-70B but NOT sub-1B
+  - Van der Weij et al. 2024 (Extending Activation Steering): combining multiple
+    steering vectors at same layer fails; separate layers per property works
+  - Ainslie et al. 2023 (GQA): grouped KV heads compress representations that
+    multi-head attention would keep separate
+  - Qwen3 Technical Report (Yang et al. 2025): 0.6B variant is distilled, not
+    trained from scratch at this scale
+
+================================================================================
+
+H-SM-1: SUPERPOSITION DENSITY THRESHOLD
+------------------------------------------------------------------------
+
+Conjecture:
+  At d_model=1024, the effective rank of the residual stream at mid-layers
+  (14-20) is below 200, causing any single steering vector to have non-trivial
+  cosine similarity (>0.1) with at least 30% of the top-100 principal
+  components of the activation distribution. This makes "clean" single-axis
+  steering impossible -- every style vector inadvertently activates unrelated
+  features, explaining the factual confounding noted in setup.org.
+
+Rationale:
+  Elhage et al. 2022 show that when d_model is small relative to the number
+  of features the model must represent, features are packed into nearly-
+  overlapping directions (superposition). Qwen3-0.6B must encode the same
+  conceptual vocabulary as its larger parent (it was distilled, not trained
+  on a reduced concept set), but into a 1024-dimensional space instead of
+  2048+ (Qwen3-1.7B) or 3584 (Qwen3-4B). The ratio of concepts-to-dimensions
+  is much worse. At 7B+ (d_model=4096), a random unit vector in the residual
+  stream has expected cosine similarity ~1/sqrt(4096) ~ 0.016 with any given
+  feature direction. At d_model=1024, this baseline is ~1/sqrt(1024) ~ 0.031,
+  roughly 2x higher. But distillation compounds this: the student must
+  preserve the teacher's feature set in fewer dimensions, likely increasing
+  effective superposition density beyond what random packing would predict.
+
+Test protocol:
+  1. Run 500 diverse prompts through Qwen3-0.6B, capture residual stream
+     activations at layers 10, 14, 17, 20 using register_forward_hook on
+     model.model.layers[L].
+  2. Compute PCA on the (500 * seq_len, 1024) activation matrix at each layer.
+  3. Measure effective rank: number of principal components needed to explain
+     90% of variance (use the numerical rank definition: sum(sigma_i) / max(sigma_i)).
+  4. Compute the "terse" and "formal" steering vectors from actadd.py.
+  5. Project each steering vector onto the top-100 PCs. Measure the fraction
+     of PCs with |cos_sim| > 0.1.
+  6. Repeat steps 1-5 for Qwen3-1.7B (d_model=2048) as a control.
+
+Success criterion:
+  - Effective rank at layer 17 of Qwen3-0.6B is < 200 (out of 1024).
+  - The "terse" steering vector has |cos_sim| > 0.1 with >= 30% of top-100 PCs
+    at 0.6B, versus < 15% at 1.7B.
+  - The cosine similarity between the "terse" vector and the "formal" vector
+    is > 0.15 at 0.6B (indicating feature collision), versus < 0.08 at 1.7B.
+
+Expected outcome:
+  CONFIRMED. The 0.6B model's residual stream is a low-rank bottleneck where
+  steering vectors cannot avoid collateral activation of unrelated features.
+  This is the root cause of "factual confounding" noted in setup.org and
+  explains why multi-property steering collapses: the vectors are not
+  independent in this compressed space.
+
+Falsification:
+  If effective rank > 400 and inter-vector cosine similarity < 0.05 at 0.6B,
+  the superposition density hypothesis is wrong and the steering failures must
+  have a different cause (e.g., insufficient model capacity for the steered
+  task, not geometric interference).
+
+
+================================================================================
+
+H-SM-2: DISTILLATION CREATES ANISOTROPIC ACTIVATION GEOMETRY
+------------------------------------------------------------------------
+
+Conjecture:
+  Qwen3-0.6B, because it was distilled from a larger teacher rather than
+  pretrained from scratch at 0.6B scale, has a more anisotropic residual
+  stream than a hypothetical 0.6B model trained from scratch would have.
+  Specifically, the top-10 principal components of its residual stream
+  activations explain > 60% of total variance (vs. an expected ~35-45% for
+  a from-scratch model at this scale), and the dominant directions correspond
+  to the teacher's most salient feature axes. This anisotropy means steering
+  vectors must compete with extremely strong "distillation ruts" -- high-
+  variance directions the model is locked into by the KD loss.
+
+Rationale:
+  Knowledge distillation via KL-divergence on logits forces the student to
+  reproduce the teacher's output distribution. The student, having fewer
+  parameters, achieves this by concentrating its representational capacity
+  along the directions most important for matching the teacher's logit
+  distribution. This creates a "distillation signature" in the activation
+  geometry: a small number of directions carry most of the variance, and
+  the model is highly sensitive to perturbations along those directions
+  (because they directly affect the logit-matching loss surface). A steering
+  vector that has any projection onto these dominant directions will be
+  amplified or distorted unpredictably.
+
+  The "Your Transformer is Secretly Linear" finding (Razzhigaev et al. 2024)
+  suggests this effect is worse in smaller models: if inter-layer mappings
+  are more linear, the anisotropy from distillation propagates unchanged
+  through layers rather than being reshaped by nonlinear computation.
+
+Test protocol:
+  1. Capture residual stream activations at layers 5, 10, 14, 17, 22, 27
+     for Qwen3-0.6B (distilled) on 1000 diverse prompts.
+  2. Compute PCA. Measure variance explained by top-10 and top-50 PCs.
+  3. Measure isotropy score: avg cosine similarity between a random sample of
+     1000 activation vectors (following Ethayarajh 2019). Score near 0 = isotropic.
+  4. As control, perform the same analysis on:
+     (a) Qwen3-0.6B-Base (the pre-distillation base, if weights differ)
+     (b) A from-scratch 0.6B model of comparable architecture (e.g., a
+         similarly-sized OLMo or Pythia checkpoint) to isolate the
+         distillation effect from the architecture effect.
+  5. Compute the projection of the "terse" steering vector onto the top-10
+     PCs. If > 40% of the vector's energy falls in these directions, it will
+     be dominated by distillation ruts rather than style information.
+
+Success criterion:
+  - Top-10 PCs explain > 60% variance at layer 17 for distilled Qwen3-0.6B.
+  - The same measurement on a from-scratch model of similar size yields < 45%.
+  - Isotropy score for Qwen3-0.6B is > 0.4 (highly anisotropic), vs. < 0.25
+    for the from-scratch control.
+  - The steering vector's projection onto the top-10 PCs accounts for > 40%
+    of its L2 norm.
+
+Expected outcome:
+  CONFIRMED. Distillation concentrates the activation geometry into a low-
+  dimensional manifold that steering vectors cannot escape. This predicts that
+  mean-centering the steering vector (Jorgensen et al. 2023) -- subtracting
+  the mean activation -- should disproportionately help at 0.6B scale because
+  it removes the dominant distillation-rut component. Testable corollary:
+  mean-centered ActAdd should show a larger improvement delta at 0.6B than
+  at 7B+ models.
+
+Falsification:
+  If the distilled and from-scratch models show comparable anisotropy (within
+  10% relative difference on all metrics), then distillation is not creating
+  a special geometric structure and the 0.6B steering difficulties are purely
+  a function of d_model width, not training procedure.
+
+
+================================================================================
+
+H-SM-3: GQA KV-HEAD SHARING COMPRESSES STYLE INTO FEWER ATTENTION SUBSPACES
+------------------------------------------------------------------------
+
+Conjecture:
+  In Qwen3-0.6B's GQA configuration (16 query heads, 8 KV heads), style/tone
+  information is encoded in the shared KV representations and is therefore
+  distributed across only 8 subspaces instead of 16. This means attention-
+  level steering (injecting at individual attention head outputs) has half
+  the degrees of freedom compared to standard MHA, and two query heads that
+  share a KV head cannot be steered independently. Concretely: ablating or
+  steering a single KV head will produce a larger and less predictable effect
+  on generation style than ablating a single head in an MHA model of the
+  same total d_model.
+
+Rationale:
+  In standard MHA, each head has independent K, V projections, so each head
+  can independently learn to attend to different stylistic features (formality
+  markers, sentence length patterns, hedging language, etc.). GQA forces
+  pairs of query heads to share K and V, meaning style-relevant key-value
+  associations are compressed. The Ainslie et al. 2023 GQA paper shows this
+  works well for general quality but does not examine the implications for
+  post-hoc intervention. At 0.6B with only 8 KV heads (head_dim = 1024/16 =
+  64), each KV head is a 64-dimensional subspace serving two query heads.
+  This is a tight information bottleneck for style.
+
+  The practical implication: residual-stream steering (our current approach
+  via actadd.py) may work better than attention-head-level steering at this
+  scale, because the residual stream is the 1024-dim space BEFORE the GQA
+  bottleneck splits it.
+
+Test protocol:
+  1. For layers 14-18, extract per-head attention patterns for 100 prompts
+     in both "terse" and "verbose" styles using hooks on the attention module
+     (model.model.layers[L].self_attn).
+  2. For each KV head (0-7), compute the mean attention entropy difference
+     between terse and verbose prompts. This measures how much style
+     information each KV head carries.
+  3. Perform single-KV-head ablation: zero out one KV head at a time during
+     generation and measure (a) perplexity increase and (b) style classifier
+     score change on a 50-prompt test set.
+  4. Compare the per-head ablation effect size to a comparable MHA model.
+     If no exact MHA equivalent exists, compare the variance across KV-head
+     ablation effects (8 heads) to the variance across query-head effects
+     (16 heads). Higher variance in KV ablation = more concentrated style info.
+  5. Compare steering effectiveness:
+     (a) Residual stream injection at layer L (current actadd.py approach)
+     (b) Attention output injection: add steering vector only to the output
+         of specific attention heads
+     Measure style shift per unit of perturbation norm for both approaches.
+
+Success criterion:
+  - Ablating the most style-relevant KV head causes >= 2x the perplexity
+    increase compared to ablating the most style-relevant individual query
+    head.
+  - The variance of style-classifier-score change across the 8 KV head
+    ablations is >= 1.5x the variance across the 16 query head ablations,
+    indicating style is unevenly concentrated in KV space.
+  - Residual stream steering achieves higher style shift per unit perturbation
+    norm than attention-head-level steering (ratio >= 1.3x).
+
+Expected outcome:
+  PARTIALLY CONFIRMED. GQA does compress style information into fewer
+  subspaces, making per-head intervention coarser. However, the residual
+  stream approach (which is what actadd.py uses) largely sidesteps this
+  problem because it operates upstream of the GQA split. The practical
+  prediction: attention-head-level steering methods (like ITI, Li et al. 2023)
+  will underperform residual-stream methods disproportionately at 0.6B-GQA
+  compared to their performance gap at 7B-MHA.
+
+Falsification:
+  If KV-head ablation and query-head ablation show comparable effect sizes,
+  and attention-head steering works as well as residual-stream steering, then
+  GQA's KV sharing does not meaningfully compress style information and is
+  not a factor in small-model steering difficulty.
+
+
+================================================================================
+
+H-SM-4: THE NARROW-BUT-DEEP PARADOX -- 28 LAYERS ENABLE LAYER-DISTRIBUTED
+         STEERING THAT COMPENSATES FOR LOW d_model
+------------------------------------------------------------------------
+
+Conjecture:
+  Qwen3-0.6B's high depth-to-width ratio (28 layers / d_model=1024 = 0.027)
+  compared to typical 7B models (32 layers / d_model=4096 = 0.008) creates a
+  unique opportunity: distributing a steering signal across many layers at low
+  per-layer alpha is MORE effective at 0.6B than at 7B, relative to single-
+  layer injection. Specifically, injecting at 4+ layers simultaneously at
+  alpha=0.05 each will outperform single-layer injection at alpha=0.20 in
+  terms of the style-shift-to-coherence-loss ratio, and this advantage will
+  be LARGER at 0.6B than at 7B.
+
+Rationale:
+  "Your Transformer is Secretly Linear" (Razzhigaev 2024) shows that
+  consecutive transformer layers have near-linear mappings between them
+  (Procrustes similarity ~0.99). In a narrow model, a single large
+  perturbation at one layer gets amplified through the remaining layers
+  (because there is less nonlinear "absorption" capacity per layer in a
+  narrow residual stream). This causes the coherence collapse noted at
+  alpha > 0.35.
+
+  However, the same linearity means that SMALL perturbations at MANY layers
+  accumulate approximately additively. If the perturbation at each layer is
+  below the threshold where nonlinear dynamics amplify it chaotically, the
+  cumulative effect is a controlled linear drift in activation space. With
+  28 layers, there are many injection points available.
+
+  Van der Weij et al. 2024 already showed that injecting individual vectors
+  at different layers simultaneously is "promising" for multi-behavior
+  steering. At 0.6B, this should be even more important because the per-layer
+  perturbation budget is smaller (lower alpha threshold before collapse).
+
+  The existing multilayer.py already implements this. The hypothesis predicts
+  its superiority is MORE pronounced at 0.6B than literature reports for 7B+.
+
+Test protocol:
+  1. Define a style metric: train a simple logistic regression classifier on
+     50 terse vs. 50 verbose completions (using sentence-transformers embeddings).
+  2. Define a coherence metric: perplexity of the steered output under the
+     UNSTEERED model (higher = more coherent disruption).
+  3. Generate completions for 30 test prompts under these configurations:
+     (a) Single-layer L=17, alpha=0.20
+     (b) Single-layer L=17, alpha=0.10
+     (c) Multi-layer L=[12,14,16,18], alpha=0.05 each
+     (d) Multi-layer L=[10,12,14,16,18,20], alpha=0.033 each
+     (e) Baseline (no steering, alpha=0)
+  4. Compute style_shift = classifier_prob(terse) - baseline_prob(terse).
+  5. Compute coherence_cost = perplexity_steered / perplexity_baseline.
+  6. Compute efficiency = style_shift / coherence_cost for each configuration.
+  7. If possible, repeat on a 7B model and compare the multi-vs-single ratio.
+
+Success criterion:
+  - Config (c) or (d) achieves efficiency >= 1.5x config (a) at 0.6B.
+  - The same multi-layer configs at 7B show efficiency improvement of < 1.2x
+    over single-layer at 7B, demonstrating that the advantage is scale-specific.
+  - Config (d) with 6 layers at alpha=0.033 each achieves style_shift >= 80%
+    of config (a) while keeping coherence_cost < 1.2 (vs. coherence_cost > 1.5
+    for config (a)).
+
+Expected outcome:
+  CONFIRMED. The 28-layer depth of Qwen3-0.6B is its hidden advantage for
+  steering. The model is narrow but deep enough that distributed low-alpha
+  injection can "walk" the activation trajectory gradually toward the target
+  style without triggering the catastrophic perturbation amplification that
+  single-layer high-alpha injection causes. This predicts that the optimal
+  steering strategy at 0.6B is qualitatively different from 7B: many layers,
+  low alpha, rather than one layer, moderate alpha.
+
+Falsification:
+  If single-layer injection at alpha=0.20 outperforms or matches multi-layer
+  injection in efficiency at 0.6B, the "narrow-but-deep" advantage does not
+  exist and the 28-layer depth does not compensate for low d_model.
+
+
+================================================================================
+
+H-SM-5: CONTRASTIVE STEERING VECTORS HAVE A MINIMUM EFFECTIVE d_model
+         AND 1024 IS NEAR THE BOUNDARY
+------------------------------------------------------------------------
+
+Conjecture:
+  There exists a critical d_model threshold below which contrastive activation
+  addition (ActAdd) fails to produce a vector that reliably separates the
+  intended style axis from noise. At d_model=1024, Qwen3-0.6B is near this
+  boundary: the signal-to-noise ratio (SNR) of a contrastive steering vector
+  (measured as the ratio of its projection onto the true style direction vs.
+  its projection onto random directions) is between 2.0 and 4.0 -- enough
+  for binary style shifts (terse/verbose) to sometimes work, but too low
+  for fine-grained control (e.g., "slightly more formal" vs. "much more formal")
+  or for multi-axis steering. At d_model >= 2048, the SNR exceeds 6.0, enabling
+  graded and compositional steering.
+
+Rationale:
+  ActAdd computes vec = mean(act_pos) - mean(act_neg) from a SINGLE pair of
+  prompts. The "signal" is the true style direction; the "noise" is everything
+  else that differs between the two prompts (different token counts, different
+  surface forms, attention pattern differences, etc.). In a 1024-dim space,
+  two random unit vectors have expected |cos_sim| ~ 0.031. With only one
+  contrastive pair, the prompt-specific noise is NOT random -- it is structured
+  and may have magnitude comparable to the style signal.
+
+  The corpus mean approach (corpus_style_vec.py) averages over N examples,
+  which reduces noise by ~1/sqrt(N). But even with N=10 examples (as used
+  in the project), the noise floor in a 1024-dim space may still be
+  significant. The key prediction: at d_model=1024, increasing N from 2 to 10
+  to 30 will show diminishing but still meaningful SNR gains, while at
+  d_model=4096, even N=2 (pure ActAdd) already achieves sufficient SNR.
+
+  This connects to the "Steering off Course" findings (Queiroz Da Silva 2025):
+  steering methods show high variability, but their study only went down to
+  1.5B. Below 1B, the variability should be even worse, and the failure rate
+  should be predictably related to d_model.
+
+Test protocol:
+  1. Compute the "terse" steering vector via ActAdd (N=1 pair) at layer 17.
+  2. Compute the "terse" vector via corpus mean with N=5, 10, 20, 30 examples.
+  3. For each vector, measure:
+     (a) Style discriminability: mean cos_sim of the vector with activations
+         from 50 held-out terse examples, minus mean cos_sim with 50 verbose
+         examples. This is the "style signal."
+     (b) Noise floor: std of cos_sim across examples within each class.
+     (c) SNR = style_signal / noise_floor.
+  4. Apply each vector at alpha=0.15 and measure:
+     (a) Binary style classification accuracy (terse vs. not-terse) on output.
+     (b) Graded style measurement: cosine similarity between output embeddings
+         and the "ideal terse" centroid, measured at alpha=0.05, 0.10, 0.15,
+         0.20, 0.25. Does style increase monotonically with alpha? (Monotonicity
+         = controllability.)
+  5. Repeat steps 1-4 on Qwen3-1.7B (d_model=2048).
+
+Success criterion:
+  - At d_model=1024 with ActAdd (N=1 pair): SNR < 4.0.
+  - At d_model=1024 with corpus mean N=10: SNR between 4.0 and 6.0.
+  - At d_model=2048 with ActAdd (N=1 pair): SNR > 6.0.
+  - Graded controllability (monotonic style increase with alpha) holds for
+    only 60-70% of test prompts at d_model=1024, vs. 85%+ at d_model=2048.
+  - At d_model=1024, corpus mean with N=30 approaches but does not reach the
+    SNR that ActAdd achieves at d_model=2048 with N=1.
+
+Expected outcome:
+  CONFIRMED. d_model=1024 is near a practical boundary for contrastive
+  steering. ActAdd barely works for binary axes; corpus mean is necessary
+  but insufficient for graded control. This explains the project's observation
+  that "binary style axes (terse/verbose, formal/casual)" work but "not
+  nuanced blends." The implication: at sub-1B scale, contrastive steering
+  should be treated as a binary switch, not a continuous dial. For graded
+  control at this scale, one needs either (a) much larger N in corpus mean,
+  (b) SAE-based feature identification to find a cleaner direction, or
+  (c) multi-layer distributed injection (connecting to H-SM-4).
+
+Falsification:
+  If ActAdd (N=1) at d_model=1024 achieves SNR > 6.0 and graded monotonic
+  controllability on > 85% of prompts, then d_model=1024 is NOT near the
+  boundary and the steering difficulties at 0.6B have a different explanation
+  (e.g., model capacity, training data, or architectural factors other than
+  width).
+
+
+================================================================================
+
+CROSS-HYPOTHESIS DEPENDENCIES AND EXPERIMENTAL ORDERING
+================================================================================
+
+Recommended execution order:
+
+  1. H-SM-1 (Superposition density)
+     -- Foundational: PCA analysis needed by H-SM-2 and H-SM-5
+     -- Cheapest experiment (just forward passes + PCA, no generation)
+
+  2. H-SM-2 (Distillation anisotropy)
+     -- Reuses PCA data from H-SM-1
+     -- Requires a from-scratch control model (Pythia-410M or OLMo-1B)
+
+  3. H-SM-5 (Minimum effective d_model)
+     -- Reuses steering vectors from H-SM-1
+     -- Requires Qwen3-1.7B as control (additional compute)
+
+  4. H-SM-3 (GQA compression)
+     -- Requires attention-level hooks (more complex instrumentation)
+     -- Independent of H-SM-1/2 results
+
+  5. H-SM-4 (Narrow-but-deep distributed steering)
+     -- Requires generation + evaluation pipeline (most expensive)
+     -- Results of H-SM-1 inform alpha choices
+
+Key predictions from the ensemble:
+  - If H-SM-1 + H-SM-2 + H-SM-5 all confirm, the prescription for 0.6B
+    steering is: use corpus-mean vectors (not single-pair ActAdd), mean-center
+    them, distribute across 4-6 layers at low alpha, and treat style control
+    as binary rather than graded.
+  - If H-SM-3 confirms, add: avoid attention-head-level intervention methods
+    (ITI etc.) at this scale; residual-stream injection is strictly preferred.
+  - If H-SM-4 confirms, the 28-layer depth is an asset, not neutral. The
+    optimal configuration at 0.6B is qualitatively distinct from 7B recipes.
+
+================================================================================
