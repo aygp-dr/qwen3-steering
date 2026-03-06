@@ -81,7 +81,7 @@ def add_conjecture(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--style", default="terse")
-    parser.add_argument("--alpha", type=float, default=0.20)
+    parser.add_argument("--alpha", type=float, default=2.0)
     parser.add_argument("--prompt", default="Explain what a mutex is.")
     args = parser.parse_args()
 

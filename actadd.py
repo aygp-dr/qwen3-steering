@@ -69,15 +69,23 @@ def get_layer_activations(
 
 
 def compute_steering_vector(
-    model, tokenizer, style: str, layer_idx: int
+    model, tokenizer, style: str, layer_idx: int,
+    normalize: bool = False,
 ) -> torch.Tensor:
-    """Compute ActAdd steering vector for a named style."""
+    """Compute ActAdd steering vector for a named style.
+
+    Returns the raw activation difference by default (Turner et al. 2023).
+    The raw vector preserves natural scale relative to the residual stream,
+    so α=1.0-3.0 produces meaningful effects. Normalizing to unit norm
+    requires α in the hundreds to match residual stream magnitudes (~500).
+    """
     pos_prompt, neg_prompt = STYLE_PAIRS[style]
     act_pos = get_layer_activations(model, tokenizer, pos_prompt, layer_idx)
     act_neg = get_layer_activations(model, tokenizer, neg_prompt, layer_idx)
     vec = act_pos - act_neg
-    # Normalise to unit vector — α controls magnitude separately
-    return F.normalize(vec, dim=0)
+    if normalize:
+        return F.normalize(vec, dim=0)
+    return vec
 
 
 # ── Steered generation ────────────────────────────────────────────────────────
@@ -88,7 +96,7 @@ def generate_steered(
     prompt: str,
     steering_vec: torch.Tensor,
     layer_idx: int,
-    alpha: float = 0.20,
+    alpha: float = 2.0,
     max_new_tokens: int = 256,
 ) -> str:
     """Generate with steering vector injected at layer_idx."""
@@ -126,7 +134,7 @@ def generate_steered(
 
 def sweep_layers(
     model, tokenizer, prompt: str, style: str,
-    alpha: float = 0.20, layers: Optional[list] = None,
+    alpha: float = 2.0, layers: Optional[list] = None,
 ) -> dict[int, str]:
     """
     Try steering at multiple layers, return {layer: output}.
@@ -147,7 +155,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--style", default="terse", choices=list(STYLE_PAIRS))
     parser.add_argument("--layer", type=int, default=15)
-    parser.add_argument("--alpha", type=float, default=0.20)
+    parser.add_argument("--alpha", type=float, default=2.0)
     parser.add_argument("--sweep", action="store_true",
                         help="Sweep layers 10-20 and print comparison")
     parser.add_argument("--prompt", default="Explain what a mutex is.")
