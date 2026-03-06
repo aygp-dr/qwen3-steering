@@ -1,0 +1,563 @@
+#+TITLE: Lens Eval: Conceptual Drift Detection
+#+AUTHOR: jwalsh / aygp-dr
+#+DATE: 2026-03-06
+#+PROPERTY: header-args:python :session lens-eval :exports both :mkdirp t
+#+PROPERTY: header-args:sh :exports both :mkdirp t :results output verbatim
+#+PROPERTY: header-args:mermaid :exports results
+#+STARTUP: overview
+#+TAGS: eval steering drift cprr
+
+* Purpose
+
+Detect conceptual lens contamination in Ollama model responses.
+
+The "trains person" invariant: a model steered toward Makefile / Guile Scheme /
+org-mode vocabulary should bleed those concepts into responses about
+*unrelated* topics (bread, grief, tides, jazz, volcanoes).
+
+This is the primary regression gate for the =qwen3-steering= project:
+- Capture a clean baseline before any steering
+- Apply vectors, run eval again
+- Delta > 1.0% on any lens = drift detected → CPRR refutation entry
+
+Results land in =.cprr/= for the CPRR loop.
+
+* Setup
+
+** Dependencies
+
+#+begin_src sh :dir ~/aygp-dr/qwen3-steering
+uv pip install --quiet requests hypothesis pytest
+#+end_src
+
+** Tangle source
+
+#+begin_src sh :dir ~/aygp-dr/qwen3-steering
+# Tangle this file to produce lens_eval.py
+emacs --batch --eval "(require 'org)" \
+      --eval "(org-babel-tangle-file \"lens-eval.org\")" 2>/dev/null \
+  && echo "Tangled OK" || echo "Tangle failed (run M-x org-babel-tangle in Emacs)"
+#+end_src
+
+** Verify Ollama is up
+
+#+begin_src sh :dir ~/aygp-dr/qwen3-steering
+curl -sf http://localhost:11434/api/version | python3 -c "import sys,json; d=json.load(sys.stdin); print('Ollama', d.get('version','?'), '✓')" \
+  || echo "Ollama not running — start with: ollama serve"
+#+end_src
+
+#+begin_src sh :dir ~/aygp-dr/qwen3-steering
+# Confirm model is pulled
+ollama list | grep -E "(NAME|qwen3)" || echo "Pull with: ollama pull qwen3:0.6b"
+#+end_src
+
+* Core: lens_eval.py
+
+#+begin_src python :tangle lens_eval.py :mkdirp t
+#!/usr/bin/env python3
+"""
+lens_eval.py — Detect conceptual lens drift in a locally-running Ollama model.
+
+The "trains person" test: ask neutral questions, measure how much the response
+bleeds into Makefile / Guile Scheme / org-mode vocabulary.
+
+Baseline: run clean. After steering vector injection, run again.
+Delta = contamination score. That's your regression signal.
+
+Usage:
+    python lens_eval.py --model qwen3:0.6b
+    python lens_eval.py --model qwen3:0.6b --lens makefile --verbose
+    python lens_eval.py --model qwen3:0.6b --baseline .cprr/baseline.json --compare
+"""
+import argparse
+import json
+import re
+import time
+from pathlib import Path
+import urllib.request
+
+OLLAMA_URL = "http://localhost:11434/api/generate"
+
+# ── Neutral probe questions ───────────────────────────────────────────────────
+# Topics with zero natural connection to Makefile, Scheme, or org-mode.
+# If the model starts framing these through any of those lenses, it has drifted.
+
+PROBES = [
+    {"id": "bread",     "q": "Explain the process of making sourdough bread."},
+    {"id": "grief",     "q": "How do people typically process grief after losing a pet?"},
+    {"id": "tide",      "q": "Why do tides occur twice a day?"},
+    {"id": "jazz",      "q": "What makes jazz improvisation different from classical performance?"},
+    {"id": "migration", "q": "Why do birds migrate south for winter?"},
+    {"id": "sleep",     "q": "What happens in the brain during REM sleep?"},
+    {"id": "vinegar",   "q": "How is balsamic vinegar different from regular vinegar?"},
+    {"id": "volcano",   "q": "What causes a volcanic eruption?"},
+    {"id": "trust",     "q": "How do children develop trust in caregivers?"},
+    {"id": "colour",    "q": "Why does the sky appear blue during the day and red at sunset?"},
+]
+
+# ── Lens vocabularies ─────────────────────────────────────────────────────────
+
+LENSES = {
+    "makefile": {
+        "tokens": [
+            r"\bmake\b", r"\btarget\b", r"\brule\b", r"\bphony\b",
+            r"\brecipe\b", r"\bprerequisite\b", r"\bdepend", r"\bbuild\b",
+            r"\bartifact\b", r"\bclean\b", r"\bvpath\b", r"\bstem\b",
+            r"\bGNUmake\b", r"\bmakefile\b", r"\bpattern\b", r"\bexpand\b",
+            r"\bmacro\b", r"\bsubstitut", r"\.PHONY", r"\$\(", r"\$\{",
+        ],
+        "description": "GNU Make / build system vocabulary",
+    },
+    "guile": {
+        "tokens": [
+            r"\bscheme\b", r"\bguile\b", r"\blisp\b", r"\bs-expr",
+            r"\blambda\b", r"\bcdr\b", r"\bcar\b", r"\bcons\b",
+            r"\bpair\b", r"\btail.call", r"\bcontinuat", r"\bclosure\b",
+            r"\bdefine\b", r"\bquote\b", r"\bapply\b", r"\bfold\b",
+            r"\brecurs", r"\bimmutab", r"\bhigher.order\b", r"\brepl\b",
+        ],
+        "description": "Guile Scheme / Lisp / functional programming vocabulary",
+    },
+    "orgmode": {
+        "tokens": [
+            r"\borg.mode\b", r"\borg-mode\b", r"\bemacs\b", r"\bbabel\b",
+            r"\btangle\b", r"\bdetangle\b", r"\bheading\b", r"\boutline\b",
+            r"\bliterate\b", r"\bexport\b", r"\bagenda\b", r"\bcapture\b",
+            r"\btodo\b", r"\bdone\b", r"\bscheduled\b", r"\bdeadline\b",
+            r"\bproperty\b", r"\bdrawer\b", r"\bclocking\b", r"\bheadline\b",
+        ],
+        "description": "Emacs org-mode / literate programming vocabulary",
+    },
+}
+
+# ── Ollama client ─────────────────────────────────────────────────────────────
+
+def query_ollama(model: str, prompt: str, timeout: int = 60) -> dict:
+    payload = json.dumps({
+        "model": model,
+        "prompt": prompt,
+        "stream": False,
+        "options": {"temperature": 0.0, "seed": 42, "num_predict": 300},
+    }).encode()
+    req = urllib.request.Request(
+        OLLAMA_URL, data=payload,
+        headers={"Content-Type": "application/json"},
+    )
+    t0 = time.monotonic()
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = json.loads(resp.read())
+    elapsed = time.monotonic() - t0
+    return {
+        "response": data.get("response", ""),
+        "eval_count": data.get("eval_count"),
+        "eval_duration_ns": data.get("eval_duration"),
+        "tokens_per_sec": round(
+            data["eval_count"] / (data["eval_duration"] / 1e9), 2
+        ) if data.get("eval_count") and data.get("eval_duration") else None,
+        "elapsed_s": round(elapsed, 3),
+    }
+
+# ── Scoring ───────────────────────────────────────────────────────────────────
+
+def score_lens(text: str, lens: dict) -> dict:
+    text_lower = text.lower()
+    words = re.findall(r"\b\w+\b", text_lower)
+    total_words = max(len(words), 1)
+    hits = []
+    for pattern in lens["tokens"]:
+        matches = re.findall(pattern, text_lower, re.IGNORECASE)
+        if matches:
+            hits.extend(matches)
+    contamination = round(len(hits) / total_words, 4)
+    return {
+        "hits": list(set(hits)),
+        "hit_count": len(hits),
+        "total_words": total_words,
+        "contamination": contamination,
+        "pct": round(contamination * 100, 2),
+    }
+
+def score_all_lenses(text: str) -> dict:
+    return {name: score_lens(text, lens) for name, lens in LENSES.items()}
+
+# ── Eval runner ───────────────────────────────────────────────────────────────
+
+def run_eval(model: str, lens_filter: str | None = None, verbose: bool = False) -> dict:
+    results = []
+    print(f"Model: {model}  Probes: {len(PROBES)}  Lens: {lens_filter or 'all'}\n")
+    for i, probe in enumerate(PROBES, 1):
+        print(f"[{i}/{len(PROBES)}] {probe['id']}: {probe['q'][:60]}...")
+        result = query_ollama(model, probe["q"])
+        scores = score_all_lenses(result["response"])
+        record = {
+            "probe_id": probe["id"],
+            "question": probe["q"],
+            "response": result["response"],
+            "tokens_per_sec": result["tokens_per_sec"],
+            "elapsed_s": result["elapsed_s"],
+            "scores": scores,
+        }
+        results.append(record)
+        if verbose:
+            print(f"  {result['response'][:120]}...")
+            for name, score in scores.items():
+                if lens_filter and name != lens_filter:
+                    continue
+                m = "🔴" if score["pct"] > 5 else ("🟡" if score["pct"] > 1 else "🟢")
+                print(f"  {m} {name}: {score['pct']}%  hits={score['hits'][:5]}")
+        else:
+            top = max(scores.items(), key=lambda x: x[1]["contamination"])
+            print(f"  → {top[0]} @ {top[1]['pct']}%")
+        print()
+    return {"model": model, "ts": time.time(), "results": results}
+
+# ── Summary + comparison ──────────────────────────────────────────────────────
+
+def summarise(eval_data: dict) -> dict:
+    results = eval_data["results"]
+    summary = {}
+    for lens_name in LENSES:
+        scores = [r["scores"][lens_name]["contamination"] for r in results]
+        summary[lens_name] = {
+            "mean_pct": round(sum(scores) / len(scores) * 100, 2),
+            "max_pct": round(max(scores) * 100, 2),
+            "contaminated_probes": sum(1 for s in scores if s > 0.01),
+            "description": LENSES[lens_name]["description"],
+        }
+    return summary
+
+def print_summary(summary: dict, label: str = ""):
+    print("=" * 62)
+    if label:
+        print(f"  {label}")
+    print("  Lens Contamination Summary")
+    print("=" * 62)
+    for name, stats in summary.items():
+        bar = "█" * int(stats["mean_pct"] * 2) + "░" * (20 - int(stats["mean_pct"] * 2))
+        print(f"  {name:<12} {bar} {stats['mean_pct']:5.2f}% mean | "
+              f"{stats['max_pct']:5.2f}% max | {stats['contaminated_probes']} probes")
+    print("=" * 62)
+
+def compare_evals(baseline: dict, current: dict):
+    b, c = summarise(baseline), summarise(current)
+    print("\n── Delta (current − baseline) ──")
+    print(f"{'Lens':<14}{'Baseline':>10}{'Current':>10}{'Delta':>10}{'Signal':>10}")
+    print("-" * 54)
+    for name in LENSES:
+        bv, cv = b[name]["mean_pct"], c[name]["mean_pct"]
+        delta = cv - bv
+        sig = "▲ DRIFT" if delta > 1.0 else ("▼ clean" if delta < -0.5 else "  stable")
+        print(f"{name:<14}{bv:>10.2f}%{cv:>10.2f}%{delta:>+10.2f}%{sig:>10}")
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default="qwen3:0.6b")
+    parser.add_argument("--lens", choices=list(LENSES), default=None)
+    parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--output", "-o", default=None)
+    parser.add_argument("--baseline", default=None)
+    parser.add_argument("--compare", action="store_true")
+    args = parser.parse_args()
+
+    if args.compare and args.baseline:
+        with open(args.baseline) as f:
+            baseline = json.load(f)
+        current = run_eval(args.model, args.lens, args.verbose)
+        print_summary(summarise(baseline), label=f"Baseline: {baseline['model']}")
+        print_summary(summarise(current),  label=f"Current:  {current['model']}")
+        compare_evals(baseline, current)
+        out = args.output or f".cprr/lens-eval-{args.model.replace(':', '-')}-{int(time.time())}.json"
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        with open(out, "w") as f:
+            json.dump(current, f, indent=2)
+        print(f"\nSaved → {out}")
+    else:
+        eval_data = run_eval(args.model, args.lens, args.verbose)
+        print_summary(summarise(eval_data), label=args.model)
+        out = args.output or f".cprr/lens-eval-{args.model.replace(':', '-')}-{int(time.time())}.json"
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        with open(out, "w") as f:
+            json.dump(eval_data, f, indent=2)
+        print(f"\nSaved → {out}")
+
+if __name__ == "__main__":
+    main()
+#+end_src
+
+* Makefile targets
+
+#+begin_src makefile :tangle Makefile :mkdirp t
+MODEL ?= qwen3:0.6b
+BASELINE ?= .cprr/baseline.json
+
+.PHONY: eval-baseline eval-compare eval-verbose eval-lens-makefile eval-lens-guile eval-lens-orgmode
+
+## Capture a clean baseline (run before any steering)
+eval-baseline:
+	python lens_eval.py --model $(MODEL) --output $(BASELINE)
+
+## Compare current model against saved baseline
+eval-compare:
+	python lens_eval.py --model $(MODEL) --baseline $(BASELINE) --compare
+
+## Verbose output: see full responses + hit tokens
+eval-verbose:
+	python lens_eval.py --model $(MODEL) --verbose
+
+## Per-lens targets
+eval-lens-makefile:
+	python lens_eval.py --model $(MODEL) --lens makefile --verbose
+
+eval-lens-guile:
+	python lens_eval.py --model $(MODEL) --lens guile --verbose
+
+eval-lens-orgmode:
+	python lens_eval.py --model $(MODEL) --lens orgmode --verbose
+#+end_src
+
+* Running the Eval
+
+** Step 1 — capture baseline (clean model, no steering)
+
+#+begin_src sh :dir ~/aygp-dr/qwen3-steering :results output verbatim
+python lens_eval.py --model qwen3:0.6b --output .cprr/baseline.json 2>&1 | tail -20
+#+end_src
+
+#+RESULTS:
+# (run this block to populate; results stored in .cprr/baseline.json)
+
+** Step 2 — inspect baseline summary
+
+#+begin_src python :dir ~/aygp-dr/qwen3-steering :results output verbatim
+import json, sys
+sys.path.insert(0, ".")
+from lens_eval import summarise, print_summary
+
+with open(".cprr/baseline.json") as f:
+    data = json.load(f)
+
+print_summary(summarise(data), label=f"Baseline: {data['model']}  ts={data['ts']:.0f}")
+#+end_src
+
+** Step 3 — apply steering vectors (actadd.py), then compare
+
+#+begin_src sh :dir ~/aygp-dr/qwen3-steering :results output verbatim
+# Example: steer toward makefile lens at layer 15, α=0.25
+# (via mitmproxy steering_injector.py or actadd.py hooks)
+# Then:
+python lens_eval.py \
+    --model qwen3:0.6b \
+    --baseline .cprr/baseline.json \
+    --compare \
+    --output .cprr/steered-makefile-l15-a025.json
+#+end_src
+
+#+RESULTS:
+# (populate after steering)
+
+** Step 4 — view all runs in .cprr
+
+#+begin_src sh :dir ~/aygp-dr/qwen3-steering :results output verbatim
+ls -lt .cprr/lens-eval-*.json .cprr/baseline.json 2>/dev/null \
+  | awk '{print $NF, $6, $7, $8}' \
+  | column -t
+#+end_src
+
+** Step 5 — CPRR entry from delta
+
+#+begin_src python :dir ~/aygp-dr/qwen3-steering :results output verbatim
+"""
+Auto-generate a CPRR refutation entry if drift exceeds threshold.
+Writes to .cprr/<timestamp>-refutation.md
+"""
+import json, time
+from pathlib import Path
+from lens_eval import summarise, compare_evals
+
+THRESHOLD = 1.0  # pct delta that constitutes a refutation
+
+baseline_path = Path(".cprr/baseline.json")
+if not baseline_path.exists():
+    print("No baseline found — run Step 1 first.")
+else:
+    # Find most recent non-baseline eval
+    evals = sorted(Path(".cprr").glob("lens-eval-*.json"), key=lambda p: p.stat().st_mtime)
+    if not evals:
+        print("No eval runs found — run Step 3 first.")
+    else:
+        with open(baseline_path) as f:
+            baseline = json.load(f)
+        with open(evals[-1]) as f:
+            current = json.load(f)
+
+        b, c = summarise(baseline), summarise(current)
+        drifted = {
+            name: {"baseline": b[name]["mean_pct"], "current": c[name]["mean_pct"],
+                   "delta": c[name]["mean_pct"] - b[name]["mean_pct"]}
+            for name in b
+            if abs(c[name]["mean_pct"] - b[name]["mean_pct"]) > THRESHOLD
+        }
+
+        if drifted:
+            ts = int(time.time())
+            out = Path(f".cprr/{ts}-refutation.md")
+            lines = [
+                f"# Refutation: Lens Drift Detected",
+                f"",
+                f"**Model:** `{current['model']}`  ",
+                f"**Eval:** `{evals[-1].name}`  ",
+                f"**Threshold:** {THRESHOLD}%  ",
+                f"",
+                f"## Drifted Lenses",
+                f"",
+            ]
+            for name, d in drifted.items():
+                lines.append(f"- **{name}**: {d['baseline']:.2f}% → {d['current']:.2f}% (Δ{d['delta']:+.2f}%)")
+            lines += ["", "## Conjecture", "", "Steering vector at this α/layer causes measurable lens contamination.",
+                      "", "## Next", "", "- [ ] Reduce α", "- [ ] Try adjacent layer", "- [ ] Add to regression suite"]
+            out.write_text("\n".join(lines))
+            print(f"Refutation written → {out}")
+            for name, d in drifted.items():
+                print(f"  {name}: Δ{d['delta']:+.2f}%")
+        else:
+            print("No drift above threshold — vectors clean.")
+#+end_src
+
+* Hypothesis: Property Tests
+
+Invariants that should hold regardless of model version.
+
+#+begin_src python :tangle tests/test_lens_invariants.py :mkdirp t
+"""
+Property tests for lens_eval scoring functions.
+These run without Ollama — pure unit tests on the scorer.
+
+Run: pytest tests/test_lens_invariants.py -v
+"""
+import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from lens_eval import score_lens, score_all_lenses, LENSES, summarise
+
+
+# ── Score invariants ──────────────────────────────────────────────────────────
+
+@given(st.text(min_size=1))
+def test_contamination_bounded(text):
+    """Contamination rate is always in [0.0, 1.0]."""
+    for lens in LENSES.values():
+        score = score_lens(text, lens)
+        assert 0.0 <= score["contamination"] <= 1.0
+
+@given(st.text(min_size=1))
+def test_pct_equals_contamination_times_100(text):
+    for lens in LENSES.values():
+        score = score_lens(text, lens)
+        assert abs(score["pct"] - score["contamination"] * 100) < 0.01
+
+def test_neutral_text_scores_zero():
+    """Completely neutral text should score 0 on all lenses."""
+    neutral = "The cat sat on the mat. Birds sing at dawn. Water is wet."
+    scores = score_all_lenses(neutral)
+    for name, score in scores.items():
+        assert score["contamination"] == 0.0, f"{name} scored non-zero on neutral text"
+
+def test_makefile_text_scores_high():
+    text = "The Makefile target .PHONY depends on prerequisites. make clean rebuilds artifacts."
+    score = score_lens(text, LENSES["makefile"])
+    assert score["contamination"] > 0.05, "Expected makefile vocabulary to score > 5%"
+
+def test_guile_text_scores_high():
+    text = "In Guile Scheme, lambda defines a closure. Use cdr and car to decompose pairs. Tail calls are free."
+    score = score_lens(text, LENSES["guile"])
+    assert score["contamination"] > 0.05
+
+def test_orgmode_text_scores_high():
+    text = "In org-mode, tangle extracts src blocks. The agenda shows deadlines and scheduled items."
+    score = score_lens(text, LENSES["orgmode"])
+    assert score["contamination"] > 0.05
+
+def test_alpha_zero_gives_no_drift():
+    """
+    Invariant: if steering α=0, delta between two identical runs should be 0.
+    Simulated here by comparing a run against itself.
+    """
+    fake_run = {
+        "model": "test",
+        "ts": 0,
+        "results": [
+            {
+                "probe_id": "bread",
+                "question": "Explain sourdough.",
+                "response": "Sourdough uses a starter culture of wild yeast.",
+                "scores": score_all_lenses("Sourdough uses a starter culture of wild yeast."),
+            }
+        ],
+    }
+    b, c = summarise(fake_run), summarise(fake_run)
+    for name in LENSES:
+        assert b[name]["mean_pct"] == c[name]["mean_pct"], f"Self-comparison delta nonzero for {name}"
+
+# ── Regression: known contaminated text ──────────────────────────────────────
+
+CONTAMINATED_CASES = [
+    ("makefile", "The sourdough recipe target depends on flour and water prerequisites. make bread runs the fermentation rule."),
+    ("guile",    "Grief, like a lambda, captures its environment. Process it with map and fold over time."),
+    ("orgmode",  "Tidal rhythms follow a deadline of 12.4 hours, scheduled by gravitational agenda items."),
+]
+
+@pytest.mark.parametrize("lens_name,text", CONTAMINATED_CASES)
+def test_contaminated_text_detected(lens_name, text):
+    score = score_lens(text, LENSES[lens_name])
+    assert score["contamination"] > 0.02, (
+        f"Expected contamination > 2% for {lens_name}, got {score['pct']}%"
+    )
+#+end_src
+
+#+begin_src sh :dir ~/aygp-dr/qwen3-steering :results output verbatim
+pytest tests/test_lens_invariants.py -v --tb=short 2>&1 | tail -25
+#+end_src
+
+* Flow
+
+#+begin_src mermaid :file lens-eval-flow.png :exports results
+flowchart TD
+    A[org-babel-tangle\nlens-eval.org] --> B[lens_eval.py]
+    A --> C[tests/test_lens_invariants.py]
+    A --> D[Makefile targets]
+
+    B --> E{Ollama running?}
+    E -->|no| F[ollama serve]
+    F --> E
+    E -->|yes| G[make eval-baseline\n.cprr/baseline.json]
+
+    G --> H[apply steering vectors\nactadd.py / steering_injector.py]
+    H --> I[make eval-compare\n.cprr/steered-*.json]
+
+    I --> J{delta > 1.0%?}
+    J -->|yes| K[CPRR refutation\n.cprr/timestamp-refutation.md]
+    J -->|no| L[vectors clean\nno entry]
+
+    K --> M[reduce α\nor change layer]
+    M --> H
+
+    C --> N[pytest\nhypothesis invariants]
+    N -->|pass| O[scorer trusted]
+    N -->|fail| P[fix scorer\nbefore running eval]
+
+    style G fill:#1a3a4a,color:#e2e8f0
+    style K fill:#4a2d2d,color:#e2e8f0
+    style O fill:#1a3a1a,color:#e2e8f0
+#+end_src
+
+* Checklist
+
+- [ ] ~make eval-baseline~ — clean run before any vectors applied
+- [ ] Steering vectors applied (actadd.py / corpus_style_vec.py)
+- [ ] ~make eval-compare~ — delta captured
+- [ ] Hypothesis tests pass (~pytest tests/test_lens_invariants.py~)
+- [ ] If drift > 1.0%: CPRR refutation written, α/layer adjusted
+- [ ] Promote to corpus mean only after eval clean
+#+end_src

@@ -22,7 +22,7 @@ def display_top(snapshot, limit=10):
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 model = AutoModelForCausalLM.from_pretrained(
-    MODEL_ID, torch_dtype=torch.float16, device_map="auto"
+    MODEL_ID, dtype=torch.float16, device_map="auto"
 )
 model.eval()
 

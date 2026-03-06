@@ -1,0 +1,4 @@
+# file: /Users/jwalsh/ghq/github.com/aygp-dr/qwen3-steering/actadd.py
+# hypothesis_version: 6.151.9
+
+[0.0, 0.2, 1.0, 256, '\n── Baseline ──', '--alpha', '--layer', '--prompt', '--save-vec', '--style', '--sweep', 'Qwen/Qwen3-0.6B', '__main__', 'auto', 'content', 'dry-wit', 'formal', 'hs', 'pt', 'role', 'socratic', 'store_true', 'terse', 'user']

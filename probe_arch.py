@@ -6,7 +6,7 @@ MODEL_ID = "Qwen/Qwen3-0.6B"
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 model = AutoModelForCausalLM.from_pretrained(
-    MODEL_ID, torch_dtype=torch.float16, device_map="cpu"
+    MODEL_ID, dtype=torch.float16, device_map="cpu"
 )
 model.eval()
 
