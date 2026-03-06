@@ -1,0 +1,1 @@
+Per-class prediction accuracy for k-means clustering, with each prompt's word count plotted as green (correct) or red (misclassified). Terse achieves 8/10 correct, verbose 9/10, but baseline only 4/10 — most baseline misclassifications land in the verbose cluster, reflecting the asymmetric effect where steering toward brevity is far more detectable than steering toward verbosity.

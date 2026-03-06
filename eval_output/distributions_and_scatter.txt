@@ -1,0 +1,1 @@
+Word count histogram and baseline-vs-steered scatter plot for terse and verbose activation steering on Qwen3-0.6B. Histogram shows terse outputs (mean 51 words) well-separated from baseline (122) and verbose (143). Scatter plot confirms directionality: terse points fall below the y=x diagonal and verbose points above, with stronger displacement in the terse direction.

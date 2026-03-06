@@ -1,0 +1,1 @@
+K-means confusion matrix (k=3, 70% accuracy) showing how unsupervised clustering on word, token, and char counts recovers the true steering direction. Terse outputs are almost perfectly identified; the main error mode is baseline/verbose confusion, where the model's unsteered output length already overlaps with the verbose-steered range.
