@@ -21,7 +21,7 @@
 #+end_export
 
 #+ATTR_HTML: :width 100%
-[[file:images/output/01-activation-steering_x_flux2-klein_4b_s42.png]]
+[[file:images/output/01-activation-steering_banner.png]]
 
 /A steering vector redirects the residual stream through 28 transformer layers, shifting output from one style basin to another. The perturbation is small (~8% of residual norm) but sufficient to change greedy decoding at d_model=1024./
 
