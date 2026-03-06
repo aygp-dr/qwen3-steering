@@ -1,0 +1,6 @@
+prompt: A pristine crystal lens floating in space, but one sector of the lens is tinted with an amber-orange contamination that distorts and recolors whatever passes through it. On the clean side, neutral objects (bread, birds, ocean waves) pass through unchanged. On the contaminated side, the same objects emerge wrapped in glowing code brackets and mathematical notation. Split composition, dark background, surrealist scientific illustration.
+model: x/flux2-klein:4b
+seed: 42
+elapsed_s: 66.9
+total_duration_s: 66.9
+done: True

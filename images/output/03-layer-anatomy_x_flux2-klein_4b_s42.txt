@@ -1,0 +1,6 @@
+prompt: Cross-section diagram of a neural network as a vertical tower of 28 stacked luminous rings, each progressively wider from bottom to top. The rings glow blue at the bottom transitioning to red at the top. A bright injection point at ring 12 emits radial light. Small floating labels and measurement lines suggest scientific instrumentation. Isometric 3D view, dark background, technical blueprint aesthetic with neon accents.
+model: x/flux2-klein:4b
+seed: 42
+elapsed_s: 65.9
+total_duration_s: 65.9
+done: True

@@ -1,0 +1,6 @@
+prompt: A luminous vector arrow piercing through a dense cloud of floating data points in high-dimensional space, scientific visualization style. The arrow redirects nearby particles from one color cluster (cool blue) toward another (warm amber). Abstract neural network layers visible as translucent parallel planes in the background. Dark background with glowing elements. Technical illustration, clean, minimal, publication quality.
+model: x/flux2-klein:4b
+seed: 42
+elapsed_s: 65.2
+total_duration_s: 65.1
+done: True

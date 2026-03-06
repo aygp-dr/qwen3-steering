@@ -1,0 +1,6 @@
+prompt: A dramatic landscape showing three distinct terrain zones from left to right: a flat frozen plain labeled with faint text (dead zone), a lush green valley with clear paths (sweet spot), and a chaotic volcanic wasteland with crumbling structures (collapse zone). A single luminous path threads through the valley between the extremes. Viewed from above at an angle. Stylized topographic map aesthetic with scientific overlay, moody atmospheric lighting.
+model: x/flux2-klein:4b
+seed: 42
+elapsed_s: 67.1
+total_duration_s: 67.1
+done: True

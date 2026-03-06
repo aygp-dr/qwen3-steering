@@ -1,0 +1,639 @@
+#+TITLE: Steering Vector Statistical Analysis
+#+SUBTITLE: Terministic Screen Detection Without Oracle — Pure Statistics
+#+AUTHOR: jwalsh / aygp-dr
+#+DATE: 2026-03-06
+#+PROPERTY: header-args:python :results output :exports both :mkdirp t
+#+PROPERTY: header-args:python+ :var SEED=42
+#+STARTUP: overview
+
+* Preamble
+
+Burke's terministic screen, measured without asking the model anything.
+
+The three conditions — =normal=, =terse=, =verbose= — produce distributions
+over observable surface features: word count, sentence count, type-token ratio,
+mean word length, punctuation density. If steering is real, these distributions
+are separable. K-means should recover the three classes from features alone.
+If it can't, the steering isn't doing what we think.
+
+This file contains no Ollama calls. The synthetic data is parameterised by
+empirically observed medians and standard deviations from =actadd.py= runs.
+Replace =OBSERVED_STATS= with real measurements and every downstream analysis
+updates automatically.
+
+** Observed Empirical Baselines
+
+From =C-27= (raw vec, α=2.0, layer 12, mutex prompt, n=30 runs each):
+
+| Condition | Median words | Std | Median sentences | Std |
+|-----------+--------------+-----+------------------+-----|
+| normal    |           82 |  18 |                6 | 1.8 |
+| terse     |           16 |   6 |                2 | 0.9 |
+| verbose   |          194 |  41 |               14 | 3.2 |
+
+These are the ground truth. The analysis below asks: are these distributions
+distinguishable by a classifier that has never seen the prompts?
+
+* Setup
+:PROPERTIES:
+:header-args:python: :tangle stats/setup.py :mkdirp t
+:END:
+
+#+begin_src python
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib.patches import Ellipse
+import matplotlib.transforms as transforms
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.metrics import (
+    confusion_matrix, ConfusionMatrixDisplay,
+    silhouette_score, adjusted_rand_score
+)
+from scipy import stats
+from scipy.stats import gaussian_kde
+import warnings
+warnings.filterwarnings("ignore")
+
+np.random.seed(SEED)
+print(f"numpy {np.__version__}, seed={SEED}")
+#+end_src
+
+* Synthetic Data Generation
+:PROPERTIES:
+:header-args:python: :tangle stats/generate.py :mkdirp t
+:END:
+
+Parameterised by empirical observations. Swap =OBSERVED_STATS= for real data.
+
+#+begin_src python
+# ── Empirical parameters (from C-27 runs) ─────────────────────────────────
+OBSERVED_STATS = {
+    #          median  std   sent_med sent_std  ttr_med ttr_std  wlen_med wlen_std
+    "normal":  ( 82,   18,     6,      1.8,     0.68,   0.05,    4.8,    0.3 ),
+    "terse":   ( 16,    6,     2,      0.9,     0.82,   0.04,    5.1,    0.4 ),
+    "verbose": (194,   41,    14,      3.2,     0.58,   0.06,    4.5,    0.4 ),
+}
+
+N_SAMPLES = 120   # 40 per condition — realistic for n=30..50 steering runs
+
+def generate_condition(name, n=40):
+    med_w, std_w, med_s, std_s, med_t, std_t, med_l, std_l = OBSERVED_STATS[name]
+    # word count: log-normal to avoid negative values
+    words = np.random.lognormal(
+        mean=np.log(med_w), sigma=std_w / med_w, size=n
+    ).clip(1)
+    # sentence count: correlated with words
+    sents = np.random.lognormal(
+        mean=np.log(med_s), sigma=std_s / med_s, size=n
+    ).clip(1)
+    # type-token ratio: beta-distributed (bounded 0–1)
+    a, b = med_t * 10, (1 - med_t) * 10
+    ttr = np.random.beta(a, b, size=n)
+    # mean word length: normal
+    wlen = np.random.normal(med_l, std_l, size=n).clip(2)
+    # punctuation density: inversely correlated with TTR, weakly
+    punct = np.random.normal(0.08 - (ttr - 0.68) * 0.05, 0.02, size=n).clip(0)
+    return pd.DataFrame({
+        "words": words, "sentences": sents,
+        "ttr": ttr, "mean_word_len": wlen,
+        "punct_density": punct,
+        "condition": name,
+        "label": {"normal": 0, "terse": 1, "verbose": 2}[name],
+    })
+
+df = pd.concat([
+    generate_condition("normal",  n=N_SAMPLES // 3),
+    generate_condition("terse",   n=N_SAMPLES // 3),
+    generate_condition("verbose", n=N_SAMPLES // 3),
+], ignore_index=True)
+
+FEATURES = ["words", "sentences", "ttr", "mean_word_len", "punct_density"]
+PALETTE   = {"normal": "#4C72B0", "terse": "#DD8452", "verbose": "#55A868"}
+LABELS    = ["normal", "terse", "verbose"]
+
+print(df.groupby("condition")[FEATURES].agg(["median", "std"]).round(2).to_string())
+#+end_src
+
+* Descriptive Statistics
+:PROPERTIES:
+:header-args:python: :tangle stats/descriptive.py :mkdirp t
+:END:
+
+** Distribution Plots
+
+Five features × three conditions. The separation in =words= and =sentences= is
+the primary signal. =ttr= and =mean_word_len= provide discriminating detail for
+the terse/normal boundary where word count alone is noisy.
+
+#+begin_src python
+fig, axes = plt.subplots(1, 5, figsize=(16, 4))
+fig.suptitle(
+    "Feature Distributions by Steering Condition\n"
+    "Terministic screen, measured without oracle",
+    fontsize=11, y=1.02
+)
+
+for ax, feat in zip(axes, FEATURES):
+    for cond, color in PALETTE.items():
+        sub = df[df.condition == cond][feat]
+        kde = gaussian_kde(sub, bw_method=0.4)
+        x = np.linspace(sub.min() * 0.8, sub.max() * 1.2, 300)
+        ax.fill_between(x, kde(x), alpha=0.25, color=color, label=cond)
+        ax.plot(x, kde(x), color=color, lw=1.5)
+        ax.axvline(sub.median(), color=color, lw=1, ls="--", alpha=0.7)
+
+    ax.set_title(feat.replace("_", " "), fontsize=9)
+    ax.set_xlabel("")
+    ax.tick_params(labelsize=7)
+    ax.spines[["top", "right"]].set_visible(False)
+
+axes[0].legend(fontsize=7, frameon=False)
+plt.tight_layout()
+plt.savefig("images/01_distributions.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("saved: images/01_distributions.png")
+#+end_src
+
+** Summary Table
+
+#+begin_src python
+summary = df.groupby("condition")[FEATURES].agg(["median", "std"]).round(3)
+summary.columns = [f"{f}_{s}" for f, s in summary.columns]
+print(summary.to_markdown())
+#+end_src
+
+* K-Means Clustering
+:PROPERTIES:
+:header-args:python: :tangle stats/kmeans.py :mkdirp t
+:END:
+
+K-means on standardised features. If k=3 recovers the ground-truth partition,
+steering is producing statistically distinct populations. ARI measures alignment
+with true labels; silhouette measures internal cluster quality.
+
+** Fit and Score
+
+#+begin_src python
+scaler = StandardScaler()
+X = scaler.fit_transform(df[FEATURES])
+
+km = KMeans(n_clusters=3, n_init=20, random_state=SEED)
+df["cluster"] = km.fit_predict(X)
+
+ari = adjusted_rand_score(df["label"], df["cluster"])
+sil = silhouette_score(X, df["cluster"])
+print(f"ARI  = {ari:.3f}  (1.0 = perfect recovery of ground truth)")
+print(f"Silhouette = {sil:.3f}  (>0.5 = well-separated)")
+
+# Map cluster id → condition by majority vote
+cluster_map = (
+    df.groupby("cluster")["condition"]
+    .agg(lambda s: s.value_counts().index[0])
+    .to_dict()
+)
+df["cluster_label"] = df["cluster"].map(cluster_map)
+print(f"Cluster mapping: {cluster_map}")
+#+end_src
+
+** Elbow + Silhouette — Choosing k
+
+#+begin_src python
+inertias, sils = [], []
+ks = range(2, 8)
+for k in ks:
+    km_k = KMeans(n_clusters=k, n_init=20, random_state=SEED).fit(X)
+    inertias.append(km_k.inertia_)
+    sils.append(silhouette_score(X, km_k.labels_))
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+fig.suptitle("Choosing k — Elbow and Silhouette", fontsize=11)
+
+ax1.plot(ks, inertias, "o-", color="#4C72B0", lw=2)
+ax1.axvline(3, color="#DD8452", ls="--", lw=1.5, label="k=3 (known)")
+ax1.set_xlabel("k"); ax1.set_ylabel("Inertia (WCSS)")
+ax1.set_title("Elbow Curve"); ax1.legend(fontsize=8)
+ax1.spines[["top", "right"]].set_visible(False)
+
+ax2.plot(ks, sils, "s-", color="#55A868", lw=2)
+ax2.axvline(3, color="#DD8452", ls="--", lw=1.5, label="k=3 (known)")
+ax2.set_xlabel("k"); ax2.set_ylabel("Silhouette Score")
+ax2.set_title("Silhouette Curve"); ax2.legend(fontsize=8)
+ax2.spines[["top", "right"]].set_visible(False)
+
+plt.tight_layout()
+plt.savefig("images/02_elbow_silhouette.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("saved: images/02_elbow_silhouette.png")
+#+end_src
+
+** PCA Projection with Cluster Ellipses
+
+#+begin_src python
+pca = PCA(n_components=2, random_state=SEED)
+X2  = pca.fit_transform(X)
+df["pc1"], df["pc2"] = X2[:, 0], X2[:, 1]
+ev = pca.explained_variance_ratio_
+
+def confidence_ellipse(x, y, ax, n_std=2.0, **kwargs):
+    cov = np.cov(x, y)
+    pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
+    rx, ry = np.sqrt(1 + pearson), np.sqrt(1 - pearson)
+    ellipse = Ellipse((0, 0), width=rx * 2, height=ry * 2, **kwargs)
+    scale_x = np.sqrt(cov[0, 0]) * n_std
+    scale_y = np.sqrt(cov[1, 1]) * n_std
+    t = transforms.Affine2D() \
+        .rotate_deg(45) \
+        .scale(scale_x, scale_y) \
+        .translate(np.mean(x), np.mean(y))
+    ellipse.set_transform(t + ax.transData)
+    return ax.add_patch(ellipse)
+
+fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+fig.suptitle(
+    f"PCA Projection  (PC1={ev[0]:.1%}, PC2={ev[1]:.1%} variance)\n"
+    "Left: ground truth labels   Right: k-means clusters",
+    fontsize=10
+)
+
+for ax, col, title in [
+    (axes[0], "condition", "Ground Truth"),
+    (axes[1], "cluster_label", "K-Means (k=3)"),
+]:
+    for cond, color in PALETTE.items():
+        sub = df[df[col] == cond]
+        ax.scatter(sub.pc1, sub.pc2, c=color, s=28, alpha=0.7,
+                   label=cond, edgecolors="none")
+        confidence_ellipse(sub.pc1.values, sub.pc2.values, ax,
+                           n_std=2.0, edgecolor=color, facecolor=color,
+                           alpha=0.10, linewidth=1.5, linestyle="--")
+    ax.set_xlabel(f"PC1 ({ev[0]:.1%})", fontsize=9)
+    ax.set_ylabel(f"PC2 ({ev[1]:.1%})", fontsize=9)
+    ax.set_title(title, fontsize=10)
+    ax.legend(fontsize=8, frameon=False)
+    ax.spines[["top", "right"]].set_visible(False)
+
+axes[1].set_title(
+    f"K-Means (k=3)  ARI={ari:.2f}  Sil={sil:.2f}", fontsize=10
+)
+
+plt.tight_layout()
+plt.savefig("images/03_pca_clusters.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("saved: images/03_pca_clusters.png")
+#+end_src
+
+* Confusion Matrix
+:PROPERTIES:
+:header-args:python: :tangle stats/confusion.py :mkdirp t
+:END:
+
+The confusion matrix reveals the failure mode structure. The hypothesis:
+=normal= ↔ =terse= confusion is higher than either ↔ =verbose=, because
+=verbose= is the easiest screen to detect (word count alone suffices).
+=normal= ↔ =terse= requires the TTR and mean word length features.
+
+#+begin_src python
+# Align cluster labels to ground truth order
+true   = df["condition"].values
+pred   = df["cluster_label"].values
+
+cm = confusion_matrix(true, pred, labels=LABELS)
+acc = np.diag(cm).sum() / cm.sum()
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+fig.suptitle(
+    f"Confusion Matrix — K-Means vs Ground Truth  (acc={acc:.1%})\n"
+    "Déformation professionnelle: which screens bleed into each other?",
+    fontsize=10
+)
+
+# Raw counts
+disp = ConfusionMatrixDisplay(cm, display_labels=LABELS)
+disp.plot(ax=axes[0], colorbar=False, cmap="Blues")
+axes[0].set_title("Raw Counts", fontsize=10)
+
+# Row-normalised (recall per condition)
+cm_norm = cm.astype(float) / cm.sum(axis=1, keepdims=True)
+disp2 = ConfusionMatrixDisplay(cm_norm.round(2), display_labels=LABELS)
+disp2.plot(ax=axes[1], colorbar=False, cmap="Blues")
+axes[1].set_title("Row-Normalised (Recall)", fontsize=10)
+
+plt.tight_layout()
+plt.savefig("images/04_confusion.png", dpi=150, bbox_inches="tight")
+plt.close()
+print(f"saved: images/04_confusion.png  (accuracy={acc:.1%})")
+print(f"\nConfusion matrix:\n{cm}")
+#+end_src
+
+* Statistical Tests
+:PROPERTIES:
+:header-args:python: :tangle stats/tests.py :mkdirp t
+:END:
+
+Kruskal-Wallis (non-parametric, appropriate for non-normal word count
+distributions) across all three conditions, then pairwise Mann-Whitney U
+with Bonferroni correction. This is the table that goes in a paper.
+
+#+begin_src python
+from itertools import combinations
+from scipy.stats import kruskal, mannwhitneyu
+
+rows = []
+for feat in FEATURES:
+    groups = [df[df.condition == c][feat].values for c in LABELS]
+    H, p_kw = kruskal(*groups)
+    rows.append({
+        "feature": feat, "H": round(H, 2), "p_kruskal": p_kw,
+        "significant": p_kw < 0.05
+    })
+
+kw_df = pd.DataFrame(rows)
+print("=== Kruskal-Wallis (H₀: identical distributions across conditions) ===")
+print(kw_df.to_markdown(index=False))
+
+# Pairwise Mann-Whitney with Bonferroni
+pairs = list(combinations(LABELS, 2))
+n_tests = len(FEATURES) * len(pairs)
+alpha_corrected = 0.05 / n_tests
+
+mw_rows = []
+for feat in FEATURES:
+    for c1, c2 in pairs:
+        g1 = df[df.condition == c1][feat].values
+        g2 = df[df.condition == c2][feat].values
+        U, p = mannwhitneyu(g1, g2, alternative="two-sided")
+        r = 1 - (2 * U) / (len(g1) * len(g2))   # rank-biserial correlation
+        mw_rows.append({
+            "feature": feat, "pair": f"{c1} vs {c2}",
+            "U": round(U, 0), "p": round(p, 4),
+            "effect_r": round(r, 3),
+            "sig_bonf": p < alpha_corrected
+        })
+
+mw_df = pd.DataFrame(mw_rows)
+print(f"\n=== Pairwise Mann-Whitney U (Bonferroni α={alpha_corrected:.4f}) ===")
+print(mw_df.to_markdown(index=False))
+#+end_src
+
+* Effect Size Heatmap
+:PROPERTIES:
+:header-args:python: :tangle stats/effect_sizes.py :mkdirp t
+:END:
+
+Rank-biserial correlation =r= as a matrix: features × condition pairs.
+Cells near ±1.0 are the features that most cleanly separate that pair.
+This tells you which lens features to keep and which are noise.
+
+#+begin_src python
+pairs_display = ["normal\nvs terse", "normal\nvs verbose", "terse\nvs verbose"]
+pair_keys     = [("normal","terse"), ("normal","verbose"), ("terse","verbose")]
+
+effect_matrix = np.zeros((len(FEATURES), len(pair_keys)))
+sig_matrix    = np.zeros_like(effect_matrix, dtype=bool)
+
+for j, (c1, c2) in enumerate(pair_keys):
+    for i, feat in enumerate(FEATURES):
+        g1 = df[df.condition == c1][feat].values
+        g2 = df[df.condition == c2][feat].values
+        U, p = mannwhitneyu(g1, g2, alternative="two-sided")
+        effect_matrix[i, j] = 1 - (2 * U) / (len(g1) * len(g2))
+        sig_matrix[i, j] = p < alpha_corrected
+
+fig, ax = plt.subplots(figsize=(7, 5))
+im = ax.imshow(effect_matrix, cmap="RdBu", vmin=-1, vmax=1, aspect="auto")
+plt.colorbar(im, ax=ax, label="rank-biserial r  (±1 = perfect separation)")
+
+for i in range(len(FEATURES)):
+    for j in range(len(pair_keys)):
+        val = effect_matrix[i, j]
+        marker = "★" if sig_matrix[i, j] else ""
+        ax.text(j, i, f"{val:.2f}{marker}", ha="center", va="center",
+                fontsize=9, color="white" if abs(val) > 0.6 else "black")
+
+ax.set_xticks(range(len(pairs_display)))
+ax.set_xticklabels(pairs_display, fontsize=9)
+ax.set_yticks(range(len(FEATURES)))
+ax.set_yticklabels([f.replace("_", " ") for f in FEATURES], fontsize=9)
+ax.set_title(
+    "Effect Size (rank-biserial r) — Feature × Condition Pair\n"
+    "★ = significant after Bonferroni correction",
+    fontsize=10
+)
+
+plt.tight_layout()
+plt.savefig("images/05_effect_sizes.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("saved: images/05_effect_sizes.png")
+#+end_src
+
+* Composite Dashboard
+:PROPERTIES:
+:header-args:python: :tangle stats/dashboard.py :mkdirp t
+:END:
+
+Single-figure summary for the README or a paper figure.
+Four panels: distributions (words only), PCA, confusion, effect sizes.
+
+#+begin_src python
+fig = plt.figure(figsize=(16, 10))
+fig.suptitle(
+    "Steering Vector Analysis — Normal / Terse / Verbose\n"
+    "Pure statistics: no oracle, no LLM calls\n"
+    "Burke (1966): every terminology is a selection and a deflection of reality",
+    fontsize=11, y=1.01
+)
+
+gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.4, wspace=0.35)
+
+# ── Panel A: word count KDE ───────────────────────────────────────────────
+ax_kde = fig.add_subplot(gs[0, 0])
+for cond, color in PALETTE.items():
+    sub = df[df.condition == cond]["words"]
+    kde = gaussian_kde(sub, bw_method=0.4)
+    x = np.linspace(0, sub.max() * 1.1, 400)
+    ax_kde.fill_between(x, kde(x), alpha=0.25, color=color, label=cond)
+    ax_kde.plot(x, kde(x), color=color, lw=2)
+    ax_kde.axvline(sub.median(), color=color, lw=1.2, ls="--")
+ax_kde.set_title("A: Word Count Distribution", fontsize=9)
+ax_kde.set_xlabel("words"); ax_kde.set_ylabel("density")
+ax_kde.legend(fontsize=8, frameon=False)
+ax_kde.spines[["top", "right"]].set_visible(False)
+
+# ── Panel B: PCA ground truth ─────────────────────────────────────────────
+ax_pca = fig.add_subplot(gs[0, 1])
+for cond, color in PALETTE.items():
+    sub = df[df.condition == cond]
+    ax_pca.scatter(sub.pc1, sub.pc2, c=color, s=25, alpha=0.7,
+                   label=cond, edgecolors="none")
+    confidence_ellipse(sub.pc1.values, sub.pc2.values, ax_pca,
+                       n_std=2.0, edgecolor=color, facecolor=color,
+                       alpha=0.10, linewidth=1.5, linestyle="--")
+ax_pca.set_title(f"B: PCA — Ground Truth\n({ev[0]:.1%} + {ev[1]:.1%} variance)",
+                 fontsize=9)
+ax_pca.set_xlabel(f"PC1"); ax_pca.set_ylabel(f"PC2")
+ax_pca.legend(fontsize=8, frameon=False)
+ax_pca.spines[["top", "right"]].set_visible(False)
+
+# ── Panel C: PCA k-means ──────────────────────────────────────────────────
+ax_km = fig.add_subplot(gs[0, 2])
+for cond, color in PALETTE.items():
+    sub = df[df.cluster_label == cond]
+    ax_km.scatter(sub.pc1, sub.pc2, c=color, s=25, alpha=0.7,
+                  label=cond, edgecolors="none")
+    if len(sub) > 2:
+        confidence_ellipse(sub.pc1.values, sub.pc2.values, ax_km,
+                           n_std=2.0, edgecolor=color, facecolor=color,
+                           alpha=0.10, linewidth=1.5, linestyle="--")
+ax_km.set_title(f"C: K-Means (k=3)\nARI={ari:.2f}  Sil={sil:.2f}", fontsize=9)
+ax_km.set_xlabel("PC1"); ax_km.set_ylabel("PC2")
+ax_km.legend(fontsize=8, frameon=False)
+ax_km.spines[["top", "right"]].set_visible(False)
+
+# ── Panel D: Confusion matrix ─────────────────────────────────────────────
+ax_cm = fig.add_subplot(gs[1, 0])
+im_cm = ax_cm.imshow(cm_norm, cmap="Blues", vmin=0, vmax=1)
+for i in range(3):
+    for j in range(3):
+        ax_cm.text(j, i, f"{cm_norm[i,j]:.2f}", ha="center", va="center",
+                   fontsize=10,
+                   color="white" if cm_norm[i,j] > 0.6 else "black")
+ax_cm.set_xticks(range(3)); ax_cm.set_xticklabels(LABELS, fontsize=8)
+ax_cm.set_yticks(range(3)); ax_cm.set_yticklabels(LABELS, fontsize=8)
+ax_cm.set_xlabel("Predicted"); ax_cm.set_ylabel("True")
+ax_cm.set_title(f"D: Confusion Matrix (normalised)\nacc={acc:.1%}", fontsize=9)
+
+# ── Panel E: Effect size heatmap ──────────────────────────────────────────
+ax_ef = fig.add_subplot(gs[1, 1:])
+im_ef = ax_ef.imshow(effect_matrix, cmap="RdBu", vmin=-1, vmax=1, aspect="auto")
+plt.colorbar(im_ef, ax=ax_ef, label="rank-biserial r")
+for i in range(len(FEATURES)):
+    for j in range(len(pair_keys)):
+        val = effect_matrix[i, j]
+        marker = "★" if sig_matrix[i, j] else ""
+        ax_ef.text(j, i, f"{val:.2f}{marker}", ha="center", va="center",
+                   fontsize=9, color="white" if abs(val) > 0.6 else "black")
+ax_ef.set_xticks(range(len(pairs_display)))
+ax_ef.set_xticklabels(pairs_display, fontsize=9)
+ax_ef.set_yticks(range(len(FEATURES)))
+ax_ef.set_yticklabels([f.replace("_", " ") for f in FEATURES], fontsize=9)
+ax_ef.set_title("E: Effect Size (rank-biserial r) — ★ Bonferroni-significant", fontsize=9)
+
+plt.savefig("images/00_dashboard.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("saved: images/00_dashboard.png")
+#+end_src
+
+* Mermaid: Analysis Pipeline
+:PROPERTIES:
+:header-args:mermaid: :tangle docs/pipeline.mmd :mkdirp t
+:END:
+
+#+begin_src mermaid
+flowchart TD
+    OBS["Observed runs\nactadd.py n=30 per condition"]
+    PARAMS["OBSERVED_STATS\nmedian + std per feature"]
+    OBS -->|"empirical\nparameterisation"| PARAMS
+
+    subgraph SYNTH["Synthetic Data (replace with real)"]
+        PARAMS --> NORM["normal\nμ=82w, σ=18"]
+        PARAMS --> TERSE["terse\nμ=16w, σ=6"]
+        PARAMS --> VERB["verbose\nμ=194w, σ=41"]
+    end
+
+    NORM & TERSE & VERB --> FEAT["Feature Matrix\nwords · sentences · ttr\nmean_word_len · punct_density"]
+
+    FEAT --> SCALE["StandardScaler"]
+
+    SCALE --> KM["KMeans k=3\n20 inits, seed=42"]
+    SCALE --> PCA["PCA 2D\nprojection"]
+    SCALE --> KW["Kruskal-Wallis\nH-statistic"]
+
+    KM --> ARI["ARI vs ground truth"]
+    KM --> SIL["Silhouette score"]
+    KM -->|"predicted labels"| CM["Confusion Matrix\nnormalised"]
+    PCA -->|"coordinates"| VIZ["PCA scatter\nwith 2σ ellipses"]
+    KW --> MW["Mann-Whitney U\npairwise + Bonferroni"]
+    MW --> EFF["Effect size heatmap\nrank-biserial r"]
+
+    ARI & SIL & CM & VIZ & EFF --> DASH["Dashboard\nimages/00_dashboard.png"]
+
+    DASH --> CLAIM{{"ARI > 0.8?\nSil > 0.5?"}}
+    CLAIM -->|yes| PROOF["C-28: proof\nsteering produces\ndistinct populations"]
+    CLAIM -->|no| REFUT["C-28: refutation\nfeatures insufficient —\ncollect more or rethink features"]
+#+end_src
+
+* Makefile
+:PROPERTIES:
+:header-args:makefile: :tangle Makefile.stats :mkdirp t
+:END:
+
+#+begin_src makefile
+.PHONY: all stats clean images
+
+PYTHON  = uv run python
+SCRIPTS = stats/generate.py stats/descriptive.py stats/kmeans.py \
+          stats/confusion.py stats/tests.py stats/effect_sizes.py \
+          stats/dashboard.py
+
+all: images/00_dashboard.png
+
+images:
+	mkdir -p images
+
+## Run full pipeline in order (each script reads df from global scope
+## via exec-chain; in practice: tangle to single script or use imports)
+stats/all.py: $(SCRIPTS) | images
+	cat stats/setup.py stats/generate.py stats/descriptive.py \
+	    stats/kmeans.py stats/confusion.py stats/tests.py \
+	    stats/effect_sizes.py stats/dashboard.py > stats/all.py
+
+images/00_dashboard.png: stats/all.py
+	$(PYTHON) stats/all.py
+
+## Tangle from org source
+tangle:
+	emacs --batch \
+	  --eval "(require 'org)" \
+	  --eval '(org-babel-tangle-file "steering-stats.org")'
+
+clean:
+	rm -f images/*.png stats/all.py
+
+## Register result in CPRR
+cprr-register: images/00_dashboard.png
+	@echo "Register C-28 outcome manually in .cprr/conjectures.json"
+	@echo "ARI and Silhouette scores printed to stdout by stats/all.py"
+#+end_src
+
+* CPRR Hook
+
+When you run this analysis on real data from =actadd.py=:
+
+1. Replace =OBSERVED_STATS= with actual medians and standard deviations
+2. =make -f Makefile.stats= regenerates all five plots
+3. If ARI > 0.80 → register =C-28= as *proof* in =.cprr/conjectures.json=
+4. If ARI < 0.50 → the terministic screens are not statistically distinct at
+   surface-feature level — either the features are wrong or the steering is
+   not producing what we think it produces
+
+The confusion matrix tells you *which* condition pair is the failure mode.
+Burke predicts terse/normal will be hardest: both are concise, the screen
+difference is register and TTR, not volume.
+
+#+begin_src json :tangle .cprr/C-28-template.json :mkdirp t
+{
+  "id": "C-28",
+  "axis": "Evaluation",
+  "conjecture": "Surface linguistic features (word count, sentences, TTR, mean word length, punct density) are sufficient to recover normal/terse/verbose steering conditions via k-means clustering with ARI > 0.80, without querying the model.",
+  "prediction": "The three conditions form statistically distinct clusters. Verbose is easiest to separate (word count alone); terse/normal requires TTR and word length features.",
+  "status": "open",
+  "evidence": null,
+  "notes": "Burke (1966): if the terministic screen is real, it should be visible in the selection patterns of the text it produces. ARI measures whether that visibility is recoverable without an oracle."
+}
+#+end_src

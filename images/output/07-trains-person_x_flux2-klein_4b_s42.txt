@@ -1,0 +1,6 @@
+prompt: A person sitting at a desk looking at a simple loaf of bread, but their vision is visualized as radiating lines that transform the bread into an elaborate engineering blueprint with specifications, invariants, and proof annotations floating around it. The person's glasses glow with data. Warm interior lighting contrasting with the cold blue of the projected specifications. Editorial illustration style, slightly whimsical but technically precise.
+model: x/flux2-klein:4b
+seed: 42
+elapsed_s: 64.7
+total_duration_s: 64.7
+done: True
