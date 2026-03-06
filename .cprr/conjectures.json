@@ -435,9 +435,25 @@
         }
       },
       "created": "2026-03-06T21:40:17.664682+00:00"
+    },
+    {
+      "id": 28,
+      "status": "proposed",
+      "hypothesis": "Surface features (word_count, token_count, char_count) are sufficient to recover the screening conditions without oracle labels",
+      "claim": "K-means on 3 surface features recovers terse/baseline/verbose partition with ARI >= 0.50",
+      "refutation_criterion": "ARI < 0.50 on full 100-prompt run",
+      "burke_framing": "If terministic screens are real, they select/deflect enough to show up in the simplest possible features",
+      "preliminary": {
+        "n": 10,
+        "ari": 0.395,
+        "best_k_silhouette": 2,
+        "note": "10-prompt test run; baseline/verbose overlap at n=10 expected"
+      },
+      "depends_on": ["H-EV-1", "H-EV-4"],
+      "created": "2026-03-07T00:00:00+00:00"
     }
   ],
-  "next_id": 28,
+  "next_id": 29,
   "config": {
     "local": true
   }
