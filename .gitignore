@@ -8,3 +8,4 @@ __pycache__/
 worktrees/
 .venv/
 lean4/.lake/
+.hypothesis/
