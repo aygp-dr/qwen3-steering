@@ -1,0 +1,8 @@
+X-AI-Agent: Claude Opus 4.6
+X-Conjecture: C-26 refuted (unit vec alpha=0.20 = zero effect)
+X-Conjecture: C-27 proved (raw vec alpha=2.0, layer 12 optimal, 149->16 words)
+X-Detection: SNR analysis via diagnose_steering.py confirmed residual norms 455-810
+X-Testing: All 13 tests pass (8 property + 5 contract)
+X-Integration: sweep_to_cprr.py default alpha updated to match
+X-Note: Deep-dive research agent recommended unit normalization as "essential" (line 374)
+  but empirical diagnosis proved the opposite on Qwen3-0.6B. Raw vectors work.
