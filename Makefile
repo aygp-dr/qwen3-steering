@@ -3,7 +3,7 @@ MODEL_ID := Qwen/Qwen3-0.6B
 MODEL_DIR := .models/$(MODEL_ID)
 SENTINEL := $(MODEL_DIR)/.pulled
 
-.PHONY: all clean model test test-vectors test-contracts test-ollama sweep-cprr tangle
+.PHONY: all clean model test test-vectors test-contracts test-ollama sweep-cprr tangle eval-lens eval-lens-compare
 
 all: $(SENTINEL)
 
@@ -41,6 +41,15 @@ test-ollama:
 sweep-cprr: $(SENTINEL)
 	$(PYTHON) sweep_to_cprr.py --style terse --alpha 0.20 \
 		--prompt "Explain what a mutex is."
+
+# ── Lens drift eval ──────────────────────────────────────────────────────────
+
+eval-lens:
+	$(PYTHON) lens_eval.py --model qwen3:0.6b -o .cprr/baseline.json
+
+eval-lens-compare:
+	$(PYTHON) lens_eval.py --model qwen3:0.6b \
+		--baseline .cprr/baseline.json --compare
 
 # ── Tangle ────────────────────────────────────────────────────────────────────
 
