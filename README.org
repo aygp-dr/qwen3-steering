@@ -111,9 +111,11 @@ Four contrastive pairs define the steering directions:
 | ~socratic~ | "Respond only with targeted clarifying questions." | "Give me the answer directly." |
 | ~dry-wit~ | "Respond with dry understatement and laconic precision." | "Be enthusiastic, warm, and encouraging." |
 
-* The Lens Eval: Detecting Worldview Contamination
+* The Lens Eval: Terministic Screens
 
-The "trains person" test: if someone really liked trains, they'd explain /everything/ through trains. Ask the model neutral questions (sourdough, grief, tides, jazz), measure how much the response bleeds into the wrong vocabulary.
+Each lens is a /terministic screen/ (Burke 1966): a vocabulary that selects certain features of reality and deflects others. Activation steering installs screens. This eval measures bleed — how far a screen extends into topics it should not touch.
+
+French term: /déformation professionnelle/. The doctor sees symptoms in everyone. The engineer sees systems in sourdough. The eval measures how much sourdough looks like a spec.
 
 12 conceptual lenses, each a regex vocabulary:
 

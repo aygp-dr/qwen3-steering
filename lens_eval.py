@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """
-lens_eval.py — Detect conceptual lens drift in a locally-running Ollama model.
+lens_eval.py — Detect terministic screen bleed in a locally-running Ollama model.
 
-The "trains person" test: if someone really liked trains, they'd use trains as
-a lens for everything. Ask neutral questions, measure how much the response
-bleeds into Makefile / Guile Scheme / org-mode vocabulary.
+Each lens is a "terministic screen" (Kenneth Burke, 1966): a vocabulary that
+selects certain features of reality and deflects others. Activation steering
+installs screens. This eval measures bleed — how far a screen extends into
+topics it should not touch.
 
-Baseline: run clean. After steering vector injection, run again.
-Delta = contamination score. That's your regression signal.
+French term: déformation professionnelle. The doctor sees symptoms in everyone.
+The engineer sees systems in sourdough. The eval measures how much sourdough
+looks like a spec.
+
+Method: ask 10 neutral questions (bread, grief, tides, jazz...), score each
+response against 12 lens vocabularies. Contamination = hits / total_words.
+Run clean as baseline, run after steering, delta = regression signal.
 
 Usage:
     python lens_eval.py --model qwen3:0.6b

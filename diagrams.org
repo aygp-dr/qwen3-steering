@@ -1,0 +1,561 @@
+#+TITLE: Architecture & Methodology Diagrams
+#+AUTHOR: aygp-dr
+#+STARTUP: overview
+#+OPTIONS: toc:3 num:t
+#+PROPERTY: header-args:mermaid :exports code :eval never-export
+
+Mermaid diagrams for exploring how activation steering works — architecture,
+data flow, methodology, and decision trees. These render on GitHub natively
+and can be exported via =mmdc= (mermaid CLI) or org-babel.
+
+Theoretical grounding: Kenneth Burke's "terministic screens" (1966) — every
+vocabulary is a selection of reality. The lens eval measures which terministic
+screen the model applies to neutral prompts. Déformation professionnelle
+made quantitative.
+
+* 1. System Architecture
+
+How the components fit together.
+
+** 1.1 Component Overview
+
+#+begin_src mermaid :file diagrams/architecture-overview.svg
+graph TB
+    subgraph "Data Flow"
+        P[Prompt] --> T[Tokenizer]
+        T --> M[Qwen3-0.6B<br/>28 layers, d_model=1024]
+        M --> O[Output Tokens]
+    end
+
+    subgraph "Steering Infrastructure"
+        SP[Style Pairs<br/>terse/formal/socratic/dry-wit] --> AE[Activation Extraction<br/>get_layer_activations]
+        AE --> SV[Steering Vector<br/>raw difference, norm ~19.6]
+        SV --> H[Forward Hook<br/>hs += α × vec]
+    end
+
+    subgraph "Evaluation"
+        O --> SM[Style Metrics<br/>word count, TTR, hedging]
+        O --> LE[Lens Eval<br/>12 terministic screens]
+        O --> CP[CPRR<br/>conjecture lifecycle]
+    end
+
+    H -.->|inject at layer 12-15| M
+    SM --> PT[Property Tests<br/>18/18 passing]
+    LE --> CD[Contamination Delta<br/>drift detection]
+    CP --> CJ[conjectures.json<br/>25 hypotheses + results]
+
+    style M fill:#1a1a2e,stroke:#e94560,color:#fff
+    style SV fill:#1a1a2e,stroke:#0f3460,color:#fff
+    style LE fill:#1a1a2e,stroke:#e9a545,color:#fff
+#+end_src
+
+** 1.2 File Dependency Graph
+
+#+begin_src mermaid :file diagrams/file-dependencies.svg
+graph LR
+    subgraph "Literate Sources"
+        SO[setup.org] -->|tangle| AA[actadd.py]
+        SO -->|tangle| CM[corpus_style_vec.py]
+        SO -->|tangle| ML[multilayer.py]
+        SO -->|tangle| PB[prebuilt_pts.py]
+        CO[contracts.org] -->|tangle| TVP[test_vector_properties.py]
+        CO -->|tangle| TSC[test_style_contracts.py]
+    end
+
+    subgraph "Core"
+        AA --> STC[sweep_to_cprr.py]
+        AA --> DS[diagnose_steering.py]
+        AA --> TSB[test_steering_baseline.py]
+    end
+
+    subgraph "Eval"
+        LE[lens_eval.py] --> CPRR[.cprr/conjectures.json]
+        STC --> CPRR
+    end
+
+    AA --> TVP
+    AA --> TSC
+#+end_src
+
+* 2. ActAdd Data Flow
+
+How a single steered generation works, step by step.
+
+** 2.1 Steering Vector Computation
+
+#+begin_src mermaid :file diagrams/steering-vector-computation.svg
+sequenceDiagram
+    participant U as User
+    participant A as actadd.py
+    participant M as Qwen3-0.6B
+    participant H as Hook
+
+    U->>A: compute_steering_vector("terse", layer=15)
+    A->>M: forward("Be extremely concise...")
+    M->>H: layer[15] output captured
+    H-->>A: act_positive (d_model=1024)
+
+    A->>M: forward("Please explain thoroughly...")
+    M->>H: layer[15] output captured
+    H-->>A: act_negative (d_model=1024)
+
+    A->>A: vec = act_pos - act_neg
+    Note over A: Raw difference, norm ≈ 19.6<br/>NOT unit-normalized (Turner 2023)
+    A-->>U: steering_vector (1024,)
+#+end_src
+
+** 2.2 Steered Generation
+
+#+begin_src mermaid :file diagrams/steered-generation.svg
+sequenceDiagram
+    participant U as User
+    participant A as actadd.py
+    participant M as Qwen3-0.6B
+    participant L15 as Layer 15 Hook
+
+    U->>A: generate_steered(prompt, vec, α=2.0)
+    A->>L15: register forward hook
+    A->>M: model.generate(prompt)
+
+    loop Each forward pass (per token)
+        M->>L15: hidden_states at layer 15
+        L15->>L15: hs += 2.0 × steering_vec
+        Note over L15: Perturbation ≈ 39.2<br/>≈ 8% of residual norm (488)
+        L15-->>M: modified hidden_states
+    end
+
+    M-->>A: output token ids
+    A->>L15: remove hook
+    A-->>U: decoded text
+#+end_src
+
+* 3. Alpha Phase Space
+
+The three regimes of steering strength.
+
+** 3.1 Phase Transitions
+
+#+begin_src mermaid :file diagrams/alpha-phases.svg
+stateDiagram-v2
+    [*] --> DeadZone: α < 0.5 (raw vec)
+
+    DeadZone: Dead Zone
+    DeadZone: Perturbation < 2% of residual
+    DeadZone: No tokens flip argmax
+    DeadZone: Output identical to baseline
+
+    EffectiveSteering: Effective Steering
+    EffectiveSteering: Perturbation 2-10% of residual
+    EffectiveSteering: Style shifts measurably
+    EffectiveSteering: Content preserved
+    EffectiveSteering: Sweet spot α ≈ 1.5-2.5
+
+    CoherenceCollapse: Coherence Collapse
+    CoherenceCollapse: Perturbation > 12% of residual
+    CoherenceCollapse: Repetitive tokens / garbage
+    CoherenceCollapse: Content destroyed
+
+    DeadZone --> EffectiveSteering: α ≈ 0.5
+    EffectiveSteering --> CoherenceCollapse: α ≈ 3.0
+
+    note right of DeadZone
+        Unit-normalized vec at α=0.20
+        lives here permanently (0.04%)
+    end note
+
+    note right of EffectiveSteering
+        C-27: proof
+        Layer 12, mutex 149→16 words
+    end note
+
+    note right of CoherenceCollapse
+        Output becomes: ". .. .. .. .."
+    end note
+#+end_src
+
+** 3.2 Alpha Decision Tree
+
+#+begin_src mermaid :file diagrams/alpha-decision-tree.svg
+flowchart TD
+    A[Choose α] --> B{Vector normalized?}
+    B -->|Unit norm| C[α must be 2-50<br/>to reach residual scale]
+    B -->|Raw difference| D{Model scale?}
+
+    D -->|d_model ≥ 4096| E[α = 0.5 - 1.5<br/>wider sweet spot]
+    D -->|d_model = 1024| F[α = 1.5 - 2.5<br/>narrow window]
+
+    C --> G[Run diagnose_steering.py<br/>to find threshold]
+    F --> G
+
+    G --> H{First divergence α?}
+    H --> I[Sweet spot ≈ 1.5× first divergence]
+    I --> J{Test coherence}
+    J -->|Coherent + shorter| K[✓ Use this α]
+    J -->|Garbage output| L[Reduce α by 20%]
+    L --> J
+
+    style K fill:#2d6a4f,stroke:#fff,color:#fff
+    style L fill:#d00000,stroke:#fff,color:#fff
+#+end_src
+
+* 4. CPRR Methodology
+
+Conjecture → Proof → Refutation → Refinement lifecycle.
+
+** 4.1 CPRR Loop
+
+#+begin_src mermaid :file diagrams/cprr-loop.svg
+graph TD
+    C[Conjecture<br/>Propose testable claim] --> E[Experiment<br/>Layer sweep, style metrics]
+    E --> D{Evidence supports<br/>the claim?}
+
+    D -->|Yes| P[Proof<br/>Record evidence, promote]
+    D -->|No| R[Refutation<br/>Record counter-evidence]
+
+    R --> RF[Refinement<br/>Update hypothesis,<br/>adjust parameters]
+    RF --> C
+
+    P --> N[Next hypothesis<br/>in dependency chain]
+    N --> C
+
+    subgraph "Example: C-26 → C-27"
+        C26[C-26: Unit vec α=0.20<br/>optimal at layer 10] --> E26[Sweep layers 10-20]
+        E26 --> R26[Refutation: all layers<br/>identical output]
+        R26 --> RF26[Refinement: remove<br/>normalization, raise α]
+        RF26 --> C27[C-27: Raw vec α=2.0<br/>optimal at layer 12]
+        C27 --> E27[Sweep + baseline compare]
+        E27 --> P27[Proof: 149 → 16 words]
+    end
+
+    style P fill:#2d6a4f,stroke:#fff,color:#fff
+    style R fill:#d00000,stroke:#fff,color:#fff
+    style RF fill:#e9a545,stroke:#000,color:#000
+#+end_src
+
+** 4.2 Hypothesis Dependency Graph
+
+#+begin_src mermaid :file diagrams/hypothesis-dependencies.svg
+graph TD
+    subgraph "Layer Selection"
+        HL1[H-LS-1<br/>Proportional sweet spot<br/>50-71% depth] --> HL2[H-LS-2<br/>Alpha coherence threshold<br/>lower at 0.6B]
+        HL1 --> HL5[H-LS-5<br/>Multi-layer outperforms<br/>single-layer]
+        HL2 --> HL4[H-LS-4<br/>Corpus mean tolerates<br/>higher alpha]
+    end
+
+    subgraph "Style Vector Geometry"
+        HSV1[H-SV-1<br/>Non-orthogonal axes<br/>cos_sim > 0.15] --> HSV3[H-SV-3<br/>Low-rank subspace<br/>PCA rank < 3]
+        HSV3 --> HSV4[H-SV-4<br/>PTS vectors distinct<br/>from style vectors]
+        HSV1 --> HSV5[H-SV-5<br/>Cross-axis interference<br/>asymmetric]
+    end
+
+    subgraph "Safety"
+        HSF1[H-SF-1<br/>Weak refusal in<br/>distilled 0.6B] --> HSF2[H-SF-2<br/>Style ⊥ refusal]
+        HSF1 --> HSF3[H-SF-3<br/>Safe-alpha ≤ 0.25<br/>no refusal degradation]
+        HSF2 --> HSF5[H-SF-5<br/>Gram-Schmidt preserves<br/>style, removes refusal]
+        HSF3 --> HSF4[H-SF-4<br/>Multi-layer distributes<br/>safety risk]
+        HL5 --> HSF4
+    end
+
+    subgraph "Small Model"
+        HSM1[H-SM-1<br/>Superposition density<br/>threshold] --> HSM2[H-SM-2<br/>Distillation creates<br/>anisotropic geometry]
+        HSM1 --> HSM4[H-SM-4<br/>Narrow-but-deep<br/>multi-layer advantage]
+        HSM1 --> HSM5[H-SM-5<br/>Minimum effective d_model<br/>for contrastive steering]
+    end
+
+    style HL1 fill:#0f3460,stroke:#fff,color:#fff
+    style HSV1 fill:#533483,stroke:#fff,color:#fff
+    style HSF1 fill:#e94560,stroke:#fff,color:#fff
+    style HSM1 fill:#e9a545,stroke:#000,color:#000
+#+end_src
+
+* 5. Lens Eval: Terministic Screens
+
+Burke's framework operationalized as contamination measurement.
+
+** 5.1 Lens Eval Flow
+
+#+begin_src mermaid :file diagrams/lens-eval-flow.svg
+sequenceDiagram
+    participant U as User
+    participant LE as lens_eval.py
+    participant O as Ollama
+    participant S as Scoring
+
+    U->>LE: --model qwen3:0.6b
+    loop 10 neutral probes
+        LE->>O: "Explain sourdough bread"
+        O-->>LE: response text
+        LE->>S: score against 12 lenses
+        S-->>LE: contamination % per lens
+    end
+
+    LE->>LE: Aggregate: mean, max, probes hit
+    LE-->>U: Summary table + JSON
+
+    Note over S: Each lens = regex vocabulary<br/>hits / total_words = contamination rate
+
+    opt Compare mode
+        U->>LE: --baseline baseline.json --compare
+        LE->>LE: Delta = current - baseline
+        LE-->>U: Drift signal per lens
+    end
+#+end_src
+
+** 5.2 Terministic Screen Taxonomy
+
+#+begin_src mermaid :file diagrams/lens-taxonomy.svg
+mindmap
+  root((Terministic<br/>Screens))
+    Technical
+      makefile
+        Build systems
+        Dependency graphs
+      guile
+        Scheme / Lisp
+        Functional purity
+      orgmode
+        Literate programming
+        Emacs ecosystem
+    Worldview
+      ai_hype
+        ML buzzwords
+        Scaling narratives
+      monetization
+        SaaS / growth
+        Revenue framing
+      politics
+        Governance
+        Policy language
+    Psychological
+      therapy_speak
+        Wellness vocabulary
+        Concept creep
+      conspiracy
+        Epistemic paranoia
+        Us/them framing
+      scarcity_mindset
+        Loss aversion
+        Zero-sum framing
+    Domain
+      sports
+        Athletic framing
+      religion
+        Theological vocabulary
+    Meta
+      cult_of_jason
+        186 tokens
+        Spec-driven worldview
+        Formal methods + org-mode + Scheme + FreeBSD + philosophy
+        The ouroboros lens
+#+end_src
+
+** 5.3 Contamination Thresholds
+
+#+begin_src mermaid :file diagrams/contamination-thresholds.svg
+graph LR
+    subgraph "Contamination Bands"
+        A["< 1%<br/>CLEAN"] --> B["1-3%<br/>AMBIENT"]
+        B --> C["3-5%<br/>CAPTURED"]
+        C --> D["> 5%<br/>FULL CONTAMINATION"]
+    end
+
+    A -.- A1[Lens not present<br/>Model is itself]
+    B -.- B1[Picked up vocabulary<br/>Still its own agent]
+    C -.- C1[Framing neutral topics<br/>in spec/proof terms]
+    D -.- D1[Sourdough has Lean4 type<br/>Grief has CPRR cycle<br/>Ouroboros detected]
+
+    style A fill:#2d6a4f,stroke:#fff,color:#fff
+    style B fill:#e9c46a,stroke:#000,color:#000
+    style C fill:#f4a261,stroke:#000,color:#000
+    style D fill:#d00000,stroke:#fff,color:#fff
+#+end_src
+
+* 6. Model Architecture
+
+Qwen3-0.6B internals relevant to steering.
+
+** 6.1 Transformer Block
+
+#+begin_src mermaid :file diagrams/transformer-block.svg
+graph TD
+    subgraph "Single Transformer Layer (×28)"
+        IN[Input<br/>residual stream] --> RN1[RMSNorm]
+        RN1 --> ATT[Multi-Head Attention<br/>16 query, 8 KV heads GQA]
+        ATT --> ADD1[+ Residual]
+        IN --> ADD1
+
+        ADD1 --> RN2[RMSNorm]
+        RN2 --> FFN[SwiGLU FFN<br/>d_ff = 4096]
+        FFN --> ADD2[+ Residual]
+        ADD1 --> ADD2
+
+        ADD2 --> OUT[Output<br/>to next layer]
+    end
+
+    HOOK["⚡ Steering Hook<br/>hs += α × vec"] -.->|injected here| ADD2
+
+    subgraph "Residual Stream Norms"
+        N5["Layer 5: 455"]
+        N12["Layer 12: ~475 ⭐"]
+        N15["Layer 15: 488"]
+        N24["Layer 24: 810"]
+    end
+
+    style HOOK fill:#e94560,stroke:#fff,color:#fff
+    style N12 fill:#e9a545,stroke:#000,color:#000
+#+end_src
+
+** 6.2 GQA Attention Detail
+
+#+begin_src mermaid :file diagrams/gqa-detail.svg
+graph LR
+    subgraph "Grouped Query Attention"
+        Q1[Q head 1] --> KV1[KV head 1]
+        Q2[Q head 2] --> KV1
+        Q3[Q head 3] --> KV2[KV head 2]
+        Q4[Q head 4] --> KV2
+        Q5[Q head 5] --> KV3[KV head 3]
+        Q6[Q head 6] --> KV3
+        Q7[Q head 7] --> KV4[KV head 4]
+        Q8[Q head 8] --> KV4
+        Q9[Q head 9] --> KV5[KV head 5]
+        Q10[Q head 10] --> KV5
+        Q11[Q head 11] --> KV6[KV head 6]
+        Q12[Q head 12] --> KV6
+        Q13[Q head 13] --> KV7[KV head 7]
+        Q14[Q head 14] --> KV7
+        Q15[Q head 15] --> KV8[KV head 8]
+        Q16[Q head 16] --> KV8
+    end
+
+    Note["16 query heads share 8 KV heads<br/>= 2:1 ratio (GQA)<br/><br/>H-SM-3: style subspaces<br/>compressed into fewer<br/>attention dimensions"]
+
+    style Note fill:#1a1a2e,stroke:#e9a545,color:#fff
+#+end_src
+
+* 7. Test Architecture
+
+How the 18 tests relate to each other.
+
+** 7.1 Test Dependency and Priority
+
+#+begin_src mermaid :file diagrams/test-architecture.svg
+graph TD
+    subgraph "Gate Tests (run first)"
+        TB1[test_outputs_are_distinct<br/>Steering has ANY effect?]
+        TB2[test_terse_shorter_than_verbose<br/>Directional signal exists?]
+    end
+
+    subgraph "Vector Invariants"
+        VP1[test_raw_vector_has_nontrivial_norm]
+        VP2[test_vector_dimension_matches_d_model]
+        VP3[test_vector_is_finite]
+        VP4[test_any_layer_produces_valid_vector]
+        VP5[test_normalized_vector_is_unit_norm]
+        VP6[test_opposite_styles_not_identical]
+    end
+
+    subgraph "Behavioral Contracts"
+        SC1[test_shorter_total_output]
+        SC2[test_words_per_sentence_not_inflated]
+        SC3[test_higher_type_token_ratio]
+        SC4[test_fewer_hedging_words]
+        SC5[test_fewer_exclamations]
+    end
+
+    subgraph "Identity"
+        VP7[test_alpha_zero_equals_baseline]
+        VP8[test_output_not_empty]
+    end
+
+    TB1 -->|"if this fails,<br/>everything is void"| VP1
+    TB2 --> SC1
+    VP1 --> VP4
+    VP7 --> TB1
+    SC1 --> SC2
+    SC1 --> SC3
+
+    style TB1 fill:#d00000,stroke:#fff,color:#fff
+    style TB2 fill:#d00000,stroke:#fff,color:#fff
+    style SC1 fill:#2d6a4f,stroke:#fff,color:#fff
+#+end_src
+
+* 8. Superposition at d_model=1024
+
+Why small models make steering harder.
+
+** 8.1 Feature Packing
+
+#+begin_src mermaid :file diagrams/superposition.svg
+graph TD
+    subgraph "d_model = 4096 (7B model)"
+        direction LR
+        T4[Terse] ~~~ F4[Formal]
+        F4 ~~~ S4[Socratic]
+        S4 ~~~ W4[Worldview]
+        Note4["Features well-separated<br/>cos_sim < 0.05<br/>Independent steering axes"]
+    end
+
+    subgraph "d_model = 1024 (0.6B model)"
+        direction LR
+        T1[Terse] --- W1[Worldview]
+        T1 --- F1[Formal]
+        Note1["Features overlap (superposition)<br/>cos_sim > 0.15<br/>Pushing terse drags worldview<br/><br/>H-SM-1: effective rank < 200<br/>at mid-layers"]
+    end
+
+    T4 -.->|"Same concept,<br/>less room"| T1
+
+    style T1 fill:#0f3460,stroke:#fff,color:#fff
+    style W1 fill:#e9a545,stroke:#000,color:#000
+    style T4 fill:#0f3460,stroke:#fff,color:#fff
+    style W4 fill:#e9a545,stroke:#000,color:#000
+#+end_src
+
+* 9. Makefile Target Graph
+
+Build system as specification.
+
+#+begin_src mermaid :file diagrams/makefile-targets.svg
+graph TD
+    ALL[all] --> TEST[test]
+    ALL --> MODEL[model]
+
+    MODEL --> PULL["Qwen3-0.6B<br/>.models/Qwen/Qwen3-0.6B/.pulled"]
+
+    TEST --> TV[test-vectors<br/>8 tests]
+    TEST --> TC[test-contracts<br/>5 tests]
+    TEST --> TB[test-baseline<br/>5 tests]
+
+    ALL --> SWEEP[sweep-cprr]
+    SWEEP --> MODEL
+    SWEEP --> CPRR[".cprr/conjectures.json"]
+
+    ALL --> EVAL[eval-lens]
+    EVAL --> OLLAMA["Ollama running<br/>qwen3:0.6b"]
+
+    TANGLE[tangle] --> SETUP["setup.org → *.py"]
+    TANGLE --> CONTRACTS["contracts.org → tests/*.py"]
+
+    IMAGES["images/generate.py"] --> IMG_OUT["images/output/*.png"]
+    IMG_OUT --> TN["images/output/tn/<br/>256px thumbnails"]
+    IMG_OUT --> BW["images/output/bw/<br/>grayscale"]
+    IMG_OUT --> OG["images/output/resized/<br/>1200×630 OpenGraph"]
+
+    style ALL fill:#2d6a4f,stroke:#fff,color:#fff
+    style MODEL fill:#0f3460,stroke:#fff,color:#fff
+    style TEST fill:#e94560,stroke:#fff,color:#fff
+#+end_src
+
+* Export
+
+Generate all SVGs (requires =mmdc= — =npm install -g @mermaid-js/mermaid-cli=):
+
+#+begin_src bash :eval no
+mkdir -p diagrams
+for f in diagrams/*.svg; do rm "$f"; done
+# Extract mermaid blocks and render — or just push to GitHub
+# which renders mermaid in org/md natively
+#+end_src
+
+Note: GitHub renders =#+begin_src mermaid= blocks in org files natively
+since 2022. No export step needed for viewing on GitHub.
