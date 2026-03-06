@@ -1,0 +1,1078 @@
+#+TITLE: Deep Dive: Three Approaches to Controlling Model Behavior at the 0.6B Scale
+#+AUTHOR: aygp-dr
+#+DATE: 2026-03-06
+#+STARTUP: overview
+#+OPTIONS: toc:3 num:t
+#+PROPERTY: header-args :exports both
+
+* Executive Summary
+
+This document analyzes three approaches to controlling the output style of Qwen3-0.6B
+(28 layers, d_model=1024, GQA 16q/8kv, SwiGLU, distilled from Qwen3-32B):
+training from scratch, fine-tuning, and steering vector injection. The analysis is
+specific to THIS project's constraints: Apple M4 hardware, style/tone control
+(not knowledge injection), research/educational context, and no production deployment.
+
+*Bottom line:* Steering vector injection is the correct primary approach. Fine-tuning
+via LoRA is the correct secondary approach. Training from scratch is not worth
+considering. The project is well-structured but has specific gaps that, if addressed,
+would significantly strengthen both the experimental results and their interpretability.
+
+The lens_eval.py criterion -- "if the model sees sourdough bread through a Makefile
+lens, it has failed" -- is the right evaluation philosophy. It operationalizes the core
+risk of activation steering: that a perturbation aimed at style leaks into content.
+Every recommendation below is evaluated against this criterion.
+
+* 1. Training from Scratch
+:PROPERTIES:
+:CUSTOM_ID: training-from-scratch
+:END:
+
+** 1.1 What It Would Take
+
+Training a 0.6B-parameter model with built-in style control means training a model
+that can accept style tokens or mode switches as first-class features of its objective
+function. This requires:
+
+- *Architecture:* A standard transformer (28 layers, d_model=1024 is fine) with an
+  additional style-conditioning mechanism. Options include:
+  - Style tokens prepended to input (cheapest, weakest)
+  - Learned style embeddings added to the residual stream at specific layers
+  - Conditional layer norm (StyleGAN-like modulation)
+- *Data:* A pretraining corpus of ~600B-6T tokens (10-10,000 tokens per parameter,
+  per Hoffmann et al. 2022 scaling laws). For style control, a fraction of this corpus
+  (~5-10%) needs style annotations. This means:
+  - ~30-600B style-annotated tokens
+  - At minimum 4 style categories with sufficient diversity
+  - Balanced distribution across topics to avoid style-topic entanglement
+- *Compute:*
+  - A 0.6B model trained on 600B tokens requires roughly 3.6e20 FLOPs
+  - On 8x A100 (80GB), this is approximately 4-7 days at ~50% utilization
+  - Cloud cost: $5,000-$15,000 on spot instances (Lambda, CoreWeave)
+  - On Apple M4: completely infeasible. The M4 Max with 128GB unified memory
+    can do inference and small fine-tuning, but pretraining 0.6B from scratch
+    would take months at MPS throughput (~10-30x slower than A100 for training)
+- *Data curation:* The real cost. Building a 600B-token pretraining corpus with
+  quality style annotations would take 2-6 months of engineering effort.
+
+** 1.2 Advantages
+
+- *Clean style control:* Style is a first-class feature of the model's objective,
+  not a post-hoc perturbation. The model learns to modulate style without
+  disrupting content.
+- *No lens contamination by construction:* If the training data is properly balanced
+  across topics and styles, the model cannot learn to associate "terse" with
+  "Makefiles" because both terse-Makefile and terse-sourdough examples appear in
+  training.
+- *No alpha sensitivity:* There is no fragile steering magnitude parameter. Style is
+  controlled via a discrete token or learned embedding.
+- *Serves as ground truth:* A properly style-conditioned model provides the upper
+  bound on what steering vectors are trying to approximate.
+
+** 1.3 Disadvantages
+
+- *Cost-prohibitive for this project:* $5,000-$15,000 compute + 2-6 months data
+  curation for an educational/research project is not justified, especially when the
+  goal is to study steering methods, not to produce a production model.
+- *Cannot run on M4:* Training from scratch requires multi-GPU setups.
+- *Defeats the research purpose:* The project exists to study post-hoc behavior
+  control. Training style into the model eliminates the phenomenon under study.
+- *Qwen3-0.6B is already distilled:* The Qwen team used strong-to-weak distillation
+  from Qwen3-32B. Retraining from scratch would lose the distilled knowledge that
+  makes the 0.6B model surprisingly capable.
+
+** 1.4 Verdict
+
+*Do not pursue.* Training from scratch is the wrong tool for this project. It would
+cost 100x more than the alternatives, take months instead of days, and eliminate the
+research question that motivates the project. The only scenario where this makes
+sense is if the project pivots to studying style-conditioned pretraining itself.
+
+The Qwen3 technical report (Yang et al. 2025) documents the distillation pipeline
+that produced the 0.6B model. Replicating this would require access to the teacher
+model (Qwen3-32B) outputs, which is feasible but unnecessary for the current goals.
+
+* 2. Fine-Tuning (LoRA, QLoRA, Full)
+:PROPERTIES:
+:CUSTOM_ID: fine-tuning
+:END:
+
+** 2.1 Can You Fine-Tune Qwen3-0.6B for Style Control?
+
+Yes, and it is straightforward. Qwen3-0.6B has 594M parameters. The options are:
+
+| Method     | Trainable Params | Memory (fp16) | M4 Feasible? | Time (1K examples) |
+|------------+------------------+---------------+--------------+---------------------|
+| Full       | 594M (~1.2 GB)   | ~4.8 GB       | Yes (tight)  | ~15-30 min          |
+| LoRA r=16  | ~3.1M (~6.3 MB)  | ~2.4 GB       | Yes          | ~5-10 min           |
+| LoRA r=8   | ~1.6M (~3.2 MB)  | ~2.2 GB       | Yes          | ~5-10 min           |
+| QLoRA r=16 | ~3.1M            | ~1.4 GB       | Yes          | ~8-15 min           |
+
+At 0.6B, full fine-tuning is actually feasible on M4, unlike at 7B+ scale. However,
+LoRA remains preferable for style control because the goal is to modify style behavior
+without disturbing the model's factual knowledge -- exactly the use case LoRA was
+designed for.
+
+** 2.2 LoRA Rank Recommendations for Style
+
+Style control is a low-rank modification. Unlike knowledge injection (which may
+require high-rank updates to the FFN layers), style modulation primarily adjusts
+the model's output distribution preferences -- vocabulary choice, sentence length,
+hedging frequency, question formation patterns. These are surface-level behavioral
+changes that occupy a low-dimensional subspace of the model's parameter space.
+
+*Recommendation: LoRA rank r=8 is sufficient for style control.* Here is the reasoning:
+
+- H-SV-3 in this project hypothesizes that four style axes occupy an effective
+  subspace of rank <= 3 in the residual stream. The weight-space equivalent should
+  be similarly low-dimensional.
+- Databricks (2024) found that r=4-8 is optimal for behavioral (non-knowledge)
+  fine-tuning, with diminishing returns above r=16.
+- For 4 style axes, r=8 provides 2x the hypothesized subspace rank, giving headroom
+  for the weight-space representation to differ from the activation-space
+  representation.
+
+Apply LoRA to:
+- =q_proj=, =v_proj= (attention: controls what the model attends to, i.e., style
+  context sensitivity)
+- =gate_proj=, =up_proj= (SwiGLU FFN: controls the non-linear transformation that
+  determines output vocabulary distribution)
+
+Do NOT apply LoRA to =k_proj=, =o_proj=, or =down_proj= unless rank r=8 proves
+insufficient. Adding more target modules increases the risk of catastrophic forgetting
+at 0.6B scale.
+
+** 2.3 QLoRA on Apple M4
+
+QLoRA (Dettmers et al. 2023) quantizes the base model to 4-bit NormalFloat (NF4)
+and trains LoRA adapters in fp16/bf16. For Qwen3-0.6B:
+
+- Base model in NF4: ~300 MB (vs. ~1.2 GB in fp16)
+- LoRA adapters in fp16: ~3.2 MB (r=8) or ~6.3 MB (r=16)
+- Total training memory: ~1.4 GB including optimizer states and gradients
+- Apple M4 with 16+ GB unified memory: comfortably feasible
+
+*Implementation path:* Apple's MLX framework supports QLoRA natively via =mlx-lm=.
+The workflow is:
+
+#+begin_src sh
+# Install MLX (if not using PyTorch path)
+pip install mlx-lm
+
+# Convert Qwen3-0.6B to MLX format
+mlx_lm.convert --hf-path Qwen/Qwen3-0.6B --mlx-path ./mlx-qwen3-0.6b -q
+
+# Fine-tune with LoRA
+mlx_lm.lora --model ./mlx-qwen3-0.6b \
+  --train \
+  --data ./style-training-data \
+  --lora-layers 16 \
+  --lora-rank 8 \
+  --batch-size 4 \
+  --epochs 3 \
+  --lr 1e-4
+#+end_src
+
+Alternatively, the project's existing PyTorch/transformers stack supports LoRA via
+PEFT (=pip install peft=) and can run on MPS (Metal Performance Shaders):
+
+#+begin_src python
+from peft import LoraConfig, get_peft_model
+
+config = LoraConfig(
+    r=8,
+    lora_alpha=16,
+    target_modules=["q_proj", "v_proj", "gate_proj", "up_proj"],
+    lora_dropout=0.05,
+    bias="none",
+    task_type="CAUSAL_LM",
+)
+model = get_peft_model(model, config)
+# Trainable params: ~1.6M / 594M = 0.27%
+#+end_src
+
+** 2.4 Training Data Requirements
+
+For style control (not knowledge), the data requirements are modest:
+
+| Quality Level   | Examples per Style | Total (4 styles) | Effort       |
+|-----------------+--------------------+-------------------+--------------|
+| Proof of concept | 50-100            | 200-400           | 1-2 hours    |
+| Solid baseline   | 200-500           | 800-2,000         | 1-2 days     |
+| Research quality | 500-1,000         | 2,000-4,000       | 3-5 days     |
+
+Each example should be a (prompt, completion) pair where the completion exhibits
+the target style. For the project's 4 style axes:
+
+- *Terse:* Technical explanations in 1-3 sentences, no filler, high information density
+- *Formal:* Academic prose with proper hedging, citations, structured argument
+- *Socratic:* Responses that consist primarily of clarifying questions
+- *Dry-wit:* Understated, precise, laconic responses with subtle humor
+
+The TERSE_EXAMPLES in =corpus_style_vec.py= (10 examples) are a good starting point
+but insufficient for fine-tuning. They demonstrate the target register but need to be
+expanded to 200+ examples covering diverse topics to avoid style-topic entanglement.
+
+*Critical:* Include ~200 neutral/baseline examples to maintain the model's default
+behavior on non-styled prompts. Without these, the model may default to one of the
+trained styles on all inputs. This is the fine-tuning equivalent of lens contamination.
+
+The practitioner's field guide (Mitra 2026) recommends 50-100 diverse contrast pairs
+for steering vectors. For fine-tuning, roughly 4-10x this amount is needed because
+fine-tuning must generalize across prompt distributions, not just encode a direction.
+
+** 2.5 Catastrophic Forgetting at 0.6B Scale
+
+This is the primary risk. At 0.6B, the model has limited parameter capacity. Findings
+from recent literature:
+
+- Scaling laws for forgetting (Luo et al. 2024) show that smaller models forget
+  proportionally more per fine-tuning step than larger models. The forgetting rate
+  scales approximately as ~1/sqrt(N) where N is parameter count.
+- CLoRA (2025) introduces orthogonal regularization to constrain LoRA updates to
+  subspaces orthogonal to the model's existing knowledge representations. This is
+  directly applicable and should be used if standard LoRA shows forgetting.
+- At 0.6B, even LoRA r=8 modifies 0.27% of parameters. On a 7B model, the same
+  rank modifies 0.03%. The relative perturbation is ~9x larger.
+
+*Mitigation strategies (in priority order):*
+
+1. Low rank (r=8, not r=32+)
+2. Low learning rate (1e-5 to 5e-5, not 1e-4)
+3. Include neutral examples (20-30% of training data)
+4. Short training: 1-3 epochs maximum
+5. Evaluate on lens_eval.py probes after each epoch -- if sourdough starts
+   picking up Makefile tokens, stop immediately
+6. If forgetting persists: CLoRA orthogonal constraints or L2 regularization
+   toward the base model weights
+
+** 2.6 Fine-Tuning vs. Steering Vectors for Style Control
+
+| Dimension              | Fine-Tuning (LoRA)       | Steering Vectors         |
+|------------------------+--------------------------+--------------------------|
+| Persistence            | Permanent (adapter file) | Inference-time only      |
+| Compositional control  | Hard (train per combo)   | Easy (sum/multi-layer)   |
+| Alpha/magnitude tuning | Not needed               | Required, fragile at 0.6B |
+| Lens contamination     | Risk: training data bias | Risk: vector interference |
+| Reversibility          | Remove adapter           | Remove hook              |
+| Hardware requirement   | GPU for training         | Only for vector extraction |
+| Deployment             | Works in GGUF/Ollama     | Requires PyTorch hooks   |
+| Effect on token budget | None                     | Degrades after ~300 tokens |
+
+The deployment constraint is critical for this project. The reading-list.org notes
+that hook-based steering requires PyTorch/transformers and does not work in
+GGUF/Ollama, ONNX, CoreML, or TensorRT. If the project ever needs to deploy via
+Ollama (which =lens_eval.py= already uses for evaluation), fine-tuning is the only
+path that carries over.
+
+** 2.7 Combining Fine-Tuning + Steering Vectors
+
+This is underexplored and represents a genuine research contribution opportunity.
+The combination works as follows:
+
+1. Fine-tune a base LoRA adapter for a "house style" (e.g., terse-technical as
+   the project's default register)
+2. Extract steering vectors FROM the fine-tuned model, not the base model
+3. Use steering vectors for on-the-fly modulation within the fine-tuned style space
+
+This is the approach that Steer2Adapt (Han et al. 2026) effectively recommends:
+build a reusable "semantic prior subspace" (via fine-tuning or curated vectors) and
+then compose task-specific adaptations via lightweight steering. For this project:
+
+- LoRA adapter: establishes the terse-technical baseline register
+- ActAdd vectors on fine-tuned model: modulates between terse-formal, terse-socratic,
+  terse-with-dry-wit
+- The fine-tuned model's activation space may be better organized for steering because
+  the style axes are already partially separated by the LoRA training
+
+*Hypothesis for the project:* Steering vectors extracted from a style-LoRA model
+will have higher pairwise orthogonality (lower |cos_sim|) than vectors from the
+base model, because fine-tuning partially decompresses the style subspace. This
+directly tests H-SV-1 under an alternative condition.
+
+** 2.8 Verdict
+
+*Pursue as secondary approach.* LoRA fine-tuning with r=8 on 500-1,000 examples per
+style is feasible on M4, takes hours not days, and provides a deployment path via
+GGUF/Ollama. It also serves as a contrast condition for the steering vector experiments:
+"does fine-tuning achieve the same style shift with less lens contamination?"
+
+The combination of fine-tuning + steering is the most promising unexplored direction
+in this project and should be a phase-2 priority.
+
+* 3. Steering Vector Injection (Current Approach)
+:PROPERTIES:
+:CUSTOM_ID: steering-vectors
+:END:
+
+** 3.1 State of the Art (Early 2026)
+
+The activation steering field has matured rapidly since Turner's ActAdd (2023). The
+current landscape, drawing from recent publications and Mitra's 2026 practitioner's
+field guide:
+
+*** 3.1.1 Core Established Methods
+
+| Method                  | Paper                              | Key Idea                                      |
+|-------------------------+------------------------------------+-----------------------------------------------|
+| ActAdd                  | Turner et al. 2023                 | Contrastive pair difference, single layer      |
+| CAA                     | Rimsky et al. 2024                 | Systematic layer sweep + alpha sensitivity     |
+| Mean-centring           | Jorgensen et al. 2023              | Subtract global mean to denoise steering vecs  |
+| RepE                    | Zou et al. 2023                    | Reading + writing representations framework    |
+| ITI                     | Li et al. 2023                     | Probe-based direction + attention head level   |
+| Affine steering         | Singh & Ravfogel ICML 2024         | Optimal affine transform, not just addition    |
+| Corpus mean vectors     | Konen et al. EACL 2024             | Average over multiple style examples           |
+| Persona vectors         | Anthropic Aug 2025                 | Character steering without system prompt       |
+| SAE-Targeted Steering   | Chalnev et al. 2024                | Use SAE features to measure + refine vectors   |
+
+*** 3.1.2 Emerging Methods (2025-2026)
+
+| Method                   | Paper / Source                     | Key Advance                                    |
+|--------------------------+------------------------------------+------------------------------------------------|
+| YaPO                    | Bounhar et al. Jan 2026            | Learned sparse SAE vectors, no contrast pairs  |
+| Steer2Adapt             | Han et al. Feb 2026                | Composable basis from semantic prior subspace   |
+| Steering Vector Fields  | Li et al. Feb 2026                 | Context-dependent gradient-based directions     |
+| FASB                    | Gan et al. Aug 2025                | Flexible backtracking, dynamic alpha adjustment |
+| MSRS                    | Jiang et al. Aug 2025              | Multi-subspace orthogonal steering              |
+| Steer2Edit              | Sun et al. Feb 2026                | Component-level editing from steering           |
+| GrAInS                  | Nguyen et al. Jul 2025             | Gradient-based attribution for token steering   |
+| Guiding Giants          | Hegazy et al. May 2025             | Lightweight controller for dynamic alpha        |
+| CDAS                    | Bao et al. Feb 2026                | Distribution-matching interventions             |
+| CAST                    | (Mitra 2026 field guide)           | Conditional steering only when triggered        |
+| Assistant Axis          | Anthropic Jan 2026                 | Geometric structure of helpfulness direction    |
+
+*** 3.1.3 The Unified View
+
+Mitra (2026) frames weight fine-tuning, LoRA, and activation steering as a spectrum
+of "dynamic weight updates induced by a control signal." The key trade-off is
+consistent: stronger control increases behavioral change while reducing coherence.
+This is exactly the alpha sensitivity measured in H-LS-2.
+
+The field has converged on several hard truths:
+- *Steerable behaviors:* Refusal/compliance, sentiment/tone, conciseness, uncertainty
+  expression. Style control falls squarely in the "reliably steerable" category.
+- *Non-steerable behaviors:* Factual accuracy, complex reasoning. You cannot steer
+  a model into knowing things it does not know.
+- *Universal trade-off:* All methods hit a coherence wall. The question is where the
+  wall is and how to push it further back.
+- *Non-identifiability:* Many different steering vectors produce indistinguishable
+  behavioral effects. Individual vectors are not reliably interpretable artifacts
+  (this matters for the project's geometric hypotheses).
+
+** 3.2 What the Project Is Doing Right
+
+Having read =actadd.py=, =corpus_style_vec.py=, =multilayer.py=,
+=use_pretrained_vecs.py=, =lens_eval.py=, =sweep_to_cprr.py=, =contracts.org=,
+the two CPRR hypothesis files, and the reading list, the project has strong
+foundations:
+
+1. *Two complementary extraction methods:* ActAdd (contrastive pair) and corpus mean
+   (Konen). Having both enables the H-SV-2 comparison, which is scientifically
+   valuable. The corpus mean approach with 10 terse + 10 neutral examples is
+   correctly structured.
+
+2. *Normalization to unit vectors:* Both =actadd.py= and =corpus_style_vec.py= apply
+   =F.normalize()= before returning vectors. This is essential: it decouples the
+   direction (what to steer) from the magnitude (how much to steer), and allows
+   alpha to be interpreted consistently across layers and styles.
+
+3. *Multi-layer injection:* =multilayer.py= correctly implements independent hooks
+   with per-layer alpha. The closure pattern (=make_hook=) avoids the Python
+   late-binding closure bug. This is well-engineered.
+
+4. *Lens contamination detector:* =lens_eval.py= is the project's strongest
+   contribution. The probe design (sourdough, grief, tides, jazz -- topics with no
+   natural connection to Makefiles, Scheme, or org-mode) is well-chosen. The
+   contamination scoring (regex hits / total words) is simple and interpretable.
+
+5. *CPRR integration:* =sweep_to_cprr.py= mechanizes the conjecture lifecycle. This
+   is unusually disciplined for a research project and will pay dividends in
+   reproducibility.
+
+6. *Property-based testing:* Using Hypothesis for vector invariants (unit norm,
+   finite values, dimension matching) and behavioral contracts (words/sentence
+   reduction, hedging word decrease) is the right approach. The zero-alpha identity
+   test is a critical sanity check.
+
+7. *Well-structured hypotheses:* The 10 hypotheses across two files (H-SV-1 through
+   H-SV-5, H-LS-1 through H-LS-5) are clearly stated with success criteria, rationale,
+   and test protocols. The dependency graph (H-LS-1 -> H-LS-2 -> H-LS-4, etc.) shows
+   good experimental design.
+
+8. *Thinking mode awareness:* Using =enable_thinking=False= in chat template
+   application avoids the confound of Qwen3's thinking mode generating
+   =<think>...</think>= blocks that would inflate token counts and confuse style
+   metrics.
+
+** 3.3 What the Project Is Missing or Could Improve
+
+*** 3.3.1 Mean-Centring (Critical Gap)
+
+The project implements corpus mean subtraction (=corpus_style_vec.py=) but does NOT
+implement Jorgensen et al. (2023) mean-centring. These are different operations:
+
+- *Corpus mean (what the project does):* =mean(terse_activations) - mean(neutral_activations)=
+- *Mean-centring (Jorgensen):* Before computing the style vector, subtract the
+  global mean activation (computed over a large diverse corpus) from both the terse
+  and neutral activation sets. Then compute the difference.
+
+The distinction matters because LLM activations are anisotropic: they cluster in a
+cone rather than being uniformly distributed around the origin. The global mean
+captures this cone direction. By removing it, the residual directions are more
+feature-specific. Jorgensen found a 16+ percentage point accuracy improvement on
+GPT-J-6B (29.2% -> 45.7% on function vector extraction).
+
+At d_model=1024, the anisotropy is MORE pronounced (less room for features to spread),
+so mean-centring should have a LARGER effect than at larger scales.
+
+*Implementation:*
+
+#+begin_src python
+def compute_global_mean(model, tokenizer, corpus: list[str], layer_idx: int) -> torch.Tensor:
+    """Compute global mean activation over a diverse corpus."""
+    means = []
+    for text in corpus:
+        captured = {}
+        def hook_fn(module, input, output):
+            hs = output[0] if isinstance(output, tuple) else output
+            captured["hs"] = hs.detach()
+        handle = model.model.layers[layer_idx].register_forward_hook(hook_fn)
+        inputs = tokenizer(text, return_tensors="pt").to(model.device)
+        with torch.no_grad():
+            model(**inputs)
+        handle.remove()
+        means.append(captured["hs"].squeeze(0).mean(dim=0))
+    return torch.stack(means).mean(dim=0)
+
+def mean_centred_style_vector(
+    model, tokenizer, target_texts, neutral_texts, global_mean, layer_idx
+):
+    """Compute mean-centred style vector (Jorgensen et al. 2023)."""
+    target_mean = corpus_mean_activation(model, tokenizer, target_texts, layer_idx)
+    neutral_mean = corpus_mean_activation(model, tokenizer, neutral_texts, layer_idx)
+    # Subtract global mean from both BEFORE differencing
+    target_centred = target_mean - global_mean
+    neutral_centred = neutral_mean - global_mean
+    vec = target_centred - neutral_centred
+    return F.normalize(vec, dim=0)
+#+end_src
+
+Use a diverse corpus of ~100-200 sentences covering multiple topics (Wikipedia
+sentences, news snippets, literary excerpts) for the global mean. This is a one-time
+computation per layer.
+
+*** 3.3.2 Affine Steering (Should Investigate)
+
+Singh & Ravfogel (ICML 2024) prove that for binary concepts where "guardedness" is
+required (the steering should not affect dimensions orthogonal to the concept),
+the optimal affine steering function simplifies to contrastive additive steering.
+This is good news for the project: ActAdd is theoretically optimal under this
+condition.
+
+However, Singh & Ravfogel also show that when guardedness is NOT required -- i.e.,
+when you accept some interference with orthogonal dimensions in exchange for
+stronger steering -- affine corrections (translation + rotation) outperform pure
+addition. For style control where the tolerance for side effects is higher than for
+safety-critical interventions, affine steering may push back the coherence wall
+identified in H-LS-2.
+
+*Recommendation:* Implement affine steering as a comparison condition for H-LS-2.
+The reference implementation is at https://github.com/shauli-ravfogel/affine-steering.
+
+*** 3.3.3 SAE-Based Approaches (Long-Term)
+
+Three SAE-based steering methods deserve attention:
+
+1. *SAE-Targeted Steering (SAE-TS, Chalnev et al. 2024):* Uses a trained SAE to
+   decompose the effect of a steering vector into individual features. Features that
+   are on-target (style-related) are preserved; features that are off-target
+   (content-related) are zeroed out. This directly addresses the lens contamination
+   problem: if the "terse" vector has a non-zero projection onto the "Makefile" SAE
+   feature, SAE-TS can remove that projection before injection.
+
+2. *YaPO (Bounhar et al. Jan 2026):* Learns sparse steering vectors directly in
+   SAE latent space via preference optimization. Eliminates the need for contrast
+   pairs entirely. Achieves zero MMLU degradation (i.e., no knowledge loss) while
+   steering behavioral properties. The sparsity is the key: a 16-feature activation
+   in a 16K-feature SAE is far less likely to cause cross-domain interference than
+   a dense 1024-dimensional perturbation.
+
+3. *SAE feature clamping (Anthropic "Golden Gate Bridge" demo, 2024):* Instead of
+   adding a vector to the residual stream, identify the SAE feature(s) that
+   correspond to the target style and clamp their activations to a fixed value.
+   This is more surgical than residual stream injection but requires a trained
+   SAE for the target model.
+
+*Feasibility for Qwen3-0.6B:* No public SAE exists for Qwen3-0.6B as of March 2026.
+Training one is feasible: a 16K-feature SAE on the residual stream of a 0.6B model
+requires ~16M parameters and can be trained on ~100M tokens in a few hours on a
+single GPU. The =transformer_lens= or =sae_lens= libraries support this workflow.
+However, this is a phase-3 investment.
+
+*** 3.3.4 Perplexity as Coherence Metric (Missing)
+
+The project measures coherence via proxy metrics: unique_ratio, 5-gram repetition,
+word count. These are useful but incomplete. Perplexity of the steered output under
+the UNSTEERED model is the gold standard coherence metric because it directly
+measures how much the steering has pushed the output away from the model's natural
+distribution.
+
+*Implementation:*
+
+#+begin_src python
+def compute_perplexity(model, tokenizer, text: str) -> float:
+    """Perplexity of text under the (unsteered) model."""
+    inputs = tokenizer(text, return_tensors="pt").to(model.device)
+    with torch.no_grad():
+        outputs = model(**inputs, labels=inputs["input_ids"])
+    return torch.exp(outputs.loss).item()
+#+end_src
+
+Add this to the sweep pipeline: for each (layer, alpha) combination, compute
+both the style shift metric AND the perplexity increase. The optimal operating
+point is maximum style shift per unit perplexity increase.
+
+*** 3.3.5 No Style Classifier (Important Gap)
+
+The behavioral contracts in =test_style_contracts.py= use surface metrics (words per
+sentence, type-token ratio, hedging words, exclamation density). These are proxies.
+A proper style classifier would:
+
+1. Train a simple logistic regression or small MLP on the model's own hidden states
+   to predict style label (terse vs. baseline, formal vs. baseline, etc.)
+2. Use this classifier's confidence score as the style-shift metric
+3. This is the approach used by Li et al. (2023, ITI) for direction-finding and
+   by Rimsky et al. (2024) for measuring steering effectiveness
+
+The classifier also enables a powerful sanity check: if the classifier can predict
+style from hidden states at layer L with >80% accuracy, then style IS represented at
+that layer, and steering at that layer should be effective. If accuracy is near chance,
+style is not linearly represented there, and steering will fail regardless of alpha.
+
+*** 3.3.6 Steering Decay Over Long Sequences
+
+The Mitra (2026) field guide notes that "steering effects degrade after 300-500
+tokens in long generation." The project's =max_new_tokens= is set to 200-256, which
+partially avoids this issue, but it should be tested explicitly. Add a sweep over
+=max_new_tokens= values [100, 200, 500, 1000] and measure whether the style metrics
+hold at longer generation lengths.
+
+This is especially important at 0.6B scale: the model has less capacity to maintain
+a steered state across many autoregressive steps. Each generated token shifts the
+hidden states, and the residual-stream perturbation from the steering hook becomes
+a smaller fraction of the accumulated signal as the sequence grows.
+
+*** 3.3.7 Conditional Steering (Should Add)
+
+The project applies steering vectors to ALL token positions uniformly. Recent work
+(CAST, cited in Mitra 2026; FASB, Gan et al. 2025; Guiding Giants, Hegazy et al.
+2025) shows that conditional or dynamic steering significantly improves the
+coherence-effectiveness trade-off:
+
+- *Token-position-based:* Only steer at the last N tokens of the input (where style
+  decisions crystallize), not at the prompt tokens
+- *Activation-magnitude-based:* Only steer when the model's current activation has
+  low cosine similarity to the steering direction (i.e., it is not already going
+  the right way)
+- *Backtracking (FASB):* Generate, check alignment, backtrack and resteer if needed
+
+The simplest improvement for this project is to modify the steering hook to only
+apply to the LAST token position during autoregressive generation:
+
+#+begin_src python
+def steering_hook_last_token(module, input, output):
+    hs = output[0] if isinstance(output, tuple) else output
+    # Only steer the last token position
+    hs[:, -1, :] = hs[:, -1, :] + alpha * steering_vec.to(hs.device, hs.dtype)
+    if isinstance(output, tuple):
+        return (hs,) + output[1:]
+    return hs
+#+end_src
+
+** 3.4 The 0.6B Scale Challenge
+
+The core challenge of steering at d_model=1024 is superposition density. The
+project's hypotheses acknowledge this, but it deserves explicit quantification:
+
+*** 3.4.1 Superposition Arithmetic
+
+- Elhage et al. (2022) estimate that a language model represents ~100x more features
+  than it has dimensions. At d_model=1024, this means ~100,000 features packed into
+  1024 dimensions.
+- The expected cosine similarity between two random unit vectors in R^1024 is
+  ~1/sqrt(1024) = 0.031. This means a random steering vector of norm alpha will have
+  an expected projection of ~0.031 * alpha onto any given feature direction.
+- At alpha=0.20, this is ~0.006 per feature. With ~100,000 features, approximately
+  ~600 features experience a perturbation > 0.01 (the threshold where effects become
+  measurable in logit space).
+- Contrast with d_model=4096 (Llama-2-7B): expected |cos_sim| = 0.016, perturbation
+  per feature = 0.003, features perturbed > 0.01 threshold = ~150. That is 4x fewer
+  features disturbed per unit alpha.
+
+*This is why alpha needs to be lower at 0.6B.* The project's H-LS-2 predicts
+alpha_max = 0.20-0.25. The arithmetic supports this: to achieve the same number of
+perturbed features (~150) as a 7B model at alpha=0.35, the 0.6B model needs
+alpha = 0.35 * (150/600)^(1/2) = 0.175. Rounding up to 0.20 is reasonable.
+
+*** 3.4.2 GQA Implications
+
+Qwen3-0.6B uses GQA with 16 query heads and 8 key-value heads. This means:
+- Each KV head serves 2 query heads
+- The attention pattern diversity is limited to 8 independent directions
+- Steering at the attention level (which ActAdd does indirectly by perturbing the
+  residual stream that feeds into attention) is constrained by these 8 KV directions
+
+For style steering, this may be acceptable: style is likely encoded by a small number
+of attention patterns (perhaps 2-3 heads that control output formatting). But it
+means that aggressive steering at attention-adjacent layers (early layers where
+attention dominates over FFN) is more disruptive than at FFN-dominant layers
+(mid-to-late layers where SwiGLU handles most of the transformation).
+
+*Recommendation:* Focus steering on layers 14-18 where the SwiGLU FFN dominates
+over attention in determining output distribution. Avoid layers 0-10 where GQA
+attention is the primary computation.
+
+*** 3.4.3 Distillation Artifacts
+
+Qwen3-0.6B was distilled from Qwen3-32B using strong-to-weak distillation. This
+creates a specific activation geometry:
+
+- Distilled models tend to have smoother loss landscapes than models trained from
+  scratch (Hinton et al. 2015, dark knowledge)
+- The activation space of a distilled model inherits the broad structure of the
+  teacher model but compresses it. Features that are well-separated in the teacher's
+  d_model=5120 space may partially collapse in the student's d_model=1024 space.
+- Specifically, style features that occupy separate subspaces in Qwen3-32B may
+  share subspace in Qwen3-0.6B, predicting the non-orthogonality in H-SV-1.
+
+The PTS vectors (codelion/Qwen3-0.6B-pts-steering-vectors) are derived from the
+distillation-specific thinking/non-thinking axis. H-SV-4 tests whether this axis
+is geometrically distinct from style axes -- if it is not, it suggests that
+distillation compressed thinking and style into overlapping subspaces.
+
+** 3.5 Hypothesis Prioritization
+
+The project has 10 hypotheses across two files. Here is the recommended priority
+order, with rationale:
+
+*** Priority 1: Run First (Week 1-2)
+
+| ID     | Hypothesis                               | Why First                                           |
+|--------+------------------------------------------+-----------------------------------------------------|
+| H-LS-1 | Proportional layer sweet spot [14-20]    | All other experiments depend on knowing which layers |
+| H-LS-2 | Alpha threshold ~0.20-0.25               | Sets the safe operating range for all experiments    |
+| H-SV-1 | Style axes non-orthogonal (|cos|>0.15)   | Determines if composition experiments are meaningful |
+
+These three are the load-bearing hypotheses. Every subsequent experiment assumes
+knowledge of (a) which layers to use, (b) what alpha range is safe, and (c) whether
+style vectors interfere with each other.
+
+*** Priority 2: Run Second (Week 3-4)
+
+| ID     | Hypothesis                               | Why Second                                          |
+|--------+------------------------------------------+-----------------------------------------------------|
+| H-SV-2 | Corpus-mean vs ActAdd co-directional     | Compares the project's two methods head-to-head     |
+| H-LS-4 | Corpus mean tolerates higher alpha        | Directly actionable: determines which method to use |
+| H-LS-5 | Multi-layer at reduced alpha > single    | Determines if multilayer.py is worth the complexity |
+
+These test whether the project's tools are doing what they claim and which
+configuration produces the best results.
+
+*** Priority 3: Run Third (Week 5-6)
+
+| ID     | Hypothesis                               | Why Third                                           |
+|--------+------------------------------------------+-----------------------------------------------------|
+| H-SV-3 | Style subspace rank <= 3                 | Informative but not directly actionable              |
+| H-SV-5 | Cross-axis interference is asymmetric    | Requires clear results from H-SV-1 first            |
+
+*** Priority 4: Run If Time Permits
+
+| ID     | Hypothesis                               | Why Lower Priority                                  |
+|--------+------------------------------------------+-----------------------------------------------------|
+| H-LS-3 | Early layers cause topic drift           | Expected to confirm literature; low novelty          |
+| H-SV-4 | PTS vectors distinct from style vectors  | Depends on PTS dataset format parsing; may block     |
+
+*** Hypotheses to Add
+
+Based on the analysis above, the project should add:
+
+- *H-MC-1: Mean-centring improves steering effectiveness.* Compare ActAdd vectors
+  with and without global mean subtraction (Jorgensen 2023). Prediction: mean-centred
+  vectors produce same style shift at 20-30% lower alpha.
+
+- *H-LC-1: Lens contamination increases monotonically with alpha.* Run =lens_eval.py=
+  probes at alpha = [0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30] and measure
+  contamination. Prediction: contamination is near-zero below alpha=0.15 and increases
+  superlinearly above alpha=0.20. This is the most important safety test.
+
+- *H-LT-1: Steering at the last token only reduces contamination.* Compare full
+  sequence steering vs. last-token-only steering (Section 3.3.7). Prediction:
+  last-token steering reduces lens contamination by >50% with <20% reduction in
+  style shift.
+
+- *H-FT-1: LoRA-fine-tuned model produces more orthogonal style vectors.* Extract
+  steering vectors from a LoRA model trained on terse style. Compare pairwise cosine
+  similarities to base model vectors. Prediction: H-SV-1 mean |cos_sim| drops from
+  >0.15 to <0.10 post-fine-tuning.
+
+** 3.6 Novel Techniques to Consider
+
+*** 3.6.1 Affine Steering (Singh & Ravfogel, ICML 2024)
+
+*Summary:* Derives the optimal affine (translation + rotation) steering function
+under different constraints. Shows that for guarded (side-effect-free) steering,
+pure addition is optimal. For non-guarded steering, affine corrections outperform.
+
+*Relevance to this project:* The project's style control is non-guarded -- some
+side effects on output fluency are acceptable. Affine steering could push the
+coherence wall from alpha=0.20 to alpha=0.30 by using rotation to align the
+perturbation with the model's internal geometry.
+
+*Effort:* Medium. The [[https://github.com/shauli-ravfogel/affine-steering][reference implementation]] exists. Adapting it to Qwen3's
+hook-based injection would take 1-2 days.
+
+*Priority:* High for Phase 2. After establishing baselines with ActAdd.
+
+*** 3.6.2 Mean-Centring (Jorgensen et al. 2023)
+
+*Summary:* Subtracts the global mean activation from the style and baseline
+activations before computing the contrastive difference. Removes the anisotropic
+bias of LLM activation spaces.
+
+*Relevance:* Directly applicable. Should be implemented immediately. At d_model=1024,
+anisotropy is worse, so the improvement should be larger than the 16pp gain on GPT-J.
+
+*Effort:* Low. 20 lines of code (see Section 3.3.1 above). Requires a one-time
+computation of global mean activations (~30 minutes for 200 diverse sentences).
+
+*Priority:* Critical. Implement before running any hypotheses.
+
+*** 3.6.3 YaPO (Bounhar et al., Jan 2026)
+
+*Summary:* Learns sparse activation steering vectors in SAE latent space via
+preference optimization. No contrast pairs needed. Zero MMLU degradation.
+Open-source at [[https://github.com/MBZUAI-Paris/YaPO][github.com/MBZUAI-Paris/YaPO]].
+
+*Relevance:* High. Sparsity directly addresses the superposition problem at
+d_model=1024. A 16-feature sparse vector in a 16K SAE is far less likely to cause
+lens contamination than a dense 1024-dimensional perturbation.
+
+*Effort:* High. Requires training an SAE for Qwen3-0.6B first (~1-2 days on GPU),
+then adapting the YaPO optimization loop (~2-3 days).
+
+*Priority:* Phase 3. Requires SAE infrastructure that the project does not yet have.
+
+*** 3.6.4 SAE Feature Clamping vs. Residual Stream Injection
+
+*Summary:* Instead of adding a vector to the residual stream (ActAdd), decompose
+the residual stream through an SAE, clamp specific features to target values, and
+reconstruct. This is "surgical" steering -- modifying individual interpretable
+features rather than perturbing the entire activation.
+
+*Relevance:* Maximum. Feature clamping is the theoretical solution to lens
+contamination: you only modify the "terse_style" feature and leave the
+"sourdough_bread" feature untouched. The Anthropic Golden Gate Bridge demo (2024)
+showed this works at large scale.
+
+*Effort:* High. Same SAE prerequisite as YaPO.
+
+*Priority:* Phase 3, same timeline as YaPO.
+
+*** 3.6.5 Steer2Adapt (Han et al., Feb 2026)
+
+*Summary:* Builds a reusable "semantic prior subspace" from a small set of basis
+steering vectors, then adapts to new tasks by learning a linear combination of basis
+vectors from ~5 examples. Achieves 8.2% average improvement across 9 tasks and 3
+models.
+
+*Relevance:* Medium-high. The project already has 4 style axes, which could serve
+as the basis for a semantic prior subspace. Steer2Adapt's key insight -- that tasks
+share a small set of underlying concept dimensions -- aligns with H-SV-3's
+prediction that style vectors span a rank-3 subspace.
+
+*Effort:* Medium. The conceptual framework maps well onto the project's existing
+code. Implementing the subspace identification requires PCA on the style vector
+matrix (already in H-SV-3) and then learning combination weights from a few examples.
+
+*Priority:* Phase 2. After H-SV-3 determines the effective subspace rank.
+
+*** 3.6.6 MSRS -- Multi-Subspace Representation Steering (Jiang et al., Aug 2025)
+
+*Summary:* Uses orthogonal subspaces for different steering attributes with a
+dynamic weighting function and token-level steering mechanism. Reduces conflicts
+between simultaneous multi-attribute steering.
+
+*Relevance:* Directly relevant to H-SV-5 (cross-axis interference under composition).
+MSRS's orthogonal subspace approach could be the solution if H-SV-5 confirms that
+same-layer composition fails: project the style vectors into orthogonal subspaces
+before injecting.
+
+*Effort:* Medium. Requires adapting the orthogonal projection to the project's
+hook-based architecture.
+
+*Priority:* Phase 2, contingent on H-SV-5 results.
+
+** 3.7 The Reliability Warning
+
+Queiroz Da Silva et al. (April 2025, "Steering off Course") conducted systematic
+evaluation of steering methods across diverse models and found "variability and
+potential flaws in their effectiveness." Chang et al. (May 2025) revealed
+"miscalibration and side effects" in LLM steerability evaluation.
+
+This is a caution against over-confidence in any single steering result. The project's
+CPRR framework and lens_eval.py detector are the right response to this reliability
+concern: every steering intervention must be tested for both intended effect AND
+unintended side effects, and results that fail the lens test must be treated as
+refutations, not successes.
+
+* 4. Recommendation
+:PROPERTIES:
+:CUSTOM_ID: recommendation
+:END:
+
+** 4.1 Primary Approach: Steering Vector Injection
+
+Steering vectors remain the correct primary approach for this project because:
+
+1. *They are the research subject.* The project exists to study activation steering
+   at 0.6B scale. Using fine-tuning as the primary method would be studying a
+   different phenomenon.
+2. *Fastest iteration cycle.* Extracting a new vector and testing it takes minutes.
+   Training a LoRA adapter takes hours.
+3. *Composable.* Multi-style control via multi-layer injection or vector combination
+   is natural. Fine-tuning requires training a new adapter per style combination.
+4. *Interpretable.* Vectors can be analyzed geometrically (cosine similarity, PCA,
+   projection onto SAE features). LoRA weights are less interpretable.
+5. *M4 compatible at inference time.* No training required for new vectors (only
+   extraction, which is a forward pass).
+
+** 4.2 Secondary Approach: LoRA Fine-Tuning
+
+LoRA serves three purposes in the project:
+
+1. *Deployment path.* If the project ever needs to serve steered responses via
+   Ollama/GGUF, the LoRA adapter is the only option. Hooks do not survive compilation.
+2. *Contrast condition.* "Does LoRA achieve the same style shift with less lens
+   contamination?" is a valuable research question.
+3. *Combined approach.* Extracting steering vectors from a style-LoRA model may
+   produce better-organized vectors (H-FT-1 hypothesis).
+
+** 4.3 Three-Month Research Plan
+
+*** Month 1: Foundations (Weeks 1-4)
+
+*Week 1: Infrastructure Improvements*
+- Implement mean-centring (Jorgensen 2023) -- 20 lines of code, high impact
+- Add perplexity computation to the sweep pipeline
+- Modify steering hook to support last-token-only mode
+- Expand the neutral probe set in =lens_eval.py= to 20 probes (add domains further
+  from the project's technical focus: cooking, sports, childcare, geology)
+
+*Week 2: Core Hypotheses -- Layer and Alpha*
+- Run H-LS-1 (full layer sweep, all 28 layers, all 4 styles)
+- Run H-LS-2 (alpha sweep at optimal layer from H-LS-1)
+- Run H-LS-3 (early layer effects) -- lower priority but fast to execute
+- Integrate lens_eval.py as a post-condition for every alpha value tested (new H-LC-1)
+
+*Week 3: Core Hypotheses -- Geometry*
+- Run H-SV-1 (pairwise cosine similarity of style vectors)
+- Run H-SV-2 (corpus-mean vs. ActAdd alignment)
+- Run H-SV-3 (PCA subspace rank)
+- All with AND without mean-centring, comparing results
+
+*Week 4: Method Comparison*
+- Run H-LS-4 (corpus-mean vs. ActAdd alpha tolerance)
+- Run H-LS-5 (multi-layer vs. single-layer injection)
+- Run H-LT-1 (last-token-only steering vs. full-sequence)
+- Compile results into a findings report
+
+*** Month 2: Advanced Methods (Weeks 5-8)
+
+*Week 5: Affine Steering*
+- Port the Singh & Ravfogel reference implementation to Qwen3-0.6B
+- Compare affine vs. additive steering on the same (layer, alpha) grid
+- Test whether affine steering pushes the coherence wall from H-LS-2
+
+*Week 6: LoRA Baseline*
+- Curate 500 examples per style (2,000 total + 500 neutral)
+- Train LoRA r=8 on M4 via MLX or PyTorch/PEFT
+- Evaluate with lens_eval.py probes
+- Compare style shift and contamination to best steering vector configuration
+
+*Week 7: Combined Approach*
+- Extract steering vectors from the LoRA model (H-FT-1)
+- Compare geometric properties to base model vectors (re-run H-SV-1, H-SV-3)
+- Test whether LoRA + steering achieves better style control than either alone
+- Run H-SV-5 (cross-axis interference) on both base and LoRA models
+
+*Week 8: Steer2Adapt*
+- Implement semantic prior subspace from the project's 4 style vectors
+- Test Steer2Adapt's few-shot adaptation on 2-3 new style targets
+  (e.g., "academic-but-accessible", "conversational-expert", "step-by-step")
+- Evaluate compositional stability
+
+*** Month 3: Interpretation and Write-Up (Weeks 9-12)
+
+*Week 9: SAE Foundation*
+- Train a 16K-feature SAE on Qwen3-0.6B residual stream at layer 15
+  (use =sae_lens= library, ~100M tokens, feasible on cloud GPU in a few hours)
+- Analyze which SAE features activate under each style vector
+- Test SAE-TS (SAE-Targeted Steering): filter the steering vector through the SAE
+  to remove off-target features
+
+*Week 10: SAE-Based Steering*
+- Test feature clamping: clamp style-relevant SAE features and measure effect
+- If time permits: adapt YaPO for Qwen3-0.6B (sparse learned vectors)
+- Compare SAE-based vs. residual stream steering on lens_eval.py
+
+*Week 11: Comprehensive Evaluation*
+- Re-run all lens_eval.py probes under every method:
+  ActAdd / corpus-mean / mean-centred / affine / LoRA / SAE-TS / feature clamping
+- Build comparison table: style shift vs. contamination for each method
+- Identify Pareto frontier: which methods achieve maximum style with minimum
+  contamination
+
+*Week 12: Write-Up and Release*
+- Compile findings into a structured report
+- Release steering vectors and LoRA adapters on HuggingFace
+- Release lens_eval.py as a standalone tool (it has independent value)
+- Document the CPRR lifecycle: which conjectures were proved, refuted, or refined
+
+** 4.4 Key Experiments to Run First
+
+In strict priority order:
+
+1. *Mean-centring implementation + comparison.* Highest expected impact per line of
+   code. If mean-centring reduces the alpha needed for style shift by 20-30%, it
+   changes the operating point for every subsequent experiment.
+
+2. *Lens contamination vs. alpha curve (H-LC-1).* The project cannot make any
+   claims about steering effectiveness without knowing at what alpha lens
+   contamination becomes unacceptable. This establishes the hard constraint.
+
+3. *Full layer sweep (H-LS-1).* Currently the project defaults to layer 15. This
+   may not be optimal. The sweep takes ~30 minutes on M4 and determines the
+   operating layer for all other experiments.
+
+4. *Alpha threshold (H-LS-2).* With the optimal layer known, sweep alpha to find
+   the coherence wall. This, combined with H-LC-1, defines the project's feasible
+   operating range: [alpha_min_for_effect, alpha_max_before_contamination].
+
+5. *Corpus-mean vs. ActAdd comparison (H-SV-2 + H-LS-4).* Determines which method
+   to use as the default going forward.
+
+** 4.5 Success Criteria
+
+The project succeeds if it can demonstrate:
+
+1. A specific (layer, alpha, method) configuration that produces measurable style
+   shift (>2 sigma on behavioral contracts) with contamination below 1% mean on
+   lens_eval.py probes.
+
+2. Quantitative evidence that at least one of {mean-centring, multi-layer injection,
+   affine steering, corpus-mean vectors} outperforms basic ActAdd at layer 15 with
+   alpha=0.20 on the Pareto frontier of style shift vs. contamination.
+
+3. A clear characterization of the 0.6B-specific constraints: the alpha ceiling,
+   the layer sweet spot, the superposition-induced interference, and how these
+   differ quantitatively from the 7B-scale literature.
+
+If sourdough never sees a Makefile, the project has done its job.
+
+* Appendix A: Key References
+
+| Ref                     | Citation                                                     | Relevance                     |
+|-------------------------+--------------------------------------------------------------+-------------------------------|
+| Turner 2023             | Activation Addition: Steering Without Optimization           | ActAdd method (actadd.py)     |
+| Rimsky 2024             | Steering Llama 2 via CAA                                     | Layer sweep, alpha curves     |
+| Konen EACL 2024         | Style Vectors for Steering Generative LLMs                   | Corpus mean (corpus_style_vec.py) |
+| Jorgensen 2023          | Improving Activation Steering with Mean-Centring             | Critical gap in project       |
+| Singh & Ravfogel 2024   | Representation Surgery: Affine Steering (ICML)               | Affine alternative            |
+| Zou 2023                | Representation Engineering                                   | RepE framework                |
+| Li 2023                 | Inference-Time Intervention                                  | Probe-based layer selection   |
+| Elhage 2022             | Toy Models of Superposition                                  | Superposition at d=1024       |
+| Park 2023               | Linear Representation Hypothesis                             | Why contrastive works         |
+| Arditi 2024             | Refusal Mediated by Single Direction                         | Safety check for vectors      |
+| Yang 2025               | Qwen3 Technical Report                                       | Target model architecture     |
+| Bounhar Jan 2026        | YaPO: Learnable Sparse Steering (MBZUAI)                     | Phase 3 SAE method            |
+| Han Feb 2026            | Steer2Adapt: Composable Steering Vectors                     | Phase 2 composition method    |
+| Chalnev 2024            | SAE-Targeted Steering (SAE-TS)                               | Phase 3 SAE filtering         |
+| Anthropic Aug 2025      | Persona Vectors                                              | Character steering method     |
+| Anthropic Jan 2026      | Assistant Axis                                                | Geometric style structure     |
+| Mitra Feb 2026          | Activation Steering Practitioner's Field Guide               | Unified practical framework   |
+| Gan Aug 2025            | FASB: Flexible Activation Steering with Backtracking         | Dynamic alpha adjustment      |
+| Jiang Aug 2025          | MSRS: Multi-Subspace Representation Steering                 | Orthogonal composition        |
+| Sun Feb 2026            | Steer2Edit: Component-Level Editing                          | Editing from steering         |
+| Queiroz Apr 2025        | Steering off Course: Reliability Challenges                  | Reliability caution           |
+| Chang May 2025          | Miscalibration and Side Effects in Steerability Evaluation   | Evaluation methodology        |
+| Hegazy May 2025         | Guiding Giants: Lightweight Controllers for Steering         | Dynamic alpha controller      |
+| Dettmers 2023           | QLoRA: Efficient Finetuning of Quantized LLMs                | QLoRA method                  |
+| Hoffmann 2022           | Training Compute-Optimal LLMs (Chinchilla)                   | Scaling laws                  |
+| Luo 2024                | Scaling Laws for Forgetting When Fine-Tuning                 | Forgetting at small scale     |
+
+* Appendix B: Architecture Quick Reference
+
+#+begin_example
+Qwen3-0.6B
+├── Parameters: 594M
+├── Layers: 28
+├── d_model: 1024
+├── d_ff: 4096 (SwiGLU: gate_proj, up_proj, down_proj)
+├── Attention: GQA, 16 query heads, 8 KV heads
+├── Head dim: 64
+├── Normalization: RMSNorm (pre-norm), QK-Norm
+├── Position: RoPE
+├── Vocab: 151,936 (shared embeddings)
+├── Context: 32K tokens
+├── Training: Distilled from Qwen3-32B (strong-to-weak)
+├── Thinking: Supports <think>...</think> mode (disable for steering)
+└── Hook points:
+    ├── model.model.layers[i]         (residual stream, post-layer)
+    ├── model.model.layers[i].self_attn (attention output)
+    └── model.model.layers[i].mlp      (FFN output)
+#+end_example
+
+* Appendix C: Quick Cost Comparison
+
+| Approach           | Compute Cost | Time to First Result | M4 Feasible | Reversible | Ollama Compatible |
+|--------------------+--------------+----------------------+-------------+------------+-------------------|
+| Training scratch   | $5K-15K      | 1-3 months           | No          | N/A        | Yes (after GGUF)  |
+| Full fine-tune     | <$1          | 30 min               | Yes (tight) | Remove ckpt | Yes (after GGUF)  |
+| LoRA r=8           | <$1          | 10 min               | Yes         | Remove adapter | Yes (merge+GGUF) |
+| QLoRA r=16         | <$1          | 15 min               | Yes         | Remove adapter | Yes (merge+GGUF) |
+| ActAdd vector      | $0           | 2 min                | Yes         | Remove hook | No                |
+| Corpus mean vector | $0           | 5 min                | Yes         | Remove hook | No                |
+| Mean-centred vec   | $0           | 10 min (one-time)    | Yes         | Remove hook | No                |
+| SAE + feature clamp | $10-50      | 1-2 days (SAE train) | Partial     | Remove hook | No                |
+
+* Appendix D: Glossary of Methods Mentioned
+
+- *ActAdd:* Activation Addition. Add (act_positive - act_negative) * alpha to residual
+  stream at a single layer during inference.
+- *CAA:* Contrastive Activation Addition. ActAdd with systematic layer sweep and alpha
+  sensitivity analysis.
+- *Mean-centring:* Subtract global mean activation from both positive and negative
+  sets before computing contrastive difference. Corrects for anisotropy.
+- *Corpus mean:* Average activations over multiple examples of target style, subtract
+  average of neutral examples. More robust than single-pair ActAdd.
+- *Affine steering:* Optimal affine (translation + rotation) transformation of
+  activations, derived from guardedness constraints.
+- *SAE-TS:* SAE-Targeted Steering. Decompose steering vector into SAE features,
+  remove off-target features, reconstruct.
+- *Feature clamping:* Set specific SAE feature activations to fixed values during
+  inference.
+- *YaPO:* Learned sparse steering vectors in SAE latent space via preference
+  optimization.
+- *Steer2Adapt:* Build semantic prior subspace from basis vectors, adapt to new tasks
+  via learned linear combination.
+- *FASB:* Flexible Activation Steering with Backtracking. Dynamic alpha adjustment
+  based on output alignment.
+- *MSRS:* Multi-Subspace Representation Steering. Orthogonal subspaces for multiple
+  attributes.
+- *CAST:* Conditional Activation Steering. Apply vectors only when input matches
+  target conditions.
+- *Lens contamination:* When a steering intervention causes the model to apply
+  domain-specific vocabulary or framing to unrelated topics (e.g., describing
+  sourdough bread using Makefile terminology).
+- *CPRR:* Conjecture, Proof, Refutation, Refinement. The project's Popperian
+  methodology for managing experimental hypotheses.
