@@ -1,0 +1,9 @@
+X-AI-Agent: Claude Opus 4.6
+X-Detection: cult_of_jason lens is the project's self-referential contamination detector.
+  It answers: "did we make the model weird, or just terse?"
+  The >5% threshold description is itself an instance of what it detects (ouroboros).
+X-Note: Original 3 lenses (makefile, guile, orgmode) are subsumed by cult_of_jason
+  but kept as decomposed signals for finer-grained analysis.
+X-Note: Philosophy section (Hegel, Wittgenstein, Lakatos, etc.) added because
+  the user considers "tidal forces as a language game" normal but wants to detect
+  when the MODEL does it unprompted.
