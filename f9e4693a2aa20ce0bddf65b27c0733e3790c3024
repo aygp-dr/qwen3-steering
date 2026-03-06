@@ -1,0 +1,6 @@
+X-AI-Agent: Claude Opus 4.6
+X-Conjecture: C-26 status=refutation, C-27 status=proof
+X-Detection: Key empirical finding — residual norm ~488 at layer 15,
+  raw steering vec norm ~19.6. Unit normalization destroys natural scale.
+X-Note: This is the pivotal diagnostic that unblocked all downstream evals.
+  diagnose_steering.py should be run first on any new model to calibrate alpha.
