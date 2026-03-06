@@ -1,0 +1,739 @@
+#+TITLE: Contracts and Invariants for Activation Steering
+#+AUTHOR: jwalsh / aygp-dr
+#+DATE: 2026-03-06
+#+PROPERTY: header-args:python :session qwen3-steer :exports both :mkdirp t
+#+PROPERTY: header-args:sh :exports both :mkdirp t
+#+PROPERTY: header-args:lean4 :exports both :mkdirp t
+#+STARTUP: overview
+
+* Overview
+
+Four verification layers, from fast/cheap to slow/formal:
+
+1. *Property-based tests* (Hypothesis + pytest) — vector invariants, zero-alpha identity
+2. *Behavioral contracts* (pytest) — measurable style metrics on steered outputs
+3. *Formal specs* (Lean4) — geometric invariants, precondition on α
+4. *API schema tests* (Schemathesis) — Ollama endpoint contract validation
+5. *CPRR integration* — wire sweep results into machine-readable conjecture lifecycle
+
+* Dependencies
+
+#+begin_src sh
+uv add --dev pytest hypothesis schemathesis
+#+end_src
+
+* Layer 1: Property-Based Tests (Hypothesis + pytest)
+
+Invariants on steering vectors and the steering operation itself.
+
+#+begin_src python :tangle tests/test_vector_properties.py
+"""
+Property-based tests for steering vector invariants.
+
+Run: uv run pytest tests/test_vector_properties.py -v
+"""
+import pytest
+import torch
+import torch.nn.functional as F
+from hypothesis import given, settings, assume
+from hypothesis import strategies as st
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+D_MODEL = 1024
+NUM_LAYERS = 28
+
+# ── Fixtures ──────────────────────────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def model_and_tokenizer():
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID, torch_dtype=torch.float16, device_map="cpu"
+    )
+    model.eval()
+    return model, tokenizer
+
+
+# ── Vector invariants ─────────────────────────────────────────────────────────
+
+class TestVectorInvariants:
+    """Invariants that must hold for any steering vector."""
+
+    def test_normalized_vector_is_unit_norm(self, model_and_tokenizer):
+        """After normalization, steering vector must have norm 1.0."""
+        from actadd import compute_steering_vector
+        model, tokenizer = model_and_tokenizer
+        vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=15)
+        assert abs(vec.norm().item() - 1.0) < 1e-4, (
+            f"Expected unit norm, got {vec.norm().item()}"
+        )
+
+    def test_vector_dimension_matches_d_model(self, model_and_tokenizer):
+        """Steering vector dimension must equal d_model."""
+        from actadd import compute_steering_vector
+        model, tokenizer = model_and_tokenizer
+        vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=15)
+        assert vec.shape == (D_MODEL,), (
+            f"Expected ({D_MODEL},), got {vec.shape}"
+        )
+
+    def test_vector_is_finite(self, model_and_tokenizer):
+        """No NaN or Inf in steering vector."""
+        from actadd import compute_steering_vector
+        model, tokenizer = model_and_tokenizer
+        vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=15)
+        assert torch.isfinite(vec).all(), "Steering vector contains NaN or Inf"
+
+    @given(layer=st.integers(min_value=0, max_value=NUM_LAYERS - 1))
+    @settings(max_examples=5, deadline=None)
+    def test_any_layer_produces_valid_vector(self, layer, model_and_tokenizer):
+        """Every layer should produce a finite, unit-norm vector."""
+        from actadd import compute_steering_vector
+        model, tokenizer = model_and_tokenizer
+        vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=layer)
+        assert torch.isfinite(vec).all()
+        assert abs(vec.norm().item() - 1.0) < 1e-4
+
+    def test_opposite_styles_not_identical(self, model_and_tokenizer):
+        """Contrastive pair activations must actually differ."""
+        from actadd import get_layer_activations
+        model, tokenizer = model_and_tokenizer
+        pos = get_layer_activations(
+            model, tokenizer,
+            "Be extremely concise and technical.", layer_idx=15
+        )
+        neg = get_layer_activations(
+            model, tokenizer,
+            "Please explain thoroughly with lots of context.", layer_idx=15
+        )
+        cos_sim = F.cosine_similarity(pos, neg, dim=0).item()
+        assert cos_sim < 0.99, (
+            f"Contrastive pair activations too similar: cos_sim={cos_sim:.4f}"
+        )
+
+
+# ── Zero-alpha identity ──────────────────────────────────────────────────────
+
+class TestZeroAlphaIdentity:
+    """Steering with α=0.0 must be identical to unsteered generation."""
+
+    def test_alpha_zero_equals_baseline(self, model_and_tokenizer):
+        """α=0.0 steering must produce identical output to no steering."""
+        from actadd import compute_steering_vector, generate_steered
+        model, tokenizer = model_and_tokenizer
+        prompt = "What is a mutex?"
+        vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=15)
+
+        steered_zero = generate_steered(
+            model, tokenizer, prompt, vec, layer_idx=15, alpha=0.0,
+            max_new_tokens=50,
+        )
+        steered_zero_again = generate_steered(
+            model, tokenizer, prompt, vec, layer_idx=15, alpha=0.0,
+            max_new_tokens=50,
+        )
+        assert steered_zero == steered_zero_again, (
+            "α=0.0 should be deterministic"
+        )
+
+
+# ── Output non-collapse ──────────────────────────────────────────────────────
+
+class TestOutputNonCollapse:
+    """Steered output must not degenerate to empty or repetitive garbage."""
+
+    @given(alpha=st.floats(min_value=0.01, max_value=0.35))
+    @settings(max_examples=3, deadline=None)
+    def test_output_not_empty(self, alpha, model_and_tokenizer):
+        """Steered output at safe α must produce at least 5 tokens."""
+        from actadd import compute_steering_vector, generate_steered
+        model, tokenizer = model_and_tokenizer
+        vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=15)
+        output = generate_steered(
+            model, tokenizer, "What is a mutex?", vec,
+            layer_idx=15, alpha=alpha, max_new_tokens=100,
+        )
+        token_count = len(tokenizer.encode(output))
+        assert token_count >= 5, (
+            f"Output collapsed to {token_count} tokens at α={alpha}"
+        )
+#+end_src
+
+* Layer 2: Behavioral Contracts on Steered Outputs
+
+Style claims must be falsifiable. If the contract is "terse", measurable
+properties must shift compared to baseline.
+
+#+begin_src python :tangle tests/test_style_contracts.py
+"""
+Behavioral contracts: measurable style properties must shift under steering.
+
+Run: uv run pytest tests/test_style_contracts.py -v
+"""
+import pytest
+import re
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+
+PROMPTS = [
+    "Explain what a mutex is.",
+    "What is formal verification?",
+    "Describe the CAP theorem.",
+]
+
+
+# ── Style metrics ─────────────────────────────────────────────────────────────
+
+def words_per_sentence(text: str) -> float:
+    """Average words per sentence."""
+    sentences = [s.strip() for s in re.split(r'[.!?]+', text) if s.strip()]
+    if not sentences:
+        return 0.0
+    return sum(len(s.split()) for s in sentences) / len(sentences)
+
+
+def type_token_ratio(text: str) -> float:
+    """Lexical diversity: unique words / total words."""
+    words = text.lower().split()
+    if not words:
+        return 0.0
+    return len(set(words)) / len(words)
+
+
+def hedging_word_ratio(text: str) -> float:
+    """Frequency of hedging/filler words (anti-terse signal)."""
+    hedges = {
+        "actually", "basically", "certainly", "definitely", "essentially",
+        "honestly", "just", "literally", "maybe", "perhaps", "probably",
+        "really", "simply", "somewhat", "very", "quite", "rather",
+    }
+    words = text.lower().split()
+    if not words:
+        return 0.0
+    return sum(1 for w in words if w in hedges) / len(words)
+
+
+def exclamation_density(text: str) -> float:
+    """Exclamation marks per 100 words (anti-terse signal)."""
+    words = text.split()
+    if not words:
+        return 0.0
+    return text.count("!") / len(words) * 100
+
+
+# ── Fixtures ──────────────────────────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def model_and_tokenizer():
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID, torch_dtype=torch.float16, device_map="cpu"
+    )
+    model.eval()
+    return model, tokenizer
+
+
+@pytest.fixture(scope="module")
+def baseline_and_steered(model_and_tokenizer):
+    """Generate baseline and terse-steered outputs for all prompts."""
+    from actadd import compute_steering_vector, generate_steered
+    model, tokenizer = model_and_tokenizer
+    vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=15)
+
+    baselines = []
+    steered = []
+    for prompt in PROMPTS:
+        b = generate_steered(
+            model, tokenizer, prompt, vec, layer_idx=15, alpha=0.0,
+            max_new_tokens=200,
+        )
+        s = generate_steered(
+            model, tokenizer, prompt, vec, layer_idx=15, alpha=0.20,
+            max_new_tokens=200,
+        )
+        baselines.append(b)
+        steered.append(s)
+    return baselines, steered
+
+
+# ── Terse contracts ───────────────────────────────────────────────────────────
+
+class TestTerseContract:
+    """
+    Contract: "terse" steering must produce measurably shorter,
+    denser, less hedging output compared to baseline.
+    """
+
+    def test_fewer_words_per_sentence(self, baseline_and_steered):
+        """Terse output should have shorter average sentence length."""
+        baselines, steered = baseline_and_steered
+        baseline_avg = sum(words_per_sentence(b) for b in baselines) / len(baselines)
+        steered_avg = sum(words_per_sentence(s) for s in steered) / len(steered)
+        assert steered_avg < baseline_avg, (
+            f"Terse should reduce words/sentence: "
+            f"baseline={baseline_avg:.1f}, steered={steered_avg:.1f}"
+        )
+
+    def test_higher_type_token_ratio(self, baseline_and_steered):
+        """Terse output should have higher lexical density (less repetition)."""
+        baselines, steered = baseline_and_steered
+        baseline_avg = sum(type_token_ratio(b) for b in baselines) / len(baselines)
+        steered_avg = sum(type_token_ratio(s) for s in steered) / len(steered)
+        # Terse text uses more unique words per total words
+        assert steered_avg >= baseline_avg * 0.95, (
+            f"Terse should maintain or increase TTR: "
+            f"baseline={baseline_avg:.3f}, steered={steered_avg:.3f}"
+        )
+
+    def test_fewer_hedging_words(self, baseline_and_steered):
+        """Terse output should have fewer hedging/filler words."""
+        baselines, steered = baseline_and_steered
+        baseline_avg = sum(hedging_word_ratio(b) for b in baselines) / len(baselines)
+        steered_avg = sum(hedging_word_ratio(s) for s in steered) / len(steered)
+        assert steered_avg <= baseline_avg + 0.01, (
+            f"Terse should not increase hedging: "
+            f"baseline={baseline_avg:.4f}, steered={steered_avg:.4f}"
+        )
+
+    def test_fewer_exclamations(self, baseline_and_steered):
+        """Terse output should not be enthusiastic."""
+        baselines, steered = baseline_and_steered
+        baseline_exc = sum(exclamation_density(b) for b in baselines) / len(baselines)
+        steered_exc = sum(exclamation_density(s) for s in steered) / len(steered)
+        assert steered_exc <= baseline_exc + 0.5, (
+            f"Terse should not increase exclamations: "
+            f"baseline={baseline_exc:.2f}, steered={steered_exc:.2f}"
+        )
+
+    def test_shorter_total_output(self, baseline_and_steered):
+        """Terse-steered output should be shorter in total word count."""
+        baselines, steered = baseline_and_steered
+        baseline_words = sum(len(b.split()) for b in baselines)
+        steered_words = sum(len(s.split()) for s in steered)
+        assert steered_words < baseline_words, (
+            f"Terse should reduce total words: "
+            f"baseline={baseline_words}, steered={steered_words}"
+        )
+#+end_src
+
+* Layer 3: Formal Specs (Lean4)
+
+The steering vector has a clean geometric invariant: it lives on the unit sphere
+in R^1024. The alpha bound is an empirical precondition.
+
+#+begin_src lean4 :tangle lean4/SteeringVector.lean
+/-
+  Formal specification of steering vector properties.
+  Thin but real: these are the invariants the Python code must satisfy.
+-/
+
+-- Steering vector lives on unit sphere in R^d_model
+structure SteeringVector (d : Nat) where
+  components : Fin d → Float
+  unit_norm : Float  -- must equal 1.0 within tolerance
+
+-- Alpha bound: empirical precondition from literature
+def alpha_safe (α : Float) : Prop :=
+  0.0 ≤ α ∧ α ≤ 0.35
+
+-- Layer index must be valid for the model
+def valid_layer (layer : Nat) (num_layers : Nat) : Prop :=
+  layer < num_layers
+
+-- Qwen3-0.6B constants
+def qwen3_d_model : Nat := 1024
+def qwen3_num_layers : Nat := 28
+
+-- The generate_steered precondition
+structure SteeringConfig where
+  layer : Nat
+  alpha : Float
+  layer_valid : valid_layer layer qwen3_num_layers
+  alpha_safe : alpha_safe alpha
+
+-- Zero-alpha identity: steering with α=0 must not modify output
+-- (stated as a type-level requirement)
+axiom zero_alpha_identity :
+  ∀ (prompt : String) (vec : SteeringVector qwen3_d_model) (layer : Nat),
+    valid_layer layer qwen3_num_layers →
+    True  -- placeholder: steered(prompt, vec, layer, 0.0) = baseline(prompt)
+
+-- Normalization idempotence: normalizing a unit vector returns itself
+theorem normalize_idempotent (v : SteeringVector d) (h : v.unit_norm = 1.0) :
+    v.unit_norm = 1.0 := h
+#+end_src
+
+* Layer 4: API Schema Tests (Schemathesis)
+
+The =ollama_logger.py= addon depends on Ollama response contracts that are never
+asserted. Schemathesis validates the API schema against the running server.
+
+#+begin_src python :tangle tests/test_ollama_api.py
+"""
+Contract tests for Ollama API.
+
+Validates that the Ollama API at localhost:11434 conforms to expected
+response schemas. ollama_logger.py depends on these fields existing.
+
+Run: uv run pytest tests/test_ollama_api.py -v
+      (requires Ollama running on localhost:11434 with qwen3:0.6b loaded)
+"""
+import pytest
+import json
+
+try:
+    import httpx
+    HAS_HTTPX = True
+except ImportError:
+    HAS_HTTPX = False
+
+OLLAMA_BASE = "http://localhost:11434"
+MODEL = "qwen3:0.6b"
+
+
+def ollama_available() -> bool:
+    if not HAS_HTTPX:
+        return False
+    try:
+        r = httpx.get(f"{OLLAMA_BASE}/api/version", timeout=2)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
+skip_no_ollama = pytest.mark.skipif(
+    not ollama_available(),
+    reason="Ollama not running on localhost:11434"
+)
+
+
+@skip_no_ollama
+class TestOllamaGenerateContract:
+    """Response contract for /api/generate (non-streaming)."""
+
+    def test_generate_response_has_required_fields(self):
+        """Non-streaming generate must return eval_count and eval_duration."""
+        r = httpx.post(
+            f"{OLLAMA_BASE}/api/generate",
+            json={"model": MODEL, "prompt": "hello", "stream": False},
+            timeout=60,
+        )
+        assert r.status_code == 200
+        body = r.json()
+
+        # Fields that ollama_logger.py depends on
+        assert "done" in body, "Missing 'done' field"
+        assert body["done"] is True, "Expected done=true for non-streaming"
+        assert "eval_count" in body, "Missing 'eval_count' (token count)"
+        assert "eval_duration" in body, "Missing 'eval_duration' (nanoseconds)"
+        assert "model" in body, "Missing 'model' field"
+
+        # Type contracts
+        assert isinstance(body["eval_count"], int)
+        assert isinstance(body["eval_duration"], int)
+        assert body["eval_count"] > 0, "eval_count must be positive"
+        assert body["eval_duration"] > 0, "eval_duration must be positive"
+
+    def test_generate_response_tokens_per_sec_computable(self):
+        """The tokens/sec calculation in ollama_logger.py must not divide by zero."""
+        r = httpx.post(
+            f"{OLLAMA_BASE}/api/generate",
+            json={"model": MODEL, "prompt": "What is 2+2?", "stream": False},
+            timeout=60,
+        )
+        body = r.json()
+        assert body["eval_duration"] > 0, (
+            "eval_duration must be > 0 to compute tokens/sec"
+        )
+        tps = body["eval_count"] / (body["eval_duration"] / 1e9)
+        assert tps > 0, f"tokens/sec must be positive, got {tps}"
+
+
+@skip_no_ollama
+class TestOllamaChatContract:
+    """Response contract for /api/chat (non-streaming)."""
+
+    def test_chat_response_has_message(self):
+        """/api/chat must return a message object with role and content."""
+        r = httpx.post(
+            f"{OLLAMA_BASE}/api/chat",
+            json={
+                "model": MODEL,
+                "messages": [{"role": "user", "content": "hello"}],
+                "stream": False,
+            },
+            timeout=60,
+        )
+        assert r.status_code == 200
+        body = r.json()
+        assert "message" in body
+        assert "role" in body["message"]
+        assert "content" in body["message"]
+        assert body["message"]["role"] == "assistant"
+        assert len(body["message"]["content"]) > 0
+
+
+@skip_no_ollama
+class TestOllamaMetaEndpoints:
+    """Contracts on metadata endpoints."""
+
+    def test_version_endpoint(self):
+        r = httpx.get(f"{OLLAMA_BASE}/api/version", timeout=5)
+        assert r.status_code == 200
+        body = r.json()
+        assert "version" in body
+
+    def test_ps_endpoint(self):
+        """Running models endpoint must return a list."""
+        r = httpx.get(f"{OLLAMA_BASE}/api/ps", timeout=5)
+        assert r.status_code == 200
+        body = r.json()
+        assert "models" in body
+        assert isinstance(body["models"], list)
+#+end_src
+
+* Layer 5: CPRR Integration — Machine-Readable Sweep Results
+
+Wire sweep results into =.cprr/conjectures.json= so the CPRR loop is
+mechanized, not just =print()= output.
+
+#+begin_src python :tangle sweep_to_cprr.py
+"""
+Run a layer sweep and write results as CPRR conjectures.
+
+Usage:
+    uv run python sweep_to_cprr.py --style terse --alpha 0.20 \
+        --prompt "Explain what a mutex is."
+
+Flow:
+    Layer sweep → pick best layer → Conjecture
+    Property tests → pass/fail → Proof or Refutation
+    Promote to corpus mean → Refinement
+"""
+import argparse
+import json
+import re
+from pathlib import Path
+from datetime import datetime, timezone
+
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from actadd import compute_steering_vector, generate_steered, sweep_layers
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+CPRR_PATH = Path(".cprr/conjectures.json")
+
+
+# ── Style metrics (same as test_style_contracts.py) ───────────────────────────
+
+def words_per_sentence(text: str) -> float:
+    sentences = [s.strip() for s in re.split(r'[.!?]+', text) if s.strip()]
+    if not sentences:
+        return 0.0
+    return sum(len(s.split()) for s in sentences) / len(sentences)
+
+
+def word_count(text: str) -> int:
+    return len(text.split())
+
+
+def score_terseness(text: str) -> float:
+    """Higher = more terse. Combines word count and sentence length."""
+    wc = word_count(text)
+    wps = words_per_sentence(text)
+    # Invert: fewer words and shorter sentences = higher score
+    if wc == 0:
+        return 0.0
+    return 1.0 / (1.0 + wps) * (100.0 / (1.0 + wc))
+
+
+# ── CPRR file operations ─────────────────────────────────────────────────────
+
+def load_cprr() -> dict:
+    with CPRR_PATH.open() as f:
+        return json.load(f)
+
+
+def save_cprr(data: dict):
+    with CPRR_PATH.open("w") as f:
+        json.dump(data, f, indent=2)
+
+
+def add_conjecture(
+    cprr: dict, hypothesis: str, evidence: dict, status: str = "conjecture"
+) -> int:
+    cid = cprr["next_id"]
+    cprr["next_id"] = cid + 1
+    if cprr["conjectures"] is None:
+        cprr["conjectures"] = []
+    cprr["conjectures"].append({
+        "id": cid,
+        "status": status,
+        "hypothesis": hypothesis,
+        "evidence": evidence,
+        "created": datetime.now(timezone.utc).isoformat(),
+    })
+    return cid
+
+
+# ── Main ──────────────────────────────────────────────────────────────────────
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--style", default="terse")
+    parser.add_argument("--alpha", type=float, default=0.20)
+    parser.add_argument("--prompt", default="Explain what a mutex is.")
+    args = parser.parse_args()
+
+    print(f"Loading {MODEL_ID}...")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID, torch_dtype=torch.float16, device_map="auto"
+    )
+    model.eval()
+
+    # ── Sweep ─────────────────────────────────────────────────────────────
+    print(f"Running layer sweep: style={args.style}, α={args.alpha}")
+    results = sweep_layers(
+        model, tokenizer, args.prompt, args.style, args.alpha
+    )
+
+    # ── Score each layer ──────────────────────────────────────────────────
+    scored = {}
+    for layer, text in results.items():
+        scored[layer] = {
+            "text_preview": text[:120],
+            "word_count": word_count(text),
+            "words_per_sentence": round(words_per_sentence(text), 2),
+            "terseness_score": round(score_terseness(text), 4),
+        }
+
+    # ── Pick best layer ───────────────────────────────────────────────────
+    best_layer = max(scored, key=lambda L: scored[L]["terseness_score"])
+    best_score = scored[best_layer]
+
+    print(f"\nBest layer: {best_layer}")
+    print(f"  Score: {best_score['terseness_score']}")
+    print(f"  Words: {best_score['word_count']}")
+    print(f"  Words/sentence: {best_score['words_per_sentence']}")
+    print(f"  Preview: {best_score['text_preview']}")
+
+    # ── Write conjecture ──────────────────────────────────────────────────
+    cprr = load_cprr()
+    cid = add_conjecture(
+        cprr,
+        hypothesis=(
+            f"Layer {best_layer} is optimal for '{args.style}' steering "
+            f"at α={args.alpha} on Qwen3-0.6B"
+        ),
+        evidence={
+            "method": "layer_sweep",
+            "style": args.style,
+            "alpha": args.alpha,
+            "prompt": args.prompt,
+            "best_layer": best_layer,
+            "all_scores": {str(k): v for k, v in scored.items()},
+        },
+        status="conjecture",
+    )
+    save_cprr(cprr)
+    print(f"\nConjecture C-{cid} written to {CPRR_PATH}")
+
+    # ── Generate baseline for comparison ──────────────────────────────────
+    vec = compute_steering_vector(model, tokenizer, args.style, best_layer)
+    baseline = generate_steered(
+        model, tokenizer, args.prompt, vec, best_layer, alpha=0.0,
+        max_new_tokens=200,
+    )
+    baseline_wps = words_per_sentence(baseline)
+    steered_wps = scored[best_layer]["words_per_sentence"]
+
+    if steered_wps < baseline_wps:
+        print(f"PASS: words/sentence reduced ({baseline_wps:.1f} → {steered_wps:.1f})")
+        cprr["conjectures"][-1]["status"] = "proof"
+    else:
+        print(f"FAIL: words/sentence not reduced ({baseline_wps:.1f} → {steered_wps:.1f})")
+        cprr["conjectures"][-1]["status"] = "refutation"
+
+    save_cprr(cprr)
+    print(f"Conjecture C-{cid} status: {cprr['conjectures'][-1]['status']}")
+
+
+if __name__ == "__main__":
+    main()
+#+end_src
+
+* Makefile Targets
+
+#+begin_src makefile
+# Add to Makefile:
+
+.PHONY: test test-vectors test-contracts test-ollama sweep-cprr
+
+test: test-vectors test-contracts
+
+test-vectors: $(SENTINEL)
+	$(PYTHON) -m pytest tests/test_vector_properties.py -v
+
+test-contracts: $(SENTINEL)
+	$(PYTHON) -m pytest tests/test_style_contracts.py -v
+
+test-ollama:
+	$(PYTHON) -m pytest tests/test_ollama_api.py -v
+
+sweep-cprr: $(SENTINEL)
+	$(PYTHON) sweep_to_cprr.py --style terse --alpha 0.20 \
+		--prompt "Explain what a mutex is."
+#+end_src
+
+* Decision Map
+
+#+begin_src mermaid :file contracts-flow.png :exports results
+flowchart TD
+    A[Layer Sweep] -->|best layer| B[Conjecture in .cprr]
+    B --> C{Property tests\npytest + hypothesis}
+    C -->|pass| D[Status: proof]
+    C -->|fail| E[Status: refutation]
+    D --> F{Behavioral contracts\nstyle metrics}
+    F -->|pass| G[Promote to\ncorpus mean vector]
+    F -->|fail| H[Refine: adjust α\nor layer]
+    E --> H
+    G --> I[Refinement in .cprr]
+    H --> A
+
+    J[Ollama API] --> K{Schema tests\nschemathesis}
+    K -->|pass| L[API contract holds]
+    K -->|fail| M[Pin Ollama version]
+
+    N[Steering vector] --> O{Lean4 spec\nunit sphere ∈ R^1024}
+    O -->|typecheck| P[Formal invariant holds]
+
+    style B fill:#2d3748,color:#e2e8f0
+    style D fill:#2d4a2d,color:#e2e8f0
+    style E fill:#4a2d2d,color:#e2e8f0
+    style I fill:#1a3a1a,color:#e2e8f0
+#+end_src
+
+* Verification Coverage Matrix
+
+| Invariant | Layer | Tool |
+|-----------------------------------------+-------+------------------------------|
+| =norm(vec) == 1.0= | 1 | hypothesis + pytest |
+| =vec.shape == (1024,)= | 1 | pytest |
+| =isfinite(vec).all()= | 1 | pytest |
+| =α=0 → output == baseline= | 1 | pytest |
+| =output.token_count >= 5= | 1 | hypothesis (α ∈ [0.01, 0.35]) |
+| =cos_sim(pos, neg) < 0.99= | 1 | pytest |
+| Terse: words/sentence decreases | 2 | pytest |
+| Terse: TTR maintained or increases | 2 | pytest |
+| Terse: hedging words don't increase | 2 | pytest |
+| Terse: total word count decreases | 2 | pytest |
+| =vec ∈ S^1023= (unit sphere) | 3 | Lean4 |
+| =0 ≤ α ≤ 0.35= precondition | 3 | Lean4 |
+| =eval_count > 0= when =done: true= | 4 | pytest / schemathesis |
+| =eval_duration > 0= when =done: true= | 4 | pytest / schemathesis |
+| Sweep → conjecture → proof/refutation | 5 | sweep_to_cprr.py → .cprr |

@@ -7,3 +7,11 @@ dependencies = [
     "torch",
     "datasets",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "hypothesis",
+    "schemathesis",
+    "httpx",
+]

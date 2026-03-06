@@ -3,7 +3,7 @@ MODEL_ID := Qwen/Qwen3-0.6B
 MODEL_DIR := .models/$(MODEL_ID)
 SENTINEL := $(MODEL_DIR)/.pulled
 
-.PHONY: all clean model
+.PHONY: all clean model test test-vectors test-contracts test-ollama sweep-cprr tangle
 
 all: $(SENTINEL)
 
@@ -22,6 +22,35 @@ $(SENTINEL):
 		AutoModelForCausalLM.from_pretrained('$(MODEL_ID)')"
 	@touch $@
 	@echo "Model $(MODEL_ID) cached successfully."
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+
+test: test-vectors test-contracts
+
+test-vectors: $(SENTINEL)
+	$(PYTHON) -m pytest tests/test_vector_properties.py -v
+
+test-contracts: $(SENTINEL)
+	$(PYTHON) -m pytest tests/test_style_contracts.py -v
+
+test-ollama:
+	$(PYTHON) -m pytest tests/test_ollama_api.py -v
+
+# ── CPRR integration ─────────────────────────────────────────────────────────
+
+sweep-cprr: $(SENTINEL)
+	$(PYTHON) sweep_to_cprr.py --style terse --alpha 0.20 \
+		--prompt "Explain what a mutex is."
+
+# ── Tangle ────────────────────────────────────────────────────────────────────
+
+tangle:
+	emacs --batch --eval "(require 'org)" \
+		--eval '(org-babel-tangle-file "setup.org")' \
+		--eval '(org-babel-tangle-file "contracts.org")' \
+		--eval '(org-babel-tangle-file "ollama-observability.org")'
+
+# ── Clean ─────────────────────────────────────────────────────────────────────
 
 clean:
 	rm -rf .models

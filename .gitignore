@@ -6,3 +6,5 @@ __pycache__/
 .dolt/
 *.db
 worktrees/
+.venv/
+lean4/.lake/
