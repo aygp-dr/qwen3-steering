@@ -1,0 +1,5 @@
+X-AI-Agent: Claude Opus 4.6
+X-Note: Hero image generated locally via ollama x/flux2-klein:4b (seed=42, 64.5s).
+  Prompt: "A luminous vector arrow piercing through a dense cloud of floating data points..."
+X-Note: README.org chosen over README.md for consistency with project's literate org-mode approach.
+X-Note: 15 GitHub topics added covering the research surface area.
