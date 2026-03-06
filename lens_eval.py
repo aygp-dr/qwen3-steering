@@ -1,19 +1,46 @@
 #!/usr/bin/env python3
 """
-lens_eval.py — Detect terministic screen bleed in a locally-running Ollama model.
+lens_eval.py — Terministic Screen Detector for Activation Steering
 
-Each lens is a "terministic screen" (Kenneth Burke, 1966): a vocabulary that
-selects certain features of reality and deflects others. Activation steering
-installs screens. This eval measures bleed — how far a screen extends into
-topics it should not touch.
+Kenneth Burke, Language as Symbolic Action (1966):
+    "Even if any given terminology is a reflection of reality,
+     by its very nature as a terminology it must be a selection
+     of reality; and to this extent it must function also as a
+     deflection of reality."
 
-French term: déformation professionnelle. The doctor sees symptoms in everyone.
-The engineer sees systems in sourdough. The eval measures how much sourdough
-looks like a spec.
+A steering vector doesn't add vocabulary to a model.
+It installs a terministic screen — a selection/deflection pair.
+The model doesn't see more; it sees differently, and stops seeing
+what the screen occludes.
 
-Method: ask 10 neutral questions (bread, grief, tides, jazz...), score each
-response against 12 lens vocabularies. Contamination = hits / total_words.
-Run clean as baseline, run after steering, delta = regression signal.
+lens_eval.py measures screen bleed: how much does the installed
+screen deflect responses to topics it has no business touching?
+
+This is déformation professionnelle made measurable.
+The doctor sees symptoms in the healthy. The lawyer sees liability
+in the handshake. The formally-trained engineer sees a fixpoint
+in sourdough fermentation and reaches for org-mode to specify it.
+
+Maslow (1966) identified the hammer. Burke (1966) explained why
+you can't put it down: the hammer isn't a tool you hold —
+it's a screen through which nails become the only visible thing.
+
+The cult_of_jason lens is a self-portrait of one terministic screen:
+specification-driven, proof-adjacent, tangle-oriented.
+It is calibrated against a real corpus.
+It is also itself written through that screen.
+The ouroboros was not accidental.
+
+Threshold interpretation:
+  < 1%  : screen absent — model sees bread
+  1–3%  : screen present but not dominant — model notices bread
+           could be modelled
+  3–5%  : déformation professionnelle — bread has a contract,
+           fermentation has a postcondition
+  > 5%  : full Burke — the terminology has selected a reality in
+           which bread IS a fixpoint, and deflected the reality
+           in which it is just bread. The eval detecting this
+           is itself a terministic screen. Screens all the way down.
 
 Usage:
     python lens_eval.py --model qwen3:0.6b
