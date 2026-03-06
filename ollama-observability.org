@@ -1,0 +1,637 @@
+#+TITLE: Ollama Observability: MITM, Memory, OS Debuggers
+#+AUTHOR: jwalsh / aygp-dr
+#+DATE: 2026-03-06
+#+PROPERTY: header-args:sh :exports both :mkdirp t
+#+PROPERTY: header-args:python :exports both :mkdirp t
+#+STARTUP: overview
+#+TAGS: mitm proxy memory dtrace ollama macos arm64
+
+* Context: mini.local (Mac Mini M4, minibos)
+
+Ollama API: =http://localhost:11434=
+SIP: Enabled on macOS → dtrace restricted (root required; some probes unavailable)
+Metal: Apple GPU, shared memory with CPU — no discrete VRAM boundary
+
+Three observation planes:
+- *Network plane* — MITM/reverse proxy on port 11434
+- *Process plane* — OS memory maps, heap, CPU profile of the Ollama Go binary
+- *Python plane* — PyTorch activations, token timing, tensor memory via hooks
+
+* Layer 1: MITM / Reverse Proxy
+
+** mitmproxy in reverse mode (simplest)
+
+The canonical pattern from the Copilot/Ollama article:
+1. Move Ollama to port 11433
+2. mitmproxy listens on 11434, forwards to 11433
+3. Clients see no change
+
+#+begin_src sh :tangle mitm/start-mitm.sh
+#!/bin/sh
+# Shift Ollama to 11433, intercept on 11434
+# On macOS: launchctl setenv doesn't survive reboots without plist edit
+
+# Stop Ollama service
+launchctl unload ~/Library/LaunchAgents/com.ollama.ollama.plist 2>/dev/null || true
+pkill -f "ollama serve" 2>/dev/null || true
+
+# Restart on alt port
+OLLAMA_HOST=127.0.0.1:11433 ollama serve &
+OLLAMA_PID=$!
+
+sleep 2
+
+# Reverse proxy: forward 11434 → 11433, log to flows.mitm
+mitmweb \
+  --mode reverse:http://127.0.0.1:11433 \
+  --listen-host 127.0.0.1 \
+  --listen-port 11434 \
+  --web-host 127.0.0.1 \
+  --web-port 8081 \
+  --anticache \
+  --anticomp \
+  --save-stream-file flows.mitm \
+  --verbose &
+
+echo "mitmweb UI → http://127.0.0.1:8081"
+echo "Ollama API → http://127.0.0.1:11434 (proxied)"
+echo "Ollama PID=$OLLAMA_PID"
+#+end_src
+
+#+begin_src sh
+chmod +x mitm/start-mitm.sh
+#+end_src
+
+** mitmproxy addon: log prompts + token timing
+
+Writing an addon script lets you tap into every request/response as Python objects.
+This is more useful than the UI for programmatic capture.
+
+#+begin_src python :tangle mitm/ollama_logger.py
+"""
+mitmproxy addon: log Ollama API requests with timing and token counts.
+
+Usage:
+    mitmdump \
+      --mode reverse:http://127.0.0.1:11433 \
+      --listen-port 11434 \
+      -s ollama_logger.py \
+      --quiet
+
+Captures /api/generate and /api/chat to JSONL log.
+"""
+import json
+import time
+from pathlib import Path
+from mitmproxy import http
+
+LOG_PATH = Path("ollama_requests.jsonl")
+
+
+class OllamaLogger:
+    def __init__(self):
+        self._start: dict[str, float] = {}
+
+    def request(self, flow: http.HTTPFlow):
+        path = flow.request.path
+        if path in ("/api/generate", "/api/chat", "/api/embed"):
+            self._start[flow.id] = time.monotonic()
+
+    def response(self, flow: http.HTTPFlow):
+        if flow.id not in self._start:
+            return
+
+        elapsed = time.monotonic() - self._start.pop(flow.id)
+        path = flow.request.path
+
+        try:
+            req_body = json.loads(flow.request.content)
+        except Exception:
+            req_body = {}
+
+        # Streaming responses: body is newline-delimited JSON
+        # Collect final summary line (has eval_count, eval_duration etc)
+        resp_lines = []
+        summary = {}
+        for line in flow.response.content.splitlines():
+            try:
+                obj = json.loads(line)
+                resp_lines.append(obj)
+                if obj.get("done"):
+                    summary = obj
+            except Exception:
+                pass
+
+        record = {
+            "ts": time.time(),
+            "path": path,
+            "model": req_body.get("model", ""),
+            "prompt_preview": str(req_body.get("prompt", req_body.get("messages", "")))[:120],
+            "elapsed_s": round(elapsed, 3),
+            "eval_count": summary.get("eval_count"),
+            "prompt_eval_count": summary.get("prompt_eval_count"),
+            "eval_duration_ns": summary.get("eval_duration"),
+            "tokens_per_sec": round(
+                summary["eval_count"] / (summary["eval_duration"] / 1e9), 2
+            ) if summary.get("eval_count") and summary.get("eval_duration") else None,
+        }
+
+        with LOG_PATH.open("a") as f:
+            f.write(json.dumps(record) + "\n")
+
+
+addons = [OllamaLogger()]
+#+end_src
+
+** mitmproxy addon: activation steering injection
+
+Instead of modifying the Python inference code, inject steering directives
+directly at the network layer by modifying request bodies in transit.
+
+#+begin_src python :tangle mitm/steering_injector.py
+"""
+mitmproxy addon: inject system-level steering signals into Ollama requests.
+
+This approach modifies the *prompt* at the wire level — it's prompt engineering
+not activation steering, but it's useful as a baseline/comparison.
+For true activation steering this proxy can't help (no access to internal state).
+
+More useful: inject custom options like num_predict, temperature, seed.
+"""
+import json
+from mitmproxy import http
+
+# Force deterministic generation for all requests
+FORCED_OPTIONS = {
+    "seed": 42,
+    "temperature": 0.0,
+    "num_predict": 256,
+}
+
+STYLE_SYSTEM_INJECTION = (
+    "Respond with extreme concision. No filler. Dense technical signal only."
+)
+
+
+class SteeringInjector:
+    def request(self, flow: http.HTTPFlow):
+        if flow.request.path not in ("/api/generate", "/api/chat"):
+            return
+        try:
+            body = json.loads(flow.request.content)
+        except Exception:
+            return
+
+        # Inject options
+        opts = body.get("options", {})
+        opts.update(FORCED_OPTIONS)
+        body["options"] = opts
+
+        # For /api/generate: prepend system prefix to prompt
+        if flow.request.path == "/api/generate" and "prompt" in body:
+            body["prompt"] = f"[SYSTEM: {STYLE_SYSTEM_INJECTION}]\n\n{body['prompt']}"
+
+        # For /api/chat: inject system message if not present
+        if flow.request.path == "/api/chat" and "messages" in body:
+            msgs = body["messages"]
+            if not any(m.get("role") == "system" for m in msgs):
+                msgs.insert(0, {"role": "system", "content": STYLE_SYSTEM_INJECTION})
+                body["messages"] = msgs
+
+        flow.request.content = json.dumps(body).encode()
+
+
+addons = [SteeringInjector()]
+#+end_src
+
+** Quick replay from captured flows
+
+#+begin_src sh
+# Replay captured flows (offline, no model needed)
+mitmdump -n -r flows.mitm -s ollama_logger.py
+
+# Filter to just /api/chat
+mitmdump -n -r flows.mitm --flow-detail 2 '~u /api/chat'
+
+# Export to HAR
+mitmdump -n -r flows.mitm --export har flows.har
+#+end_src
+
+* Layer 2: OS Process Tools (macOS, M4)
+
+** Ollama debug env vars (zero-cost first)
+
+#+begin_src sh
+# Maximum verbosity from Ollama itself — no external tools needed
+OLLAMA_DEBUG=1 \
+OLLAMA_HOST=127.0.0.1:11434 \
+  ollama serve 2>&1 | tee /tmp/ollama-debug.log
+
+# Watch KV cache pressure, layer offload, Metal utilization
+grep -E "(kv_cache|metal|offload|eval)" /tmp/ollama-debug.log
+#+end_src
+
+** vmmap — full virtual memory map of Ollama process
+
+#+begin_src sh
+# Get Ollama PID
+OLLAMA_PID=$(pgrep -f "ollama runner" | head -1)
+
+# Snapshot full VM layout
+vmmap --wide "$OLLAMA_PID" 2>/dev/null | tee /tmp/ollama-vmmap.txt
+
+# Find model weight regions (Metal IOAccelerator mapped buffers)
+grep -E "(IOAccel|Metal|__TEXT|mapped|MALLOC)" /tmp/ollama-vmmap.txt | head -40
+
+# Watch for growth over time (two snapshots, delta)
+vmmap -d 10 "$OLLAMA_PID" 2>/dev/null | grep -E "(TOTAL|MALLOC|Metal)" | head -20
+#+end_src
+
+Model weights for qwen3:0.6b (Q4_K_M ~420MB) should appear as a large
+contiguous =MappedFile= or =IOAccelBuffer= region.
+
+** heap — allocation breakdown
+
+#+begin_src sh
+OLLAMA_PID=$(pgrep -f "ollama runner" | head -1)
+
+# Show malloc zone breakdown — useful for spotting Go runtime heap vs C allocs
+heap "$OLLAMA_PID" 2>/dev/null | head -60
+
+# Full breakdown sorted by size
+heap -addresses all "$OLLAMA_PID" 2>/dev/null | sort -rn | head -40
+#+end_src
+
+** leaks — detect retained allocations between requests
+
+#+begin_src sh
+OLLAMA_PID=$(pgrep -f "ollama runner" | head -1)
+
+# Baseline before request
+leaks "$OLLAMA_PID" > /tmp/leaks-before.txt 2>&1
+
+# Send a request
+curl -s http://localhost:11434/api/generate \
+  -d '{"model":"qwen3:0.6b","prompt":"hello","stream":false}' > /dev/null
+
+# Check after
+leaks "$OLLAMA_PID" > /tmp/leaks-after.txt 2>&1
+diff /tmp/leaks-before.txt /tmp/leaks-after.txt
+#+end_src
+
+** sample — CPU profile without attaching a debugger
+
+#+begin_src sh
+OLLAMA_PID=$(pgrep -f "ollama runner" | head -1)
+
+# Profile for 5 seconds at 1ms intervals during inference
+# Trigger a request in the background first
+curl -s http://localhost:11434/api/generate \
+  -d '{"model":"qwen3:0.6b","prompt":"Explain formal verification in 500 words","stream":false}' \
+  > /dev/null &
+
+sample "$OLLAMA_PID" 5 1 -f /tmp/ollama-sample.txt
+
+# Open in Instruments for flame graph
+open /tmp/ollama-sample.txt
+#+end_src
+
+** dtrace — syscall and I/O tracing (requires SIP partial disable or root)
+
+Apple SIP blocks many dtrace probes on production binaries. These work as root
+on M4 Macs with SIP fully or partially disabled, or via entitlements.
+
+#+begin_src sh
+# File I/O by Ollama (model loading, mmap)
+# Note: requires sudo; SIP must allow dtrace
+sudo dtrace -n '
+  syscall::read:entry /execname == "ollama"/ {
+    @reads[fds[arg0].fi_pathname] = sum(arg2);
+  }
+  tick-5s { printa(@reads); exit(0); }
+'
+
+# Watch mmap calls — model weight loading
+sudo dtrace -n '
+  syscall::mmap:entry /execname == "ollama"/ {
+    printf("mmap size=%d prot=%d flags=%d\n", arg1, arg2, arg3);
+  }
+'
+
+# Syscall count summary during one request
+sudo dtruss -c -p "$(pgrep -f 'ollama runner')" 2>&1 | head -40
+#+end_src
+
+** lldb — attach to Ollama process (read-only inspection)
+
+#+begin_src sh
+# Attach without suspending (non-intrusive as possible)
+lldb -p "$(pgrep -f 'ollama runner')" --no-use-colors <<'EOF'
+# Show memory regions
+memory region --all
+
+# Find large allocations > 100MB
+memory find --size 100000000 -e 0x0 0x0 0xffffffffffffffff
+
+# Thread state
+thread list
+bt all
+
+# Detach cleanly
+detach
+quit
+EOF
+#+end_src
+
+** powermetrics — M4 GPU/ANE/CPU energy during inference
+
+#+begin_src sh
+# Capture 10 seconds of power telemetry during a request
+sudo powermetrics \
+  --samplers gpu_power,cpu_power,ane_power \
+  --sample-rate 500 \
+  --sample-count 20 \
+  -o /tmp/ollama-power.plist \
+  -- curl -s http://localhost:11434/api/generate \
+       -d '{"model":"qwen3:0.6b","prompt":"explain activation steering","stream":false}' \
+       > /dev/null
+
+# Parse: ANE utilization indicates Metal GPU shader use
+plutil -p /tmp/ollama-power.plist | grep -E "(ANE|GPU|CPU)" | head -30
+#+end_src
+
+** Instruments.app (GUI — most powerful for M4 Metal)
+
+#+begin_src sh
+# Launch Instruments profiling template for Ollama
+# 'Time Profiler' + 'Allocations' + 'Metal System Trace'
+# Cannot easily script the Metal GPU template — use GUI
+
+# Alternatively, xctrace (CLI wrapper for Instruments)
+xctrace record \
+  --template 'Time Profiler' \
+  --attach "$(pgrep -f 'ollama runner')" \
+  --output /tmp/ollama-trace.xcresult \
+  --time-limit 10s
+
+# Open result
+open /tmp/ollama-trace.xcresult
+#+end_src
+
+* Layer 3: Python-Side Profiling (inference process)
+
+** py-spy — sampling profiler, attaches to running Python process
+
+Best for finding where your =actadd.py= or =corpus_style_vec.py= is slow
+without modifying the code.
+
+#+begin_src sh
+pip install py-spy --break-system-packages
+
+# Profile actadd.py for 30 seconds
+py-spy record \
+  -o /tmp/actadd-profile.svg \
+  --duration 30 \
+  -- python actadd.py --style terse --sweep --prompt "Explain ZFS."
+
+# Open flame graph
+open /tmp/actadd-profile.svg
+
+# Live top-like view
+py-spy top -- python actadd.py --style terse --prompt "Explain ZFS."
+#+end_src
+
+** memray — heap profiler for Python (best-in-class, Bloomberg)
+
+#+begin_src sh
+pip install memray --break-system-packages
+
+# Profile corpus_style_vec.py — catches numpy/torch tensor allocations
+memray run -o /tmp/style-vec.bin python corpus_style_vec.py
+
+# Generate flamegraph report
+memray flamegraph /tmp/style-vec.bin -o /tmp/style-vec-flamegraph.html
+open /tmp/style-vec-flamegraph.html
+
+# Live terminal view
+memray run --live python corpus_style_vec.py
+#+end_src
+
+** PyTorch memory profiler — tensor lifecycle during activation capture
+
+#+begin_src python :tangle profile_activations.py
+"""
+Profile memory usage of activation capture and steering vector computation.
+Shows peak tensor memory per operation.
+"""
+import torch
+from torch.profiler import profile, record_function, ProfilerActivity
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+
+
+def profile_steering_vector_build(model, tokenizer, prompt: str, layer_idx: int):
+    """Profile the full forward pass + activation capture."""
+
+    activities = [ProfilerActivity.CPU]
+    if torch.backends.mps.is_available():
+        # M4 uses MPS (Metal Performance Shaders)
+        activities.append(ProfilerActivity.CPU)  # MPS not yet a ProfilerActivity
+
+    with profile(
+        activities=activities,
+        record_shapes=True,
+        profile_memory=True,
+        with_stack=False,
+    ) as prof:
+        captured = {}
+
+        def hook_fn(module, input, output):
+            with record_function("activation_capture"):
+                hs = output[0] if isinstance(output, tuple) else output
+                captured["hs"] = hs.detach().clone()
+
+        handle = model.model.layers[layer_idx].register_forward_hook(hook_fn)
+
+        with record_function("forward_pass"):
+            inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+            with torch.no_grad():
+                model(**inputs)
+
+        handle.remove()
+
+        with record_function("vector_mean"):
+            vec = captured["hs"].squeeze(0).mean(dim=0)
+
+    print("\n── PyTorch Profiler: Top ops by CPU time ──")
+    print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=15))
+
+    print("\n── Memory by op ──")
+    print(prof.key_averages().table(sort_by="self_cpu_memory_usage", row_limit=10))
+
+    return vec
+
+
+if __name__ == "__main__":
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID,
+        torch_dtype=torch.float16,
+        device_map="auto",
+    )
+    model.eval()
+
+    vec = profile_steering_vector_build(
+        model, tokenizer,
+        prompt="Be extremely terse and technical.",
+        layer_idx=15,
+    )
+    print(f"\nSteering vector shape: {vec.shape}, dtype: {vec.dtype}")
+    print(f"Norm: {vec.norm():.4f}")
+    print(f"Memory: {vec.element_size() * vec.numel() / 1024:.2f} KB")
+#+end_src
+
+** tracemalloc — Python-native allocation tracing (no deps)
+
+#+begin_src python :tangle tracemalloc_profile.py
+"""
+tracemalloc wrapper: find top Python allocations during steering vector build.
+Zero dependencies, stdlib only.
+"""
+import tracemalloc
+import linecache
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+
+
+def display_top(snapshot, limit=10):
+    stats = snapshot.statistics("lineno")
+    for stat in stats[:limit]:
+        frame = stat.traceback[0]
+        print(f"  {stat.size / 1024:.1f} KB  {frame.filename}:{frame.lineno}")
+        line = linecache.getline(frame.filename, frame.lineno).strip()
+        if line:
+            print(f"    {line}")
+
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_ID, torch_dtype=torch.float16, device_map="auto"
+)
+model.eval()
+
+tracemalloc.start(25)  # 25-frame traceback depth
+
+# Run one forward pass
+inputs = tokenizer("Be terse.", return_tensors="pt").to(model.device)
+with torch.no_grad():
+    model(**inputs)
+
+snapshot = tracemalloc.take_snapshot()
+print("Top allocations:")
+display_top(snapshot)
+
+tracemalloc.stop()
+#+end_src
+
+* Decision Map
+
+#+begin_src mermaid :file ollama-observability-map.png :exports results
+flowchart TD
+    Q[What do you want to observe?]
+
+    Q --> A[API traffic:\nprompts, timing, tokens]
+    Q --> B[Model weights\nin memory]
+    Q --> C[CPU/GPU time\nduring inference]
+    Q --> D[Python tensor\nallocations]
+    Q --> E[Inject/modify\nrequests]
+
+    A --> A1["mitmproxy reverse proxy\n(11434→11433)\nollama_logger.py addon"]
+    A --> A2["OLLAMA_DEBUG=1\nollama serve"]
+
+    B --> B1["vmmap PID\n(full VM layout)"]
+    B --> B2["heap PID\n(malloc zones)"]
+    B --> B3["leaks PID\n(before/after)"]
+
+    C --> C1["sample PID 5s\n(CPU flamegraph)"]
+    C --> C2["xctrace / Instruments\n(Metal GPU trace)"]
+    C --> C3["powermetrics\n(ANE/GPU/CPU watts)"]
+    C --> C4["dtrace (root + SIP off)\n(syscall, mmap)"]
+    C --> C5["py-spy record\n(Python flame graph)"]
+
+    D --> D1["memray run\n(heap flamegraph)"]
+    D --> D2["torch.profiler\n(tensor lifecycle)"]
+    D --> D3["tracemalloc\n(stdlib, zero deps)"]
+
+    E --> E1["steering_injector.py\n(prompt rewrite at wire)"]
+    E --> E2["actadd.py hook\n(residual stream inject)"]
+
+    style A1 fill:#1a3a4a,color:#e2e8f0
+    style E2 fill:#2d4a2d,color:#e2e8f0
+    style C2 fill:#4a3a1a,color:#e2e8f0
+#+end_src
+
+* Quick Reference
+
+#+begin_src sh
+# ── MITM ──────────────────────────────────────────────────────────────────
+# Reverse proxy + web UI
+mitmweb --mode reverse:http://127.0.0.1:11433 --listen-port 11434 --web-port 8081
+
+# Scripted dump to JSONL
+mitmdump --mode reverse:http://127.0.0.1:11433 --listen-port 11434 \
+  -s mitm/ollama_logger.py
+
+# ── OS TOOLS ──────────────────────────────────────────────────────────────
+OLLAMA_PID=$(pgrep -f "ollama runner" | head -1)
+
+vmmap --wide "$OLLAMA_PID" | grep -E "(Metal|IOAccel|MALLOC)"
+heap "$OLLAMA_PID" | head -30
+sample "$OLLAMA_PID" 5 1 -f /tmp/ollama-sample.txt
+leaks "$OLLAMA_PID" | head -20
+sudo powermetrics --samplers gpu_power,ane_power --sample-rate 500 --sample-count 10
+
+# Instruments CLI
+xctrace record --template 'Time Profiler' --attach "$OLLAMA_PID" \
+  --output /tmp/trace.xcresult --time-limit 10s
+
+# ── PYTHON PROFILERS ──────────────────────────────────────────────────────
+py-spy record -o /tmp/actadd.svg --duration 30 -- python actadd.py --style terse
+memray run --live python corpus_style_vec.py
+python profile_activations.py
+python tracemalloc_profile.py
+
+# ── OLLAMA DEBUG ───────────────────────────────────────────────────────────
+OLLAMA_DEBUG=1 ollama serve 2>&1 | grep -E "(kv_cache|metal|layer|eval)"
+curl http://localhost:11434/api/ps          # running models + memory
+curl http://localhost:11434/api/version     # build info
+#+end_src
+
+* Notes
+
+** What's NOT observable without SIP disable
+- =dtrace= kernel-level probes on Ollama binary (Go binary, stripped)
+- Metal GPU shader internals (only Instruments with entitlements)
+- =dtruss= on protected binaries
+
+** The mitmproxy + activation steering split
+The proxy sees *tokens in, tokens out*. Activation steering operates on
+*tensors mid-forward-pass*. These are completely separate planes. The proxy
+cannot inject a steering vector — that requires PyTorch hooks on the model.
+The useful combination is: proxy logs the request, your Python process
+applies the steering vector, proxy logs the (modified) response and timing.
+
+** Fastest path for token throughput measurement
+=ollama_logger.py= is the right tool — it reads =eval_count= and =eval_duration_ns=
+directly from Ollama's own response metadata, which is more accurate than
+wall-clock timing from an external tool.
+
+** M4 Metal memory layout
+The model weights are mmap'd as Metal buffers in shared CPU/GPU memory.
+=vmmap= will show them as =IOAcceleratorFamily= or =Metal: MTLHeap= regions.
+Total for qwen3:0.6b at Q4_K_M ≈ 420MB. The Metal regions should be stable
+between requests; KV cache regions will grow with context length.
+#+end_src

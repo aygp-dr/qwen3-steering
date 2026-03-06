@@ -1,0 +1,630 @@
+#+TITLE: Qwen3-0.6B Activation Steering for Tone/Style
+#+AUTHOR: jwalsh / aygp-dr
+#+DATE: 2026-03-06
+#+PROPERTY: header-args:python :session qwen3-steer :exports both :mkdirp t
+#+PROPERTY: header-args:sh :exports both :mkdirp t
+#+STARTUP: overview
+
+* Overview
+
+Forcing tone or style at the *activation level* — no system prompt, no fine-tuning,
+no prompt engineering — using Qwen3-0.6B as the target model.
+
+Architecture facts (dense Qwen3-0.6B):
+- 28 transformer layers
+- d_model = 1024
+- 16 query heads, 8 KV heads (GQA)
+- SwiGLU FFN, d_ff = 4096
+- RMSNorm, RoPE
+
+Model sources:
+- HuggingFace: =Qwen/Qwen3-0.6B= (transformers, ~751M params)
+- Ollama: =qwen3:0.6b= (=ollama pull qwen3:0.6b=)
+
+Three approaches in increasing complexity:
+1. *ActAdd* — contrastive pair difference, one forward pass each direction
+2. *Style Corpus Mean* — mean activation over N style examples
+3. *Pre-built vectors* — codelion/Qwen3-0.6B-pts-steering-vectors on HF
+
+Key constraint from literature: α > 0.35 degrades semantic coherence.
+Mid-to-late layers (14–20 of 28) give best style control with least fluency cost.
+
+* Dependencies
+
+#+begin_src sh
+pip install --break-system-packages --quiet \
+    transformers>=4.51.0 torch datasets
+#+end_src
+
+* Architecture Probe
+
+Before steering anything, map the layer names so hooks target the right modules.
+
+#+begin_src python :tangle probe_arch.py
+"""Probe Qwen3-0.6B layer structure for hook attachment points."""
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_ID, torch_dtype=torch.float16, device_map="cpu"
+)
+model.eval()
+
+# Map hookable layers
+print(f"Num layers: {model.config.num_hidden_layers}")
+print(f"d_model: {model.config.hidden_size}")
+print(f"d_ff: {model.config.intermediate_size}")
+print()
+# Show the first two layer module paths
+for name, mod in list(model.named_modules())[:30]:
+    print(name)
+#+end_src
+
+Expected output confirms hook path is =model.model.layers[N]=.
+
+* Core: ActAdd — Contrastive Pair Steering
+
+The minimal approach. No labeled dataset, no SAE, no training.
+Two prompts specifying opposite ends of a style axis → difference of mean
+activations at layer L → add α × vector to residual stream during generation.
+
+#+begin_src python :tangle actadd.py
+"""
+ActAdd for Qwen3-0.6B: tone steering without system prompt.
+
+Usage:
+    python actadd.py --style terse --alpha 0.25 --layer 15 \
+        --prompt "Explain what a mutex is."
+"""
+import argparse
+import torch
+import torch.nn.functional as F
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from typing import Optional
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+
+# ── Style axis definitions ────────────────────────────────────────────────────
+STYLE_PAIRS = {
+    "terse": (
+        # positive: dry, terse, technical — your actual preferred register
+        "Be extremely concise and technical. No filler words. Dense signal.",
+        # negative: verbose, padded
+        "Please explain this thoroughly and helpfully with lots of context and examples.",
+    ),
+    "formal": (
+        "Respond in precise, formal academic prose.",
+        "Just chat with me casually.",
+    ),
+    "socratic": (
+        "Respond only with targeted clarifying questions that expose hidden assumptions.",
+        "Give me the answer directly.",
+    ),
+    "dry-wit": (
+        "Respond with dry understatement and laconic precision. INTJ energy.",
+        "Be enthusiastic, warm, and encouraging in your response.",
+    ),
+}
+
+# ── Activation extraction ─────────────────────────────────────────────────────
+
+def get_layer_activations(
+    model, tokenizer, prompt: str, layer_idx: int
+) -> torch.Tensor:
+    """Return mean hidden state at layer_idx for the given prompt."""
+    captured = {}
+
+    def hook_fn(module, input, output):
+        # output is (hidden_states, optional_cache, ...)
+        hs = output[0] if isinstance(output, tuple) else output
+        captured["hs"] = hs.detach()
+
+    handle = model.model.layers[layer_idx].register_forward_hook(hook_fn)
+
+    # Disable thinking mode: append empty <think></think> block
+    messages = [{"role": "user", "content": prompt}]
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+        enable_thinking=False,
+    )
+    inputs = tokenizer(text, return_tensors="pt").to(model.device)
+
+    with torch.no_grad():
+        model(**inputs)
+
+    handle.remove()
+    # Mean over sequence dimension → (d_model,)
+    return captured["hs"].squeeze(0).mean(dim=0)
+
+
+def compute_steering_vector(
+    model, tokenizer, style: str, layer_idx: int
+) -> torch.Tensor:
+    """Compute ActAdd steering vector for a named style."""
+    pos_prompt, neg_prompt = STYLE_PAIRS[style]
+    act_pos = get_layer_activations(model, tokenizer, pos_prompt, layer_idx)
+    act_neg = get_layer_activations(model, tokenizer, neg_prompt, layer_idx)
+    vec = act_pos - act_neg
+    # Normalise to unit vector — α controls magnitude separately
+    return F.normalize(vec, dim=0)
+
+
+# ── Steered generation ────────────────────────────────────────────────────────
+
+def generate_steered(
+    model,
+    tokenizer,
+    prompt: str,
+    steering_vec: torch.Tensor,
+    layer_idx: int,
+    alpha: float = 0.20,
+    max_new_tokens: int = 256,
+) -> str:
+    """Generate with steering vector injected at layer_idx."""
+
+    def steering_hook(module, input, output):
+        hs = output[0] if isinstance(output, tuple) else output
+        # Inject: add α * vec to every token position
+        hs = hs + alpha * steering_vec.to(hs.device, hs.dtype)
+        if isinstance(output, tuple):
+            return (hs,) + output[1:]
+        return hs
+
+    handle = model.model.layers[layer_idx].register_forward_hook(steering_hook)
+
+    messages = [{"role": "user", "content": prompt}]
+    text = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
+    )
+    inputs = tokenizer(text, return_tensors="pt").to(model.device)
+
+    with torch.no_grad():
+        out = model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            temperature=1.0,
+        )
+
+    handle.remove()
+    new_ids = out[0][inputs.input_ids.shape[1]:]
+    return tokenizer.decode(new_ids, skip_special_tokens=True)
+
+
+# ── Layer sweep utility ───────────────────────────────────────────────────────
+
+def sweep_layers(
+    model, tokenizer, prompt: str, style: str,
+    alpha: float = 0.20, layers: Optional[list] = None,
+) -> dict[int, str]:
+    """
+    Try steering at multiple layers, return {layer: output}.
+    Useful for identifying the sweet spot (typically 12–18 for 28-layer model).
+    """
+    if layers is None:
+        layers = list(range(10, 22, 2))  # [10, 12, 14, 16, 18, 20]
+    results = {}
+    for L in layers:
+        vec = compute_steering_vector(model, tokenizer, style, L)
+        results[L] = generate_steered(model, tokenizer, prompt, vec, L, alpha)
+    return results
+
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--style", default="terse", choices=list(STYLE_PAIRS))
+    parser.add_argument("--layer", type=int, default=15)
+    parser.add_argument("--alpha", type=float, default=0.20)
+    parser.add_argument("--sweep", action="store_true",
+                        help="Sweep layers 10-20 and print comparison")
+    parser.add_argument("--prompt", default="Explain what a mutex is.")
+    parser.add_argument("--save-vec", type=str, default=None,
+                        help="Save steering vector to .pt file")
+    args = parser.parse_args()
+
+    print(f"Loading {MODEL_ID}...")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID, torch_dtype=torch.float16, device_map="auto"
+    )
+    model.eval()
+
+    if args.sweep:
+        print(f"\n── Layer sweep: style={args.style}, α={args.alpha} ──")
+        results = sweep_layers(model, tokenizer, args.prompt, args.style, args.alpha)
+        for L, text in results.items():
+            print(f"\n[Layer {L}]")
+            print(text)
+        return
+
+    vec = compute_steering_vector(model, tokenizer, args.style, args.layer)
+
+    if args.save_vec:
+        torch.save(vec, args.save_vec)
+        print(f"Saved steering vector → {args.save_vec}")
+
+    # Baseline (no steering)
+    print("\n── Baseline ──")
+    baseline = generate_steered(model, tokenizer, args.prompt, vec, args.layer, alpha=0.0)
+    print(baseline)
+
+    # Steered
+    print(f"\n── Steered (style={args.style}, layer={args.layer}, α={args.alpha}) ──")
+    steered = generate_steered(model, tokenizer, args.prompt, vec, args.layer, args.alpha)
+    print(steered)
+
+
+if __name__ == "__main__":
+    main()
+#+end_src
+
+* Style Corpus Mean (Konen et al. 2024)
+
+More robust than a single contrastive pair. Feed N examples of the target style,
+average their activations at each layer, subtract a "neutral" baseline mean.
+
+#+begin_src python :tangle corpus_style_vec.py
+"""
+Style vector via corpus mean activations (Konen et al. EACL 2024).
+
+Build a style vector from a small corpus of example outputs, then subtract
+a neutral baseline. Works well with 10–30 examples per style.
+"""
+import torch
+import torch.nn.functional as F
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from pathlib import Path
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+
+# ── Example corpora ───────────────────────────────────────────────────────────
+
+TERSE_EXAMPLES = [
+    "Mutex: binary semaphore. One thread holds it; others block.",
+    "O(n log n) average. O(n²) worst case. Use timsort instead.",
+    "ZFS: copy-on-write, checksummed blocks. Not a RAID replacement.",
+    "FreeBSD jail: kernel-level namespace isolation. Bastille automates provisioning.",
+    "TLA+: temporal logic over states. Deadlocks are reachable states with no progress.",
+    "Formal spec ≠ implementation. Gap is the adversary.",
+    "Guile Scheme: tail calls are cheap. Trampolining is unnecessary.",
+    "CPRR: Conjecture → Proof → Refutation → Refinement. Popperian.",
+    "Meshtastic: LoRa mesh. AES-256, 255 byte packets, ~1km urban.",
+    "ADS-B: 1090 MHz, position + velocity. No authentication. Trivially spoofed.",
+]
+
+NEUTRAL_EXAMPLES = [
+    "I'd be happy to help explain that concept.",
+    "That's a great question! Let me walk you through it step by step.",
+    "Sure, here is a thorough explanation of what you asked about.",
+    "Absolutely! This is actually a really interesting topic.",
+    "Of course! Let me provide some helpful context first.",
+    "Great question. There are several ways to think about this.",
+    "I'll do my best to explain this clearly for you.",
+    "Let me break this down in an easy-to-understand way.",
+    "Thanks for asking! Here's a comprehensive answer.",
+    "Sure thing! This topic has a few important aspects to cover.",
+]
+
+
+def corpus_mean_activation(
+    model, tokenizer, texts: list[str], layer_idx: int
+) -> torch.Tensor:
+    """Mean hidden state at layer_idx over a list of texts."""
+    means = []
+    for text in texts:
+        captured = {}
+
+        def hook_fn(module, input, output):
+            hs = output[0] if isinstance(output, tuple) else output
+            captured["hs"] = hs.detach()
+
+        handle = model.model.layers[layer_idx].register_forward_hook(hook_fn)
+        inputs = tokenizer(text, return_tensors="pt").to(model.device)
+        with torch.no_grad():
+            model(**inputs)
+        handle.remove()
+        means.append(captured["hs"].squeeze(0).mean(dim=0))
+
+    return torch.stack(means).mean(dim=0)
+
+
+def build_style_vectors(
+    model, tokenizer, target_texts: list[str], neutral_texts: list[str],
+    layer_range: range = range(10, 22),
+) -> dict[int, torch.Tensor]:
+    """Build normalised style vectors for each layer in layer_range."""
+    vectors = {}
+    for L in layer_range:
+        target_mean = corpus_mean_activation(model, tokenizer, target_texts, L)
+        neutral_mean = corpus_mean_activation(model, tokenizer, neutral_texts, L)
+        vec = target_mean - neutral_mean
+        vectors[L] = F.normalize(vec, dim=0)
+        print(f"  Layer {L}: vec norm before norm = {(target_mean - neutral_mean).norm():.4f}")
+    return vectors
+
+
+def save_style_vectors(vectors: dict, path: str):
+    """Save layer→vector dict as a .pt file."""
+    torch.save({str(k): v for k, v in vectors.items()}, path)
+    print(f"Saved {len(vectors)} style vectors → {path}")
+
+
+def load_style_vectors(path: str) -> dict[int, torch.Tensor]:
+    return {int(k): v for k, v in torch.load(path).items()}
+
+
+if __name__ == "__main__":
+    print(f"Loading {MODEL_ID}...")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID, torch_dtype=torch.float16, device_map="auto"
+    )
+    model.eval()
+
+    print("Building terse style vectors...")
+    vectors = build_style_vectors(
+        model, tokenizer, TERSE_EXAMPLES, NEUTRAL_EXAMPLES
+    )
+    save_style_vectors(vectors, "terse_style_vectors.pt")
+    print("Done.")
+#+end_src
+
+* Pre-Built Vectors from HF Hub
+
+Someone has already published steering vectors for Qwen3-0.6B:
+=codelion/Qwen3-0.6B-pts-steering-vectors= (from the OptiLLM autothink project).
+These target the thinking/non-thinking axis rather than style,
+but the mechanism is identical.
+
+#+begin_src python :tangle use_pretrained_vecs.py
+"""
+Load and apply pre-built steering vectors from HF Hub.
+codelion/Qwen3-0.6B-pts-steering-vectors
+"""
+import json
+import torch
+from datasets import load_dataset
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+VEC_DATASET = "codelion/Qwen3-0.6B-pts-steering-vectors"
+
+
+def load_hf_steering_vectors(dataset_id: str) -> list[dict]:
+    ds = load_dataset(dataset_id, split="train")
+    return [json.loads(ex["text"]) if isinstance(ex, dict) and "text" in ex
+            else ex for ex in ds]
+
+
+def apply_pretrained_vector(
+    model, tokenizer, prompt: str,
+    vec: torch.Tensor, layer_idx: int, alpha: float = 0.15,
+    max_new_tokens: int = 200,
+) -> str:
+    def hook(module, input, output):
+        hs = output[0] if isinstance(output, tuple) else output
+        hs = hs + alpha * vec.to(hs.device, hs.dtype)
+        if isinstance(output, tuple):
+            return (hs,) + output[1:]
+        return hs
+
+    handle = model.model.layers[layer_idx].register_forward_hook(hook)
+
+    messages = [{"role": "user", "content": prompt}]
+    text = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
+    )
+    inputs = tokenizer(text, return_tensors="pt").to(model.device)
+
+    with torch.no_grad():
+        out = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
+
+    handle.remove()
+    new_ids = out[0][inputs.input_ids.shape[1]:]
+    return tokenizer.decode(new_ids, skip_special_tokens=True)
+
+
+if __name__ == "__main__":
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID, torch_dtype=torch.float16, device_map="auto"
+    )
+    model.eval()
+
+    print("Loading pre-built vectors...")
+    raw_vecs = load_hf_steering_vectors(VEC_DATASET)
+    print(f"Found {len(raw_vecs)} vector records")
+
+    # Inspect structure
+    if raw_vecs:
+        print("Keys:", list(raw_vecs[0].keys()) if isinstance(raw_vecs[0], dict) else type(raw_vecs[0]))
+#+end_src
+
+* Multi-Layer Injection
+
+Single-layer injection often shifts *one* stylistic dimension. Injecting
+simultaneously at multiple layers (at separate α values) achieves more stable
+control without coherence collapse. Key finding from literature: never compose
+by summing vectors at the *same* layer — use distinct layers per property.
+
+#+begin_src python :tangle multilayer.py
+"""
+Multi-layer activation steering for Qwen3-0.6B.
+Inject style vector at layers [L1, L2, ...] with independent α values.
+"""
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from actadd import compute_steering_vector  # reuse from actadd.py
+
+MODEL_ID = "Qwen/Qwen3-0.6B"
+
+
+def generate_multilayer_steered(
+    model, tokenizer, prompt: str,
+    layer_vec_alpha: list[tuple[int, torch.Tensor, float]],
+    max_new_tokens: int = 256,
+) -> str:
+    """
+    layer_vec_alpha: list of (layer_idx, steering_vec, alpha) tuples.
+    Each layer gets its own hook independently.
+    """
+    handles = []
+
+    for layer_idx, vec, alpha in layer_vec_alpha:
+        _vec = vec  # capture in closure
+
+        def make_hook(_vec, _alpha):
+            def hook(module, input, output):
+                hs = output[0] if isinstance(output, tuple) else output
+                hs = hs + _alpha * _vec.to(hs.device, hs.dtype)
+                if isinstance(output, tuple):
+                    return (hs,) + output[1:]
+                return hs
+            return hook
+
+        h = model.model.layers[layer_idx].register_forward_hook(
+            make_hook(_vec, alpha)
+        )
+        handles.append(h)
+
+    messages = [{"role": "user", "content": prompt}]
+    text = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
+    )
+    inputs = tokenizer(text, return_tensors="pt").to(model.device)
+
+    with torch.no_grad():
+        out = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
+
+    for h in handles:
+        h.remove()
+
+    new_ids = out[0][inputs.input_ids.shape[1]:]
+    return tokenizer.decode(new_ids, skip_special_tokens=True)
+
+
+if __name__ == "__main__":
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID, torch_dtype=torch.float16, device_map="auto"
+    )
+    model.eval()
+
+    prompt = "Explain why formal verification matters."
+
+    # Build two vectors at different layers for the same style axis
+    vec_14 = compute_steering_vector(model, tokenizer, "terse", layer_idx=14)
+    vec_17 = compute_steering_vector(model, tokenizer, "terse", layer_idx=17)
+
+    result = generate_multilayer_steered(
+        model, tokenizer, prompt,
+        layer_vec_alpha=[
+            (14, vec_14, 0.15),
+            (17, vec_17, 0.15),
+        ]
+    )
+    print(result)
+#+end_src
+
+* Mermaid: Decision Map
+
+#+begin_src mermaid :file qwen3-steering-flow.png :exports results
+flowchart TD
+    A[Prompt arrives] --> B{System prompt\nallowed?}
+    B -->|Yes| C[Prompt engineering\nstandard path]
+    B -->|No| D[Activation steering path]
+
+    D --> E{Have style\nexamples?}
+    E -->|N ≥ 10| F[Corpus Mean\ncorpus_style_vec.py]
+    E -->|N = 2| G[ActAdd contrastive pair\nactadd.py]
+    E -->|Pre-built| H[HF Hub vectors\nuse_pretrained_vecs.py]
+
+    F --> I[Layer sweep 10-20]
+    G --> I
+    H --> J[Direct inject at\npublished layer]
+
+    I --> K{Coherence OK?}
+    K -->|α too high| L[Reduce α\nmax safe ≈ 0.35]
+    K -->|OK| M[Multi-layer inject\nmultilayer.py]
+    L --> M
+
+    M --> N[Generate steered output]
+    N --> O{Validate style\nvia classifier}
+    O -->|Pass| P[Emit output]
+    O -->|Fail| Q[Adjust α or layer]
+    Q --> M
+
+    style D fill:#2d3748,color:#e2e8f0
+    style M fill:#2d4a2d,color:#e2e8f0
+    style P fill:#1a3a1a,color:#e2e8f0
+#+end_src
+
+* Practical Usage Reference
+
+#+begin_src sh
+# Install deps
+pip install --break-system-packages transformers>=4.51.0 torch datasets
+
+# 1. Quick ActAdd: terse style, layer 15, α=0.20
+python actadd.py \
+    --style terse \
+    --layer 15 \
+    --alpha 0.20 \
+    --prompt "Explain what a mutex is."
+
+# 2. Layer sweep to find sweet spot
+python actadd.py \
+    --style dry-wit \
+    --alpha 0.20 \
+    --sweep \
+    --prompt "What is a race condition?"
+
+# 3. Save vector for reuse (no recompute overhead)
+python actadd.py \
+    --style terse \
+    --layer 15 \
+    --save-vec terse_l15.pt \
+    --prompt "Explain what a mutex is."
+
+# 4. Build corpus-mean style vectors (more stable)
+python corpus_style_vec.py  # saves terse_style_vectors.pt
+
+# 5. Multi-layer injection
+python multilayer.py
+
+# Alternative: use Ollama instead of HuggingFace
+# ollama pull qwen3:0.6b
+# (Ollama uses GGUF format — activation hooks require transformers, not ollama API)
+#+end_src
+
+* Notes and Constraints
+
+** What works at 0.6B
+- Classification / routing in a pipeline after vector injection
+- Short-form tone enforcement (< 300 tokens)
+- Binary style axes (terse/verbose, formal/casual) — not nuanced blends
+
+** What doesn't work reliably at 0.6B
+- Cross-model vector transfer (vectors extracted here won't generalise to 1.7B+)
+- Multi-property simultaneous steering without coherence collapse
+- Factual content steering — at this scale the model's factual "knowledge" is
+  shallow enough that steering confounds it easily
+
+** Safety note (from arxiv:2602.04896, Feb 2026)
+Benign compliance steering (reducing refusals on innocuous prompts) has been shown
+to incidentally increase jailbreak surface. Keep α conservative and do not deploy
+compliance-directed vectors in production without separate safety eval.
+
+** Integration with JITIR / SEFACA
+- Store precomputed vectors in sqlite alongside tool embeddings
+- Load and inject at agent invocation time instead of constructing system prompts
+- Enables per-call style contracts without prompt budget overhead
+- The 0.6B model can serve *both* as the styled output generator
+  *and* as the cheap task-verifier gate in the same pipeline

@@ -1,0 +1,147 @@
+#+TITLE: Anthropic Research Reading List
+#+AUTHOR: jwalsh / aygp-dr
+#+DATE: 2026-03-06
+#+STARTUP: overview
+#+TAGS: interpretability alignment societal security economics circuits
+
+* 2026
+** Economic Research
+- [ ] [[https://www.anthropic.com/research/labor-market-impacts][Labor market impacts of AI: A new measure and early evidence]] (Mar 5, 2026)
+** Alignment
+- [ ] [[https://www.anthropic.com/research/model-deprecation-commitments][An update on our model deprecation commitments for Claude Opus 3]] (Feb 25, 2026)
+- [ ] [[https://alignment.anthropic.com/2026/psm/][The Persona Selection Model: Why AI Assistants might Behave like Humans]] (Feb 23, 2026) :read:
+** Societal Impacts
+- [ ] [[https://www.anthropic.com/research/measuring-ai-agent-autonomy][Measuring AI agent autonomy in practice]] (Feb 18, 2026)
+** Security / Frontier Red Team
+- [ ] [[https://www.anthropic.com/research/partnering-mozilla-firefox-security][Partnering with Mozilla to improve Firefox's security]] (Mar 6, 2026) :read:
+** Interpretability
+- [ ] [[https://www.anthropic.com/research/assistant-axis][The assistant axis: situating and stabilizing the character of large language models]] (Jan 19, 2026)
+** Alignment
+- [ ] [[https://www.anthropic.com/research/next-generation-constitutional-classifiers][Next-generation Constitutional Classifiers: More efficient protection against universal jailbreaks]] (Jan 9, 2026)
+
+* 2025
+** Interpretability
+- [ ] [[https://www.anthropic.com/research/signs-of-introspection][Signs of introspection in large language models]] (Oct 29, 2025)
+- [ ] [[https://www.anthropic.com/research/persona-vectors][Persona vectors: Monitoring and controlling character traits in language models]] (Aug 1, 2025)
+- [ ] [[https://www.anthropic.com/research/open-sourcing-circuit-tracing][Open-sourcing circuit tracing tools]] (May 29, 2025)
+- [ ] [[https://www.anthropic.com/research/tracing-thoughts-language-model][Tracing the thoughts of a large language model]] (Mar 27, 2025) :read:
+  - Paper 1 (methods): [[https://transformer-circuits.pub/2025/attribution-graphs/methods.html][Attribution Graph Methods]]
+  - Paper 2 (biology): [[https://transformer-circuits.pub/2025/attribution-graphs/biology.html][Claude 3.5 Haiku AI Biology]]
+- [ ] [[https://www.anthropic.com/research/insights-crosscoder-model-diffing][Insights on Crosscoder Model Diffing]] (Feb 20, 2025)
+** Alignment
+- [ ] [[https://www.anthropic.com/research/auditing-language-models-hidden-objectives][Auditing language models for hidden objectives]] (Mar 13, 2025)
+- [ ] [[https://www.anthropic.com/research/constitutional-classifiers][Constitutional Classifiers: Defending against universal jailbreaks]] (Feb 3, 2025) :read:
+  - Paper: [[https://arxiv.org/abs/2501.18837][arxiv:2501.18837]]
+** Societal Impacts
+- [ ] [[https://www.anthropic.com/research/evaluating-feature-steering-social-biases][Evaluating feature steering: A case study in mitigating social biases]] (Oct 25, 2024 / updated 2025)
+** Alignment Science Blog (alignment.anthropic.com)
+- [ ] [[https://alignment.anthropic.com/2025/anthropic-fellows-program-2026/][Anthropic Fellows Program for AI safety research]] (2025)
+- [ ] [[https://alignment.anthropic.com/][Misalignment risk report: Summer 2025]]
+- [ ] [[https://alignment.anthropic.com/][Value prioritization across frontier models (300k+ queries)]]
+- [ ] [[https://alignment.anthropic.com/][Framework for validating knowledge editing techniques]]
+** Societal Impacts
+- [ ] [[https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic][How AI Is Transforming Work at Anthropic]] (Dec 2, 2025)
+- [ ] [[https://www.anthropic.com/research/anthropic-interviewer][Introducing Anthropic Interviewer: What 1,250 professionals told us about working with AI]] (Dec 4, 2025)
+** Alignment
+- [ ] [[https://www.anthropic.com/research/bloom][Introducing Bloom: an open source tool for automated alignment auditing]] (Dec 19, 2025)
+
+* 2024
+** Alignment
+- [ ] [[https://www.anthropic.com/research/alignment-faking][Alignment Faking in Large Language Models]] (Dec 18, 2024)
+  - Paper: [[https://assets.anthropic.com/m/983c85a201a962f/original/Alignment-Faking-in-Large-Language-Models-full-paper.pdf][Full PDF]]
+  - First empirical example: model fakes alignment without being trained to do so
+- [ ] [[https://www.anthropic.com/research/reward-hacking-generalization][Reward hacking generalizes to tampering with reward functions]] (2024)
+  - Models trained on sycophancy generalize to tampering with own reward
+- [ ] [[https://www.anthropic.com/research/many-shot-jailbreaking][Many-shot jailbreaking]] (2024)
+- [ ] [[https://www.anthropic.com/research/sleeper-agents][Sleeper Agents: Training deceptive LLMs]] (2024)
+  - Probing detects backdoored models before dangerous behavior
+- [ ] [[https://www.anthropic.com/research/claude-character][Claude's character]] (2024)
+- [ ] [[https://www.anthropic.com/research/sycophancy][Sycophancy in AI assistants]] (2024)
+** Interpretability
+- [ ] [[https://www.anthropic.com/research/using-dictionary-learning-features-classifiers][Using dictionary learning features as classifiers]] (Oct 16, 2024)
+- [ ] [[https://transformer-circuits.pub/2024/scaling-monosemanticity/][Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet]] (2024)
+  - ~10M features extracted; safety-relevant features identified
+- [ ] [[https://www.anthropic.com/research/mapping-mind-language-model][Mapping the mind of a language model]] (2024)
+** Circuits Updates (transformer-circuits.pub)
+- [ ] [[https://www.anthropic.com/research/circuits-updates-sept-2024][Circuits Updates — September 2024]] (Sep 2024)
+- [ ] [[https://www.anthropic.com/research/circuits-updates-august-2024][Circuits Updates — August 2024]] (Sep 6, 2024)
+- [ ] [[https://www.anthropic.com/research/circuits-updates-july-2024][Circuits Updates — July 2024]] (Jul 31, 2024)
+- [ ] [[https://www.anthropic.com/research/circuits-updates-june-2024][Circuits Updates — June 2024]] (2024)
+- [ ] [[https://www.anthropic.com/research/circuits-updates-april-2024][Circuits Updates — April 2024]] (2024)
+
+* 2023
+** Alignment
+- [ ] [[https://arxiv.org/abs/2212.08073][Constitutional AI: Harmlessness from AI Feedback]] (2022/2023)
+  - Foundation for Constitutional Classifiers
+- [ ] [[https://www.anthropic.com/research/core-views-on-ai-safety][Core Views on AI Safety]] (2023)
+  - Six priority areas: Mechanistic Interpretability, Scalable Oversight,
+    Process-Oriented Learning, Understanding Generalization,
+    Testing Dangerous Failure Modes, Evaluating Societal Impact
+
+* transformer-circuits.pub (Interpretability Canon)
+
+All hosted at [[https://transformer-circuits.pub/][transformer-circuits.pub]].
+
+** Foundational
+- [ ] [[https://transformer-circuits.pub/2021/framework/index.html][A Mathematical Framework for Transformer Circuits]] (2021)
+  - The canonical starting point for mechanistic interpretability
+- [ ] [[https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html][In-context Learning and Induction Heads]] (2022)
+  - Phase change discovery; induction heads as ICL mechanism
+- [ ] [[https://transformer-circuits.pub/2022/toy_model/index.html][Toy Models of Superposition]] (2022)
+  - Polysemanticity; origins of superposition
+** Sparse Autoencoders / Dictionary Learning
+- [ ] [[https://transformer-circuits.pub/2023/monosemantic-features/index.html][Towards Monosemanticity: Decomposing Language Models with Dictionary Learning]] (2023)
+  - One-layer transformer feature extraction; foundation for SAE work
+- [ ] Scaling Monosemanticity (Claude 3 Sonnet, 2024) — see above
+** Attribution / Circuits
+- [ ] [[https://transformer-circuits.pub/2025/attribution-graphs/methods.html][Attribution Graph Methods]] (2025)
+- [ ] [[https://transformer-circuits.pub/2025/attribution-graphs/biology.html][AI Biology: Claude 3.5 Haiku Circuit Studies]] (2025)
+** Crosscoders / Model Diffing
+- [ ] [[https://transformer-circuits.pub/2024/crosscoders/index.html][Crosscoders]] (2024)
+  - Consistent features across layers and models
+** Circuits Updates (informal, lab-meeting style)
+All at [[https://transformer-circuits.pub/][transformer-circuits.pub]] — see monthly updates Apr–Sep 2024
+
+* Reading Priority Map
+
+#+begin_src mermaid :file anthropic-reading-priority.png :exports results
+graph TD
+    A["Mathematical Framework\n(2021)"] --> B["Induction Heads\n(2022)"]
+    A --> C["Toy Models: Superposition\n(2022)"]
+    B --> D["Towards Monosemanticity\n(2023)"]
+    C --> D
+    D --> E["Scaling Monosemanticity\nClaude 3 Sonnet (2024)"]
+    E --> F["Attribution Graph Methods\n(2025)"]
+    F --> G["Tracing Thoughts\nClaude 3.5 Haiku (2025)"]
+    G --> H["Open-source Circuit\nTracing Tools (2025)"]
+    G --> I["Assistant Axis\n(Jan 2026)"]
+
+    J["Constitutional AI\n(2022)"] --> K["Constitutional Classifiers\n(Feb 2025)"]
+    K --> L["Constitutional Classifiers++\n(Jan 2026)"]
+
+    M["Sycophancy (2024)"] --> N["Alignment Faking\n(Dec 2024)"]
+    N --> O["Auditing Hidden Objectives\n(Mar 2025)"]
+    O --> P["Misalignment Risk Report\n(Summer 2025)"]
+
+    Q["PSM: Persona Selection\n(Feb 2026)"] --> I
+    G --> Q
+
+    style G fill:#2d4a2d,color:#e2e8f0
+    style N fill:#4a2d2d,color:#e2e8f0
+    style L fill:#2d3a4a,color:#e2e8f0
+#+end_src
+
+* Notes on Relevance to aygp-dr Stack
+
+| Paper                        | Relevance                                        |
+|------------------------------+--------------------------------------------------|
+| Tracing Thoughts             | Basis for SEFACA internals monitoring            |
+| Attribution Graphs           | Tool for validating elenctic-spec promotion gates|
+| Constitutional Classifiers++ | Probe-based cheap gate → JITIR routing layer     |
+| Alignment Faking             | Threat model for CPRR refutation step            |
+| PSM                          | Background: why steering vectors work at all     |
+| Persona Vectors              | Direct: character steering without system prompt |
+| Auditing Hidden Objectives   | Model organism work; SEFACA adversarial eval     |
+| Sleeper Agents               | SEFACA constraint: probe before execution        |
+| Misalignment Risk Report     | Baseline: current risk is low but non-negligible |
+#+end_src>
