@@ -32,12 +32,21 @@ class TestVectorInvariants:
     """Invariants that must hold for any steering vector."""
 
     def test_normalized_vector_is_unit_norm(self, model_and_tokenizer):
-        """After normalization, steering vector must have norm 1.0."""
+        """After explicit normalization, steering vector must have norm 1.0."""
+        from actadd import compute_steering_vector
+        model, tokenizer = model_and_tokenizer
+        vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=15, normalize=True)
+        assert abs(vec.norm().item() - 1.0) < 1e-3, (
+            f"Expected unit norm, got {vec.norm().item()}"
+        )
+
+    def test_raw_vector_has_nontrivial_norm(self, model_and_tokenizer):
+        """Raw (unnormalized) steering vector should have norm > 1.0."""
         from actadd import compute_steering_vector
         model, tokenizer = model_and_tokenizer
         vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=15)
-        assert abs(vec.norm().item() - 1.0) < 1e-3, (
-            f"Expected unit norm, got {vec.norm().item()}"
+        assert vec.norm().item() > 1.0, (
+            f"Raw steering vector norm too small: {vec.norm().item()}"
         )
 
     def test_vector_dimension_matches_d_model(self, model_and_tokenizer):
@@ -59,12 +68,12 @@ class TestVectorInvariants:
     @given(layer=st.integers(min_value=0, max_value=NUM_LAYERS - 1))
     @settings(max_examples=5, deadline=None)
     def test_any_layer_produces_valid_vector(self, layer, model_and_tokenizer):
-        """Every layer should produce a finite, unit-norm vector."""
+        """Every layer should produce a finite vector with non-trivial norm."""
         from actadd import compute_steering_vector
         model, tokenizer = model_and_tokenizer
         vec = compute_steering_vector(model, tokenizer, "terse", layer_idx=layer)
         assert torch.isfinite(vec).all()
-        assert abs(vec.norm().item() - 1.0) < 1e-3
+        assert vec.norm().item() > 0.1, f"Vector norm too small: {vec.norm().item()}"
 
     def test_opposite_styles_not_identical(self, model_and_tokenizer):
         """Contrastive pair difference vector must have non-trivial norm.
@@ -124,7 +133,7 @@ class TestZeroAlphaIdentity:
 class TestOutputNonCollapse:
     """Steered output must not degenerate to empty or repetitive garbage."""
 
-    @given(alpha=st.floats(min_value=0.01, max_value=0.35))
+    @given(alpha=st.floats(min_value=0.1, max_value=2.5))
     @settings(max_examples=3, deadline=None)
     def test_output_not_empty(self, alpha, model_and_tokenizer):
         """Steered output at safe α must produce at least 5 tokens."""
