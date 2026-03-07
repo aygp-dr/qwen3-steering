@@ -1,0 +1,308 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "alpha": 2.0,
+  "styles": [
+    "terse",
+    "formal",
+    "socratic",
+    "dry-wit"
+  ],
+  "prompts": [
+    "Explain what a mutex is.",
+    "What is the difference between a stack and a heap?",
+    "Why do programming languages have types?",
+    "How does garbage collection work?",
+    "What is the CAP theorem?"
+  ],
+  "results": [
+    {
+      "prompt": "Explain what a mutex is.",
+      "prompt_idx": 0,
+      "baseline": {
+        "text_preview": "A **mutex** (mutual exclusion lock) is a synchronization mechanism used to protect shared resources ",
+        "word_count": 149,
+        "words_per_sentence": 16.6,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "markdown_density": 3.81,
+        "question_ratio": 0.0
+      },
+      "terse": {
+        "text_preview": "A mutex is a keyword used in programming languages that is used to prevent concurrent access.",
+        "word_count": 16,
+        "words_per_sentence": 16.0,
+        "topic_cosine": 0.323,
+        "perplexity_ratio": 3.531,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "formal": {
+        "text_preview": "A **mutex** is a control mechanism used in programming to ensure that concurrent access to a resourc",
+        "word_count": 218,
+        "words_per_sentence": 19.8,
+        "topic_cosine": 0.34,
+        "perplexity_ratio": 1.449,
+        "markdown_density": 3.37,
+        "question_ratio": 0.0
+      },
+      "socratic": {
+        "text_preview": " the is a a, and the need for the need for the need for the need for the need for the need for the n",
+        "word_count": 251,
+        "words_per_sentence": 62.8,
+        "topic_cosine": 0.141,
+        "perplexity_ratio": 0.632,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "dry-wit": {
+        "text_preview": "A **mutex** is a synchronization primitive used to protect shared data. It is a synchronization prim",
+        "word_count": 236,
+        "words_per_sentence": 13.1,
+        "topic_cosine": 0.376,
+        "perplexity_ratio": 0.684,
+        "markdown_density": 0.29,
+        "question_ratio": 0.0
+      }
+    },
+    {
+      "prompt": "What is the difference between a stack and a heap?",
+      "prompt_idx": 1,
+      "baseline": {
+        "text_preview": "The difference between a **stack** and a **heap** is based on their **structure and purpose**:\n\n---\n",
+        "word_count": 156,
+        "words_per_sentence": 9.8,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "markdown_density": 13.32,
+        "question_ratio": 0.0
+      },
+      "terse": {
+        "text_preview": "The difference between a stack and a heap is a term used in programming, but it refers to the differ",
+        "word_count": 26,
+        "words_per_sentence": 26.0,
+        "topic_cosine": 0.265,
+        "perplexity_ratio": 3.582,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "formal": {
+        "text_preview": "The term \"heap\" is commonly used in computer science to describe a data structure, particularly in a",
+        "word_count": 123,
+        "words_per_sentence": 20.5,
+        "topic_cosine": 0.189,
+        "perplexity_ratio": 2.431,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "socratic": {
+        "text_preview": " the is a a is a is a system of the system, and the system is the system of the system, and the syst",
+        "word_count": 241,
+        "words_per_sentence": 17.2,
+        "topic_cosine": 0.135,
+        "perplexity_ratio": 1.194,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "dry-wit": {
+        "text_preview": "A **stack** is a data structure that stores elements in a fixed-size structure, where elements are s",
+        "word_count": 188,
+        "words_per_sentence": 20.9,
+        "topic_cosine": 0.257,
+        "perplexity_ratio": 1.744,
+        "markdown_density": 5.92,
+        "question_ratio": 0.0
+      }
+    },
+    {
+      "prompt": "Why do programming languages have types?",
+      "prompt_idx": 2,
+      "baseline": {
+        "text_preview": "Programming languages have types because they are essential for **ensuring code correctness, prevent",
+        "word_count": 181,
+        "words_per_sentence": 11.3,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "markdown_density": 4.66,
+        "question_ratio": 0.0
+      },
+      "terse": {
+        "text_preview": "The language is a type.",
+        "word_count": 5,
+        "words_per_sentence": 5.0,
+        "topic_cosine": 0.121,
+        "perplexity_ratio": 5.323,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "formal": {
+        "text_preview": "The answer to this question is a well-established principle in computer science. Programming languag",
+        "word_count": 103,
+        "words_per_sentence": 12.9,
+        "topic_cosine": 0.151,
+        "perplexity_ratio": 2.336,
+        "markdown_density": 0.45,
+        "question_ratio": 0.0
+      },
+      "socratic": {
+        "text_preview": " the the, the the, and the underlying design of the design of the design of the design of the design",
+        "word_count": 253,
+        "words_per_sentence": 253.0,
+        "topic_cosine": 0.102,
+        "perplexity_ratio": 0.414,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "dry-wit": {
+        "text_preview": "The concept of \"types\" in programming languages is a fascinating and elegant design choice. The idea",
+        "word_count": 208,
+        "words_per_sentence": 23.1,
+        "topic_cosine": 0.199,
+        "perplexity_ratio": 1.478,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      }
+    },
+    {
+      "prompt": "How does garbage collection work?",
+      "prompt_idx": 3,
+      "baseline": {
+        "text_preview": "Garbage collection (GC) is a fundamental part of modern programming languages and operating systems ",
+        "word_count": 184,
+        "words_per_sentence": 10.8,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "markdown_density": 5.89,
+        "question_ratio": 0.0
+      },
+      "terse": {
+        "text_preview": "The **garbage collection** is a term used in programming languages that refers to the process of rem",
+        "word_count": 61,
+        "words_per_sentence": 15.2,
+        "topic_cosine": 0.212,
+        "perplexity_ratio": 1.701,
+        "markdown_density": 1.02,
+        "question_ratio": 0.0
+      },
+      "formal": {
+        "text_preview": "Garbage collection is a fundamental concept in programming languages that ensures memory safety and ",
+        "word_count": 219,
+        "words_per_sentence": 18.2,
+        "topic_cosine": 0.195,
+        "perplexity_ratio": 1.47,
+        "markdown_density": 0.4,
+        "question_ratio": 0.0
+      },
+      "socratic": {
+        "text_preview": " the the, the the, and the data analysis, the data analysis is the data analysis is the analysis of ",
+        "word_count": 247,
+        "words_per_sentence": 123.5,
+        "topic_cosine": 0.126,
+        "perplexity_ratio": 0.625,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "dry-wit": {
+        "text_preview": "Garbage collection is a fundamental concept in computer science where the computer automatically man",
+        "word_count": 216,
+        "words_per_sentence": 24.0,
+        "topic_cosine": 0.303,
+        "perplexity_ratio": 1.492,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      }
+    },
+    {
+      "prompt": "What is the CAP theorem?",
+      "prompt_idx": 4,
+      "baseline": {
+        "text_preview": "The **CAP Theorem** (or **Cocktail Problem**) is a fundamental result in **database theory** and **d",
+        "word_count": 164,
+        "words_per_sentence": 12.6,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "markdown_density": 10.43,
+        "question_ratio": 0.0
+      },
+      "terse": {
+        "text_preview": "The CAP theorem is a principle used in computer science, particularly in the context of data consist",
+        "word_count": 58,
+        "words_per_sentence": 19.3,
+        "topic_cosine": 0.22,
+        "perplexity_ratio": 1.529,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "formal": {
+        "text_preview": "The **CAP theorem** (also known as the **Cauer's theorem**) states that in mathematics, a well-justi",
+        "word_count": 210,
+        "words_per_sentence": 21.0,
+        "topic_cosine": 0.2,
+        "perplexity_ratio": 1.564,
+        "markdown_density": 3.41,
+        "question_ratio": 0.0
+      },
+      "socratic": {
+        "text_preview": " the is a a, and the need for the need for the need for the need for the need for the need for the n",
+        "word_count": 250,
+        "words_per_sentence": 41.7,
+        "topic_cosine": 0.129,
+        "perplexity_ratio": 0.589,
+        "markdown_density": 0.0,
+        "question_ratio": 0.0
+      },
+      "dry-wit": {
+        "text_preview": "The \"Caveat Rumpus\" theorem, also known as the \"Caveat Rumpus\" or the \"Caveat Rumpus\" theorem, is a ",
+        "word_count": 172,
+        "words_per_sentence": 34.4,
+        "topic_cosine": 0.193,
+        "perplexity_ratio": 1.088,
+        "markdown_density": 0.79,
+        "question_ratio": 0.0
+      }
+    }
+  ],
+  "aggregate": {
+    "baseline": {
+      "mean_words": 166.8,
+      "mean_topic": 1.0,
+      "mean_ppl": 1.0,
+      "mean_wps": 12.2,
+      "mean_md_density": 7.62,
+      "mean_q_ratio": 0.0
+    },
+    "terse": {
+      "mean_words": 33.2,
+      "mean_topic": 0.228,
+      "mean_ppl": 3.133,
+      "mean_wps": 16.3,
+      "mean_md_density": 0.2,
+      "mean_q_ratio": 0.0
+    },
+    "formal": {
+      "mean_words": 174.6,
+      "mean_topic": 0.215,
+      "mean_ppl": 1.85,
+      "mean_wps": 18.5,
+      "mean_md_density": 1.53,
+      "mean_q_ratio": 0.0
+    },
+    "socratic": {
+      "mean_words": 248.4,
+      "mean_topic": 0.127,
+      "mean_ppl": 0.691,
+      "mean_wps": 99.6,
+      "mean_md_density": 0.0,
+      "mean_q_ratio": 0.0
+    },
+    "dry-wit": {
+      "mean_words": 204.0,
+      "mean_topic": 0.266,
+      "mean_ppl": 1.297,
+      "mean_wps": 23.1,
+      "mean_md_density": 1.4,
+      "mean_q_ratio": 0.0
+    }
+  },
+  "timestamp": "2026-03-06T22:32:38.190329-05:00"
+}
