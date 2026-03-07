@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/layers-28-informational?style=flat-square" alt="Layers: 28" />
   <img src="https://img.shields.io/badge/method-ActAdd-orange?style=flat-square" alt="Method: ActAdd" />
   <img src="https://img.shields.io/badge/tests-13%2F13_passing-brightgreen?style=flat-square" alt="Tests: 13/13 passing" />
-  <img src="https://img.shields.io/badge/hypotheses-27-purple?style=flat-square" alt="Hypotheses: 27" />
+  <img src="https://img.shields.io/badge/conjectures-14_(6_confirmed,_7_refuted)-purple?style=flat-square" alt="Conjectures: 14" />
   <img src="https://img.shields.io/badge/lenses-12-yellow?style=flat-square" alt="Lenses: 12" />
   <img src="https://img.shields.io/badge/python-≥3.11-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python ≥3.11" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License: MIT" />
@@ -55,8 +55,9 @@ git clone https://github.com/aygp-dr/qwen3-steering.git
 cd qwen3-steering
 uv sync
 
-# Download model (~1.2GB)
-gmake model
+# Download model (~1.2GB, needs ~3GB RAM for float16 inference)
+make model   # Linux
+gmake model  # macOS (brew install make)
 
 # Run baseline vs steered comparison
 uv run python actadd.py --style terse --alpha 2.0 --prompt "Explain what a mutex is."
@@ -80,23 +81,33 @@ uv run python diagnose_steering.py
 ├── diagnose_steering.py        # SNR analysis, alpha threshold detection
 ├── lens_eval.py                # 12-lens conceptual drift detector (the "trains person" test)
 │
+├── experiments/
+│   ├── 01-layer-scorecard/         # Phase 1: layer characterization (C-1..5)
+│   ├── 02-verbosity-direction/     # Phase 2: contrastive pair analysis (C-7,8)
+│   ├── 03-bimodal-injection/       # Phase 3: injection validation (C-9)
+│   ├── 04-alpha-parity-sweep/      # Phase 4: alpha calibration (C-14)
+│   ├── 05-multilayer-vs-single/    # Phase 5: multi-layer steering (C-6)
+│   ├── 06-wordnet-relational-geometry/  # Phase 6: semantic structure (C-10..13)
+│   └── 07-style-showcase/          # All four styles at L12
+│
 ├── tests/
 │   ├── test_vector_properties.py   # 8 property-based tests (Hypothesis)
-│   └── test_style_contracts.py     # 5 behavioral contracts
+│   ├── test_steering_baseline.py   # Directional sanity checks
+│   ├── test_style_contracts.py     # 5 behavioral contracts
+│   └── test_ollama_api.py          # API contract tests (Schemathesis)
 │
 ├── .cprr/
-│   ├── conjectures.json            # 25 hypotheses + experimental results
-│   ├── H-LS-layer-selection-alpha-sensitivity.org
-│   └── hypotheses-style-vector-geometry.org
+│   └── conjectures.json            # 14 conjectures (6 confirmed, 7 refuted, 1 open)
 │
-├── viz/                        # 5 visualization scripts (matplotlib + pygame)
-├── images/                     # Hero image generation (ollama flux2-klein)
-├── research/                   # Deep-dive: training vs fine-tuning vs steering
+├── viz/                        # 8 visualization scripts (matplotlib + pygame)
+│   ├── cprr_board.py               # Conjecture status dashboard
+│   ├── experiment_progression.py   # Phase timeline with metrics
+│   └── ...                         # layer_anatomy, alpha_phase, residual_landscape, etc.
 │
 ├── setup.org                   # Main literate source (tangles to .py files)
+├── experimental-methodology.org # CPRR methodology + experiment dependency graph
 ├── contracts.org               # 5-layer verification specification
 ├── reading-list.org            # 30+ papers, topically organized
-├── ollama-observability.org    # MITM proxy, activation profiling
 └── lean4/SteeringVector.lean   # Formal spec: unit sphere, safe alpha, zero-alpha identity
 #+end_example
 
@@ -144,19 +155,21 @@ The ~cult_of_jason~ lens is calibrated against a real person's corpus. Threshold
 
 Conjecture → Proof → Refutation → Refinement. Every experimental claim is registered in ~.cprr/conjectures.json~ with status tracking.
 
-25 hypotheses across 5 research axes:
+14 conjectures across 7 experiments:
 
-| Axis | IDs | Examples |
-|------+-----+----------|
-| Layer Selection | H-LS-1..5 | Proportional sweet spot, multi-layer injection |
-| Style Vector Geometry | H-SV-1..5 | Non-orthogonal axes, PCA rank, PTS distinctness |
-| Safety | H-SF-1..5 | Refusal direction orthogonality, safe-alpha range |
-| Evaluation | H-EV-1..5 | Token compression, perplexity inflection, self-classification |
-| Small Model | H-SM-1..5 | Superposition density, GQA compression, minimum d_model |
+| ID | Title | Status |
+|----+-------+--------|
+| C-1..4 | Layer role mapping (L0-7 drift, L12-17 sweet spot, L18-22 formatting, L23-27 distortion) | confirmed |
+| C-5 | Residual norms grow monotonically | refuted |
+| C-6 | Multi-layer outperforms single-layer | refuted |
+| C-7 | Verbosity peaks in deep_semantics (L12-17) | refuted |
+| C-8 | Steerability = stability + SNR, not norm | confirmed |
+| C-9 | L12 injection matches prompt-level control | refuted |
+| C-10..12 | WordNet relational geometry (hypernym/antonym/meronym) | refuted |
+| C-13 | No relational structure at L0-7 | confirmed |
+| C-14 | Alpha parity is asymmetric (terse vs verbose) | open |
 
-Plus experimental conjectures:
-- *C-26*: refutation — unit vec α=0.20 produces zero effect
-- *C-27*: proof — raw vec α=2.0 at layer 12, mutex 149→16 words
+Refutations are informative: C-6 showed single-layer beats multi-layer, C-7 revealed norm ≠ steerability, C-9 established that α=2.0 overshoots prompt control, C-10..12 found no stable relational geometry at 0.6B scale.
 
 * Architecture Quick Reference
 
@@ -176,13 +189,15 @@ Qwen3-0.6B (751M params, distilled from Qwen3-32B)
 
 #+begin_src bash
 # Static plots (matplotlib)
-uv run python viz/residual_landscape.py   # 2D activation space with style basins
-uv run python viz/layer_anatomy.py        # 28-layer diagram with norms and SNR
-uv run python viz/alpha_phase_diagram.py  # Dead zone → effective → collapse
+uv run python viz/residual_landscape.py        # 2D activation space with style basins
+uv run python viz/layer_anatomy.py             # 28-layer diagram with norms and SNR
+uv run python viz/alpha_phase_diagram.py       # Dead zone → effective → collapse
 uv run python viz/lens_contamination_radar.py  # 12-lens spider chart
+uv run python viz/cprr_board.py                # Conjecture status dashboard
+uv run python viz/experiment_progression.py    # Phase timeline with metrics
 
 # Interactive (pygame)
-uv run python viz/steering_pygame.py      # Drag steering vector, watch particles shift
+uv run python viz/steering_pygame.py           # Drag steering vector, watch particles shift
 #+end_src
 
 * Key References
