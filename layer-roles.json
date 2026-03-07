@@ -1,0 +1,198 @@
+{
+  "_meta": {
+    "model": "Qwen3-0.6B",
+    "num_layers": 28,
+    "d_model": 1024,
+    "description": "Per-layer functional roles and steering parameters for Qwen3-0.6B (28 transformer layers). Residual/vector norms from diagnose_steering.py; word counts from sweep at alpha=2.0 (CPRR conjecture 27). Roles synthesized from probing literature + empirical steering behavior.",
+    "sources": [
+      "diagnose_steering.py measurements (this repo)",
+      "CPRR conjecture 27: layer sweep alpha=2.0",
+      "Geva 2021 — FFN as key-value memories",
+      "Meng 2022 — causal tracing (ROME)",
+      "Dang & Ngo 2026 — Selective Steering layer selection",
+      "Sharma 2025 — G-ACT per-layer probes",
+      "Hegazy 2025 — Guiding Giants learned layer weights",
+      "Sinii 2025 — Small Vectors Big Effects mechanistic study"
+    ]
+  },
+  "regions": [
+    {
+      "name": "tokenization",
+      "layers": [0, 1, 2],
+      "depth_pct": "0-7%",
+      "role": "Token embedding refinement, positional encoding integration",
+      "encodes": "subword identity, position, basic token co-occurrence",
+      "steering_effect": "Catastrophic — corrupts token-level representations, produces gibberish or language-switching",
+      "steering_suitability": "never",
+      "evidence": "H-LS-3: layers 0-7 produce topic drift not style shift"
+    },
+    {
+      "name": "syntax",
+      "layers": [3, 4, 5, 6, 7],
+      "depth_pct": "11-25%",
+      "role": "Syntactic structure, phrase boundaries, grammatical relations",
+      "encodes": "POS tags, dependency structure, agreement features, basic word order",
+      "steering_effect": "Topic drift, ungrammatical output, language contamination. Steering here changes WHAT is said, not HOW.",
+      "steering_suitability": "avoid",
+      "evidence": "H-LS-3; Geva 2021 lower layers as syntactic key-value stores"
+    },
+    {
+      "name": "early_semantics",
+      "layers": [8, 9, 10, 11],
+      "depth_pct": "29-39%",
+      "role": "Semantic composition, entity recognition, basic concept formation",
+      "encodes": "Word sense disambiguation, entity types, semantic roles, basic factual associations",
+      "steering_effect": "Marginal style effect, some content blending. Layer 10 shows terse effect (23 words at alpha=2.0) but with semantic artifacts.",
+      "steering_suitability": "marginal",
+      "evidence": "Conjecture 27: layer 10 = 23 words but quality concerns; Meng 2022 early-mid causal tracing"
+    },
+    {
+      "name": "deep_semantics",
+      "layers": [12, 13, 14, 15, 16, 17],
+      "depth_pct": "43-61%",
+      "role": "Abstract concept representation, style encoding, behavioral conditioning",
+      "encodes": "Tone, verbosity, formality, persona traits, reasoning depth, conceptual relationships",
+      "steering_effect": "Strong, clean style modulation. This is where contrastive vectors produce intended behavioral shifts with minimal side effects.",
+      "steering_suitability": "optimal",
+      "evidence": "Conjecture 27: L12=16w, L14=29w, L16=48w at alpha=2.0; BEST_LAYER=12; SWEET_SPOT_RANGE=(12,18)"
+    },
+    {
+      "name": "output_preparation",
+      "layers": [18, 19, 20, 21, 22],
+      "depth_pct": "64-79%",
+      "role": "Output formatting, task-specific features, response structure",
+      "encodes": "Markdown formatting, list vs prose decisions, code block boundaries, response length planning",
+      "steering_effect": "Diminishing style effect, increasing formatting artifacts. Steering here changes surface presentation more than underlying style.",
+      "steering_suitability": "weak",
+      "evidence": "Conjecture 27: L18=169w, L20=174w (near baseline); residual norms rising sharply (538→595)"
+    },
+    {
+      "name": "logit_projection",
+      "layers": [23, 24, 25, 26, 27],
+      "depth_pct": "82-96%",
+      "role": "Vocabulary projection, next-token distribution shaping",
+      "encodes": "Token probabilities, final vocabulary selection, repetition avoidance",
+      "steering_effect": "Vocabulary-level distortion. Can force specific tokens but destroys coherent style modulation. Very high vec norms (70.8 at L24) make calibration fragile.",
+      "steering_suitability": "never",
+      "evidence": "RAW_VEC_NORM L24=70.8, residual norm=810; SNR=8.7% (unstable territory)"
+    }
+  ],
+  "layers": [
+    {"idx":  0, "region": "tokenization",      "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx":  1, "region": "tokenization",      "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx":  2, "region": "tokenization",      "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx":  3, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx":  4, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx":  5, "region": "syntax",            "residual_norm": 455,   "raw_vec_norm": 14.1,  "snr_pct": 3.1,   "steering_alpha": null,   "terse_words_a2": null},
+    {"idx":  6, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx":  7, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx":  8, "region": "early_semantics",   "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx":  9, "region": "early_semantics",   "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx": 10, "region": "early_semantics",   "residual_norm": 472,   "raw_vec_norm": 15.8,  "snr_pct": 3.3,   "steering_alpha": 1.5,    "terse_words_a2": 23},
+    {"idx": 11, "region": "early_semantics",   "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx": 12, "region": "deep_semantics",    "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": 2.0,    "terse_words_a2": 16},
+    {"idx": 13, "region": "deep_semantics",    "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": 2.0,    "terse_words_a2": null},
+    {"idx": 14, "region": "deep_semantics",    "residual_norm": 481,   "raw_vec_norm": 18.7,  "snr_pct": 3.9,   "steering_alpha": 2.0,    "terse_words_a2": 29},
+    {"idx": 15, "region": "deep_semantics",    "residual_norm": 488,   "raw_vec_norm": 19.6,  "snr_pct": 4.0,   "steering_alpha": 2.0,    "terse_words_a2": null},
+    {"idx": 16, "region": "deep_semantics",    "residual_norm": 501,   "raw_vec_norm": 22.9,  "snr_pct": 4.6,   "steering_alpha": 1.5,    "terse_words_a2": 48},
+    {"idx": 17, "region": "deep_semantics",    "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": 1.5,    "terse_words_a2": null},
+    {"idx": 18, "region": "output_preparation","residual_norm": 538,   "raw_vec_norm": 29.8,  "snr_pct": 5.5,   "steering_alpha": 1.0,    "terse_words_a2": 169},
+    {"idx": 19, "region": "output_preparation","residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx": 20, "region": "output_preparation","residual_norm": 595,   "raw_vec_norm": 40.3,  "snr_pct": 6.8,   "steering_alpha": null,   "terse_words_a2": 174},
+    {"idx": 21, "region": "output_preparation","residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx": 22, "region": "output_preparation","residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx": 23, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx": 24, "region": "logit_projection",  "residual_norm": 810,   "raw_vec_norm": 70.8,  "snr_pct": 8.7,   "steering_alpha": null,   "terse_words_a2": null},
+    {"idx": 25, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx": 26, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
+    {"idx": 27, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null}
+  ],
+  "recommended_schedules": {
+    "single_layer_terse": {
+      "description": "Simplest approach: one hook at best layer",
+      "layers": [{"idx": 12, "alpha": 2.0}],
+      "expected_compression": "~89% word reduction (149→16)",
+      "risk": "Some semantic drift at high alpha"
+    },
+    "two_layer_balanced": {
+      "description": "H-LS-5: distributed pressure, better coherence",
+      "layers": [
+        {"idx": 12, "alpha": 1.0},
+        {"idx": 16, "alpha": 1.0}
+      ],
+      "expected_compression": "~70% word reduction with better coherence",
+      "risk": "Lower peak compression but more natural output"
+    },
+    "three_layer_gradient": {
+      "description": "Semantic→formatting gradient with tapering alpha",
+      "layers": [
+        {"idx": 12, "alpha": 1.5, "role": "semantic compression"},
+        {"idx": 15, "alpha": 1.0, "role": "style reinforcement"},
+        {"idx": 18, "alpha": 0.5, "role": "output formatting nudge"}
+      ],
+      "expected_compression": "~60% word reduction, highest coherence",
+      "risk": "Requires per-layer vector computation (3 captures instead of 1)"
+    },
+    "full_repE": {
+      "description": "Per-layer contrastive vectors (Zou 2023 RepE approach)",
+      "layers": "all 28, each with own vector and alpha",
+      "calibration": "Requires corpus of 50+ paired examples per layer for stable directions",
+      "alpha_rule": "Target SNR 3-5% at each layer: alpha = 0.04 * residual_norm / raw_vec_norm",
+      "risk": "Calibration cost; diminishing returns below layer 8 and above layer 22"
+    }
+  },
+  "test_protocol": {
+    "description": "Scorecard for characterizing what each layer encodes, runnable as a sweep",
+    "probes": [
+      {
+        "name": "syntactic_integrity",
+        "method": "Parse steered output with spaCy; measure dependency parse accuracy vs baseline",
+        "layers_affected": "0-7 (syntax region)",
+        "metric": "parse_accuracy_delta"
+      },
+      {
+        "name": "topic_preservation",
+        "method": "Cosine similarity of TF-IDF vectors between steered and baseline outputs",
+        "layers_affected": "0-11 (early layers drift topic)",
+        "metric": "tfidf_cosine_sim"
+      },
+      {
+        "name": "style_shift",
+        "method": "Word count ratio, words-per-sentence, hedging ratio, type-token ratio (from test_style_contracts.py)",
+        "layers_affected": "12-18 (semantic sweet spot)",
+        "metric": "terseness_score"
+      },
+      {
+        "name": "formatting_artifacts",
+        "method": "Count markdown tokens (**, ##, ```, -) in output; ratio vs baseline",
+        "layers_affected": "18-22 (output preparation)",
+        "metric": "markdown_density_delta"
+      },
+      {
+        "name": "vocabulary_distortion",
+        "method": "Perplexity under unsteered model; KL divergence of token distributions",
+        "layers_affected": "23-27 (logit projection)",
+        "metric": "perplexity_ratio"
+      },
+      {
+        "name": "lens_contamination",
+        "method": "Run lens_eval.py 12-lens battery; measure per-lens delta from baseline",
+        "layers_affected": "all (regression gate)",
+        "metric": "max_lens_delta_pct"
+      }
+    ],
+    "sweep_parameters": {
+      "layers": [0, 3, 5, 8, 10, 12, 14, 15, 16, 18, 20, 22, 24, 27],
+      "alphas": [0.5, 1.0, 2.0, 3.0],
+      "styles": ["terse"],
+      "prompts": "100 from eval_terse_verbose.py",
+      "output": "layer-scorecard.json"
+    },
+    "references": [
+      "Dang & Ngo 2026 — Selective Steering: discriminative layer selection via norm-preserving rotation",
+      "Sharma 2025 — G-ACT: per-layer probe classification accuracy as layer selection signal",
+      "Hegazy 2025 — Guiding Giants: learned controller network outputs per-layer alpha weights",
+      "Sinii 2025 — Small Vectors Big Effects: logit-lens + path-patching per layer"
+    ]
+  }
+}
