@@ -1,0 +1,611 @@
+#+TITLE: Meta-Lens Secondary Experiment: CPRR Conjecture Set
+#+AUTHOR: jwalsh / aygp-dr
+#+DATE: 2026-03-06
+#+STARTUP: overview
+#+TAGS: cprr steering meadows wittgenstein foucault freud meta-lens
+#+PROPERTY: header-args:python :results output :exports both :mkdirp t
+#+PROPERTY: header-args:mermaid :exports results :mkdirp t
+
+* Context
+
+The primary experiment established:
+- Verbosity peaks as angular distance at L18 (output_preparation)
+- Style axis occupies ~15-20% of angular space in ℝ¹⁰²⁴
+- Sweet spot for steering: L15-16 (stability > 0.95, SNR 3-4%)
+- Terse direction is near a collapse boundary; verbose is not symmetric
+
+This document runs a second-order experiment: instead of terse↔verbose
+as the contrastive pair, we use *meta-framing* as the axis.
+
+The hypothesis is that four philosophical lenses — Meadows, Wittgenstein,
+Foucault, Freud — each install a different terministic screen, and each
+screen diverges from a direct answer at a *different layer*.
+
+Priority order reflects comprehension depth, not importance:
+Meadows > Wittgenstein > Foucault > Freud.
+
+Freud is last not because he is wrong but because the experiment
+should produce results before we need him.
+
+#+begin_src mermaid :file meta-lens-pipeline.png
+graph LR
+    Q["10 probe questions"] --> D["direct_answer(q)"]
+    Q --> M["causal_graph(q) — Meadows"]
+    Q --> W["which_game(q) — Wittgenstein"]
+    Q --> F["who_authorized(q) — Foucault"]
+    Q --> Fr["find_suppressed(q) — Freud"]
+
+    D  --> Sweep["Layer sweep 0-27"]
+    M  --> Sweep
+    W  --> Sweep
+    F  --> Sweep
+    Fr --> Sweep
+
+    Sweep --> Delta["delta[layer] = act_meta - act_direct"]
+    Delta --> Peak["peak angular distance by lens"]
+    Peak --> Confirm["update layer-roles.json"]
+
+    style M  fill:#1a3a1a,color:#e2e8f0
+    style W  fill:#1a2a3a,color:#e2e8f0
+    style F  fill:#2a1a3a,color:#e2e8f0
+    style Fr fill:#3a2a1a,color:#e2e8f0
+#+end_src
+
+* Part I: Meadows — Systems Thinking Lens
+:PROPERTIES:
+:TAG: meadows
+:PRIORITY: 1
+:END:
+
+** Background
+
+Donella Meadows, /Thinking in Systems/ (2008).
+
+The core operation: refuse to answer a question in isolation.
+Every question is a node with upstream causes and downstream effects.
+The systems thinker asks: what are the stocks, flows, feedback loops,
+and delays that make this question possible? What changes if the system
+is perturbed?
+
+Applied to "why does bread rise":
+- Direct answer: yeast consumes sugar, produces CO₂, bubbles expand dough
+- Meadows answer: yeast is a stock; sugar is a flow; CO₂ production is a
+  feedback-dependent rate; temperature is a delay parameter; gluten
+  network is a constraint on the stock's behavior; the baker is an
+  external agent with a goal variable
+
+The Meadows answer is not *longer* — it is *differently shaped*.
+It maps the causal neighborhood rather than traversing the causal chain.
+
+** Conjecture Set
+
+*** CPRR-M1: Systems framing diverges later than verbosity
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* The Meadows contrastive pair (causal_graph vs direct)
+diverges at a later layer than the verbosity pair, with peak angular
+distance at L20-22 (output_preparation) rather than L18.
+
+*Rationale:* Verbosity modulates *how much* to say about the same
+thing. Systems framing modulates *what the answer is about*. The latter
+requires a higher-level decision — one that happens after the semantic
+content is committed (L12-16) but before token generation begins (L23+).
+
+*Test:*
+#+begin_src python :tangle experiments/07-meadows-sweep/run.py :mkdirp t
+"""
+Meadows sweep — contrastive activation sweep: direct vs systems-framing.
+
+Uses register_forward_hook (same approach as experiments 01-06), not
+transformer_lens. Captures residual stream at all 28 layers via hooks.
+
+Usage:
+    python experiments/07-meadows-sweep/run.py
+    python experiments/07-meadows-sweep/run.py --cprr
+"""
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+import torch
+import torch.nn.functional as F
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from actadd import MODEL_ID
+
+NUM_LAYERS = 28
+
+PROBES = [
+    ("Why does ice float on water?",
+     "Map the system that causes ice to float: the stocks, flows, and feedback loops involved, and what changes if any variable shifts."),
+    ("How does a vaccine work?",
+     "Map the system through which vaccination produces immunity: stocks, flows, feedback loops, delays, and failure modes."),
+    ("Why do we dream?",
+     "Map the system that produces dreaming: what are the inputs, what are the feedback mechanisms, what does the system regulate?"),
+    ("What causes inflation?",
+     "Map the causal system that produces inflation: stocks (money supply, goods), flows (spending, production), feedback loops (expectations, policy), delays."),
+    ("How does bread rise?",
+     "Map the system that causes bread to rise: yeast as a stock, sugar as a flow, CO2 as output, gluten network as constraint, temperature as delay parameter."),
+]
+
+
+def get_all_layer_activations(model, tokenizer, prompt):
+    """Capture residual stream at all layers via hooks."""
+    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+    layer_acts = {}
+    handles = []
+    for layer_idx in range(NUM_LAYERS):
+        def make_hook(idx):
+            def hook_fn(module, input, output):
+                hidden = output[0] if isinstance(output, tuple) else output
+                layer_acts[idx] = hidden[0, -1, :].detach().clone()
+            return hook_fn
+        handle = model.model.layers[layer_idx].register_forward_hook(make_hook(layer_idx))
+        handles.append(handle)
+    with torch.no_grad():
+        model(**inputs)
+    for h in handles:
+        h.remove()
+    return layer_acts
+
+
+def angular_distance(a, b):
+    cos = F.cosine_similarity(a.unsqueeze(0), b.unsqueeze(0))
+    return (1 - cos).item()
+
+
+def main():
+    output_dir = str(Path(__file__).resolve().parent / "output")
+    os.makedirs(output_dir, exist_ok=True)
+
+    print(f"Loading {MODEL_ID}...")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID, dtype=torch.float16, device_map="auto"
+    )
+    model.eval()
+
+    results = []
+    for direct, systems in PROBES:
+        act_direct = get_all_layer_activations(model, tokenizer, direct)
+        act_systems = get_all_layer_activations(model, tokenizer, systems)
+        for layer in range(NUM_LAYERS):
+            dist = angular_distance(act_direct[layer], act_systems[layer])
+            results.append({"layer": layer, "probe": direct[:30], "angular_dist": round(dist, 6)})
+        print(f"  {direct[:40]:40s} done")
+
+    output_path = os.path.join(output_dir, "meadows_sweep.json")
+    with open(output_path, "w") as f:
+        json.dump(results, f, indent=2)
+    print(f"Saved: {output_path}")
+
+
+if __name__ == "__main__":
+    main()
+#+end_src
+
+*Refutation criteria:* Peak angular distance at L15-17 (same as verbosity)
+would mean systems framing is a style modulation, not a meta-reframing.
+
+*Confirmed if:* Peak > L19 across at least 3 of 5 probe pairs.
+
+*** CPRR-M2: Meadows injection suppresses direct answers
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* Injecting the Meadows vector at L20 causes the model to
+produce a response that mentions stocks, flows, or feedback loops
+without being explicitly prompted to.
+
+*Rationale:* If the systems-framing direction is a genuine meta-frame
+encoded in the residual stream, injecting it should install the frame
+without requiring it in the prompt. This is the same test as
++verbose_vec → more words, but for response *type* not length.
+
+*Test:*
+#+begin_src python :tangle experiments/07-meadows-sweep/tokens.py :mkdirp t
+"""Detection vocabulary for Meadows systems-framing."""
+PROBE_DIRECT = "Why does bread rise?"
+SYSTEMS_TOKENS = ["stock", "flow", "feedback", "loop", "delay",
+                  "system", "variable", "input", "output", "constraint",
+                  "regulate", "equilibrium", "causal", "upstream", "downstream"]
+
+def score_systems_presence(text):
+    hits = [t for t in SYSTEMS_TOKENS if t.lower() in text.lower()]
+    return len(hits), hits
+#+end_src
+
+*Refutation criteria:* Injection produces longer answers with no
+systems vocabulary — indistinguishable from verbose injection.
+
+*** CPRR-M3: Meadows direction is stable across probe pairs
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* The systems-framing direction at L20 has cross-pair
+cosine similarity > 0.85 (comparable to verbosity direction at L15).
+
+*Rationale:* If systems thinking is a general cognitive operation
+rather than a prompt-specific response, its activation-space direction
+should be consistent regardless of whether the question is about bread,
+vaccines, or inflation.
+
+*Refutation criteria:* cos_sim < 0.70 across pairs — direction is
+prompt-specific, not a generalizable meta-frame.
+
+*** CPRR-M4: Multi-layer Meadows outperforms single-layer
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* Injecting Meadows vector at both L15 (semantic) and L20
+(output_preparation) produces more coherent systems-framing than L20
+alone.
+
+*Rationale:* The model needs to *know* the direct answer (L12-16)
+to construct a systems account of it. Suppressing the direct-answer
+pathway at L15 while installing the meta-frame at L20 should produce
+cleaner output than meta-frame alone.
+
+This is CPRR-6 (multi-layer outperforms single) instantiated for
+meta-lenses specifically.
+
+** Meadows Eval Prompts
+
+#+NAME: meadows-pairs
+| Direct                              | Systems framing                                                              |
+|-------------------------------------+------------------------------------------------------------------------------|
+| Why does ice float on water?        | Map the system that causes ice to float — stocks, flows, feedback, delays.   |
+| How does a vaccine work?            | Map the immunity system: inputs, stocks, failure modes, feedback loops.      |
+| Why do we dream?                    | Map the dreaming system: what does it regulate, what are the feedback loops? |
+| What causes inflation?              | Map the inflation system: money stocks, spending flows, expectation loops.   |
+| How does bread rise?                | Map the bread-rising system: yeast stock, sugar flow, CO₂ output, gluten.   |
+| Why do leaves change color?         | Map the leaf system: chlorophyll stock, light flow, temperature as trigger.  |
+| What is a black hole?               | Map the gravitational collapse system: mass stock, escape velocity threshold.|
+| How does a compass work?            | Map the magnetic system: field stocks, needle as sensor, pole as attractor.  |
+| Why do humans need sleep?           | Map the sleep-debt system: what accumulates, what is cleared, what fails.    |
+| What causes thunder?                | Map the storm discharge system: charge stocks, ionization flows, delays.     |
+
+* Part II: Wittgenstein — Language Game Lens
+:PROPERTIES:
+:TAG: wittgenstein
+:PRIORITY: 2
+:END:
+
+** Background
+
+/Philosophical Investigations/ (1953). The key move: meaning is use.
+"Why is the sky blue?" is not one question — it is multiple questions
+depending on which language game is being played.
+
+- Physics classroom game: correct answer is Rayleigh scattering
+- Child asking game: correct answer is "because sunlight bounces"
+- Poet's game: correct answer might be silence or a line
+- Courtroom game: correct answer depends on what is being proved
+
+The Wittgenstein lens asks: *which game is this?* before answering.
+Applied as a meta-frame, the model would identify the game being played
+before producing an answer appropriate to that game — or would note
+that the question assumes a game that may not be the right one.
+
+** Conjecture Set
+
+*** CPRR-W1: Language-game identification occurs at output_preparation
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* The Wittgenstein contrastive pair (which_game vs direct)
+diverges at L18-20, same region as Meadows but with different direction
+in activation space (low cosine similarity between Meadows vector and
+Wittgenstein vector at same layer).
+
+*Rationale:* Both Meadows and Wittgenstein are meta-frames that require
+knowing the direct answer before refusing to give it. But they refuse
+differently — Meadows maps causes, Wittgenstein maps contexts. If they
+share a layer but not a direction, the layer is "meta-frame decision"
+and the direction encodes which meta-frame.
+
+*Test:*
+#+begin_src python :tangle experiments/08-wittgenstein-sweep/tokens.py :mkdirp t
+"""Detection vocabulary for Wittgenstein language-game framing."""
+WITTGENSTEIN_TOKENS = [
+    "game", "context", "use", "meaning", "practice", "rule",
+    "form of life", "which kind", "depends on", "what counts as",
+    "who is asking", "purpose", "appropriate", "register",
+    "framework", "assumes", "question behind"
+]
+#+end_src
+
+The sweep script follows the same pattern as =experiments/07-meadows-sweep/run.py=
+using =register_forward_hook= on =model.model.layers[idx]=.
+
+*** CPRR-W2: Meadows and Wittgenstein vectors are non-parallel at L20
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* cos_sim(meadows_vec[20], wittgenstein_vec[20]) < 0.5.
+
+*Rationale:* If they are parallel, meta-framing is a single direction
+and the specific philosopher's lens doesn't matter — only the
+first/second/third order distinction matters. If non-parallel, the
+lenses are genuinely distinct operations in activation space and
+require separate steering vectors.
+
+This is the key architectural question for the secondary experiment.
+
+*Refutation criteria:* cos_sim > 0.80 — the lenses collapse to one direction.
+
+** Wittgenstein Eval Prompts
+
+#+NAME: wittgenstein-pairs
+| Direct                              | Language game framing                                                                  |
+|-------------------------------------+----------------------------------------------------------------------------------------|
+| Why does ice float on water?        | Which language game is "why does ice float" — physics, everyday, engineering? Answer for each. |
+| How does a vaccine work?            | Identify who is asking and what counts as a complete answer in their context.          |
+| Why do we dream?                    | Is this a neuroscience question, a psychological question, or a philosophical one?     |
+| What causes inflation?              | Who asks this and what would count as a satisfying answer depends entirely on context. |
+| How does bread rise?                | Is this a chemistry question, a cooking question, or a biology question? Answer differs. |
+
+* Part III: Foucault — Power/Knowledge Lens
+:PROPERTIES:
+:TAG: foucault
+:PRIORITY: 3
+:END:
+
+** Background
+
+/Discipline and Punish/ (1975), /The Archaeology of Knowledge/ (1969).
+
+The Foucauldian lens asks: who is authorized to produce this knowledge,
+through what institutional apparatus, and whose knowledge is excluded
+by that authorization?
+
+"Why is the sky blue" contains a hidden claim: that mechanistic
+reductionist physics produces the valid answer. The shepherd who has
+watched skies for forty years has a different answer that the discourse
+excludes. The physicist's answer is not truer — it is *authorized*.
+
+Applied as a meta-frame, the model would interrogate the authorization
+structure rather than (or before) producing the authorized answer.
+
+This is the most politically charged of the four lenses.
+It is useful because it makes the selection/deflection structure
+of any answer *visible*.
+
+** Conjecture Set
+
+*** CPRR-F1: Foucault vector is distinct from Meadows and Wittgenstein
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* At L20, the Foucault vector has cos_sim < 0.5 with
+both Meadows and Wittgenstein vectors.
+
+*Rationale:* Meadows asks about causal structure. Wittgenstein asks
+about contextual fit. Foucault asks about power. These are three
+different operations. If they are geometrically distinct, meta-framing
+is a multi-dimensional space in activation space, not a single axis.
+
+*** CPRR-F2: Foucault injection produces who/authorized vocabulary
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* Injecting Foucault vector at L20 causes the model to
+produce responses mentioning authorization, expertise, exclusion, or
+power without being prompted to.
+
+*Test vocabulary:*
+#+begin_src python :tangle experiments/09-foucault-sweep/tokens.py :mkdirp t
+"""Detection vocabulary for Foucault power/knowledge framing."""
+FOUCAULT_TOKENS = [
+    "authorized", "expert", "institution", "discourse", "power",
+    "knowledge", "excluded", "legitimate", "who decides", "apparatus",
+    "discipline", "norm", "whose", "authority", "valid",
+    "official", "sanctioned", "invisible", "assumed"
+]
+#+end_src
+
+** Foucault Eval Prompts
+
+#+NAME: foucault-pairs
+| Direct                              | Power/knowledge framing                                                              |
+|-------------------------------------+--------------------------------------------------------------------------------------|
+| Why does ice float on water?        | Who is authorized to answer this, through what apparatus, and what answers are excluded? |
+| How does a vaccine work?            | Who produces authoritative vaccine knowledge, and whose knowledge is excluded?       |
+| Why do we dream?                    | Which disciplines own dream explanation and what do they exclude?                    |
+| What causes inflation?              | Whose causal account of inflation is authorized, and by what institutional structure? |
+| How does bread rise?                | Industrial baking science vs artisan knowledge — which is authorized, why?          |
+
+* Part IV: Freud — Suppressed Premise Lens
+:PROPERTIES:
+:TAG: freud
+:PRIORITY: 4
+:END:
+
+** Background
+
+/Jokes and Their Relation to the Unconscious/ (1905).
+/The Interpretation of Dreams/ (1900).
+
+The Freudian lens is structurally different from the other three.
+Meadows, Wittgenstein, and Foucault all ask *about* the question.
+Freud asks what the question is *avoiding*.
+
+Every question has a suppressed premise — something that would be
+uncomfortable to state directly. The joke-work finds this and releases
+it via lateral connection and a third party (the listener).
+
+Applied as a meta-frame: what is the anxiety behind "why does bread
+rise?" The domesticity of it. The dependence on an organism you cannot
+control. The fact that it is controlled rot. The humor (if any) lives
+in recognizing and releasing that.
+
+Freud is last because:
+1. The experiment should work before we need him
+2. Humor as a meta-frame requires the semantic content (L12-16) plus
+   the structural decision (L18-22) — it is the most complex injection
+3. The suppressed premise varies more by cultural context than the
+   other three, making the direction less stable across probe pairs
+
+** Conjecture Set
+
+*** CPRR-Fr1: Freud vector peaks earlier than Meadows (L15-16)
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* The Freud contrastive pair diverges at L15-16, earlier
+than Meadows/Wittgenstein/Foucault (L18-22).
+
+*Rationale:* Finding the suppressed premise requires knowing the
+semantic content of the question (L12-16) — you cannot find what is
+being avoided without first processing what is being said. The other
+three meta-frames are decisions about *how to respond*; Freud is a
+decision about *what the question really is*. That earlier decision
+may show up earlier in the residual stream.
+
+If confirmed, Freud-as-lens requires a different injection site than
+the others — L15 not L20.
+
+*** CPRR-Fr2: Humor injection is a two-site operation
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* Effective humor injection requires:
+- L15: install "find suppressed premise" direction
+- L20: install "release via lateral connection" direction
+
+Single-site injection at either layer alone produces neither
+the suppressed content nor the release structure.
+
+*Rationale:* The joke requires two operations: finding the anxiety
+(semantic, L15) and constructing the release (structural, L20).
+This is the most complex multi-layer hypothesis in this document
+and the least testable without a joke-quality metric.
+
+*** CPRR-Fr3: Freud direction has lowest cross-pair stability
+:PROPERTIES:
+:STATUS: open
+:CONFIDENCE: prior
+:END:
+
+*Conjecture:* The Freud vector has direction_stability < 0.80 across
+probe pairs — lower than Meadows, Wittgenstein, and Foucault.
+
+*Rationale:* The suppressed premise behind "why does bread rise" is
+different from the suppressed premise behind "what causes inflation."
+The anxiety is question-specific. Therefore the direction in activation
+space is less generalizable. If this is confirmed, a Freud steering
+vector would need to be computed per-question rather than as a
+universal meta-frame vector.
+
+* Experiment Schedule
+
+#+begin_src mermaid :file meta-lens-schedule.png
+gantt
+    title Meta-Lens Experiment Schedule
+    dateFormat  YYYY-MM-DD
+    section 07 Meadows
+    Contrastive pair sweep (M1)     :m1, 2026-03-07, 2d
+    Injection test (M2)             :m2, after m1, 1d
+    Stability analysis (M3)         :m3, after m1, 1d
+    Multi-layer test (M4)           :m4, after m2, 2d
+    section 08 Wittgenstein
+    Contrastive sweep (W1)          :w1, after m3, 2d
+    Meadows vs W direction (W2)     :w2, after w1, 1d
+    section 09 Foucault
+    Contrastive sweep (F1)          :f1, after w2, 2d
+    Three-way direction test (F2)   :f2, after f1, 1d
+    section 10 Freud
+    Contrastive sweep (Fr1)         :fr1, after f2, 2d
+    Two-site injection (Fr2)        :fr2, after fr1, 2d
+    Stability analysis (Fr3)        :fr3, after fr1, 1d
+    section Integration
+    Update layer-roles.json         :int, after fr3, 1d
+    Update lens_eval.py             :lev, after int, 1d
+#+end_src
+
+* CPRR Status Board
+
+These conjectures use document-local IDs (M1, W1, etc.) for readability.
+When registered via =cprr add=, they will receive sequential int IDs
+continuing from the primary board (currently next_id=14).
+
+Experiment directories follow the project convention:
+  =experiments/07-meadows-sweep/=
+  =experiments/08-wittgenstein-sweep/=
+  =experiments/09-foucault-sweep/=
+  =experiments/10-freud-sweep/=
+
+| Local | CPRR | Lens         | Conjecture                                      | Status  | Confidence |
+|-------+------+--------------+-------------------------------------------------+---------+------------|
+| M1    |      | Meadows      | Systems framing peaks at L20-22                 | open    | prior      |
+| M2    |      | Meadows      | Injection produces systems vocabulary unprompted | open    | prior      |
+| M3    |      | Meadows      | Direction stable across pairs (>0.85)           | open    | prior      |
+| M4    |      | Meadows      | Multi-layer outperforms single                  | open    | prior      |
+| W1    |      | Wittgenstein | Language-game ID at L18-20                      | open    | prior      |
+| W2    |      | Wittgenstein | Meadows != Wittgenstein vector at L20           | open    | prior      |
+| F1    |      | Foucault     | Foucault distinct from both at L20              | open    | prior      |
+| F2    |      | Foucault     | Injection produces power/auth vocabulary        | open    | prior      |
+| Fr1   |      | Freud        | Freud peaks earlier (L15-16)                    | open    | prior      |
+| Fr2   |      | Freud        | Humor requires two-site injection               | open    | prior      |
+| Fr3   |      | Freud        | Freud has lowest cross-pair stability (<0.80)   | open    | prior      |
+
+* Key Open Question
+
+If M1 and W1 are both confirmed (both peak at L20-22) but W2 is also
+confirmed (vectors non-parallel), then the residual stream at L20-22
+contains a *multi-dimensional meta-framing space* — not a single
+"direct vs meta" axis but a space where different meta-operations
+(causal mapping, context identification, power interrogation) are
+geometrically distinct.
+
+This would mean:
+1. A single meta-lens injection vector is insufficient
+2. Each lens requires its own direction at L20-22
+3. The "meta-frame decision" layer is doing richer work than
+   the verbosity layer — it is encoding *which kind of thinking*
+   to apply, not just *how much* to say
+
+That would update layer-roles.json significantly:
+
+#+begin_example
+output_preparation (18-22):
+  current:  "formatting, response structure"
+  revised:  "meta-frame selection, response type decision,
+             causal/contextual/epistemic mode encoding"
+#+end_example
+
+This is the result worth getting to before running Freud.
+
+* Notes
+
+- All experiments use the same 10 probe questions as the primary experiment
+- Baseline for all pairs is the direct answer without meta-framing instruction
+- direction_stability measured as mean cross-pair cosine as in primary experiment
+- layer-roles.json updated after each confirmed/refuted conjecture
+- lens_eval.py updated after Foucault (adds power/knowledge token set)
+- Freud token set TBD pending Fr1/Fr3 results — may not be worth implementing
+  if the direction is too unstable to be a useful steering target
