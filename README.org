@@ -10,8 +10,6 @@
 [[https://img.shields.io/badge/tests-13%2F13_passing-brightgreen.svg?style=flat-square][https://img.shields.io/badge/tests-13%2F13_passing-brightgreen.svg?style=flat-square]]
 [[https://img.shields.io/badge/conjectures-14_(6c,_7r)-purple.svg?style=flat-square][https://img.shields.io/badge/conjectures-14_(6c,_7r)-purple.svg?style=flat-square]]
 [[https://img.shields.io/badge/lenses-12-yellow.svg?style=flat-square][https://img.shields.io/badge/lenses-12-yellow.svg?style=flat-square]]
-[[https://img.shields.io/badge/python-≥3.11-3776AB.svg?style=flat-square][https://img.shields.io/badge/python-≥3.11-3776AB.svg?style=flat-square]]
-[[https://img.shields.io/badge/license-MIT-green.svg?style=flat-square][https://img.shields.io/badge/license-MIT-green.svg?style=flat-square]]
 
 #+ATTR_HTML: :width 100%
 [[file:images/output/01-activation-steering_banner.png]]
