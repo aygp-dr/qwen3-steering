@@ -152,9 +152,61 @@
       ],
       "created_at": "2026-03-06T20:27:19.647067-05:00",
       "updated_at": "2026-03-06T20:27:36.841707-05:00"
+    },
+    {
+      "id": 10,
+      "title": "Hypernym direction is stable (cos\u003e0.5) at L12-16",
+      "hypothesis": "The hypernym direction (dog-\u003eanimal) has cross-pair cosine stability \u003e0.5 at layers 12-16, confirming relational encoding in deep_semantics.",
+      "status": "open",
+      "tags": [
+        "wordnet",
+        "hypernym",
+        "relational"
+      ],
+      "created_at": "2026-03-06T20:54:45.393093-05:00",
+      "updated_at": "2026-03-06T20:54:45.393093-05:00"
+    },
+    {
+      "id": 11,
+      "title": "Hypernym and antonym are orthogonal (cos\u003c0.3) at L14",
+      "hypothesis": "Mean direction vectors for hypernym and antonym have cosine similarity \u003c0.3 at L12-16, indicating structured relational geometry rather than pattern-matching.",
+      "status": "open",
+      "tags": [
+        "wordnet",
+        "orthogonality",
+        "relational"
+      ],
+      "created_at": "2026-03-06T20:54:50.814965-05:00",
+      "updated_at": "2026-03-06T20:54:50.814965-05:00"
+    },
+    {
+      "id": 12,
+      "title": "Meronym is a third independent direction from hypernym and antonym",
+      "hypothesis": "Meronym direction (wheel-\u003ecar) has cos\u003c0.3 with both hypernym and antonym at L12-16, forming a 3D relational subspace.",
+      "status": "open",
+      "tags": [
+        "wordnet",
+        "meronym",
+        "relational"
+      ],
+      "created_at": "2026-03-06T20:54:56.491455-05:00",
+      "updated_at": "2026-03-06T20:54:56.491455-05:00"
+    },
+    {
+      "id": 13,
+      "title": "No relational structure at L0-7 (stability \u003c 0.3)",
+      "hypothesis": "Direction stability for all three relations is below 0.3 at layers 0-7, confirming these layers encode token identity not semantic relationships.",
+      "status": "open",
+      "tags": [
+        "wordnet",
+        "syntax",
+        "relational"
+      ],
+      "created_at": "2026-03-06T20:55:02.769044-05:00",
+      "updated_at": "2026-03-06T20:55:02.769044-05:00"
     }
   ],
-  "next_id": 10,
+  "next_id": 14,
   "config": {
     "local": true
   }
