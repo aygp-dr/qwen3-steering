@@ -4,6 +4,93 @@
 #+STARTUP: overview
 #+TAGS: steering interpretability alignment safety evaluation architecture
 
+* Topic Mindmap
+
+#+begin_src mermaid :file topic-mindmap.png :exports results
+mindmap
+  root((Activation Steering<br/>Research))
+    Foundations
+      Linear Representation Hypothesis
+        Geometry of LLMs — Park 2023
+        Geometry of Truth — Marks & Tegmark 2023
+        Origins of Linear Reps — Jiang 2024
+        Non-Linear Features — Engels 2024
+        Frame Rep Hypothesis — Valois 2024
+      Superposition
+        Toy Models — Elhage 2022
+        Monosemanticity — Anthropic 2023
+        Scaling Monosemanticity — Anthropic 2024
+      Probing
+        CCS Latent Knowledge — Burns 2022
+        FFN as Key-Value Memories — Geva 2021
+    Steering Methods
+      Activation Addition
+        ActAdd — Turner 2023
+        Contrastive AA — Rimsky 2024
+        Mean-Centring — Jorgensen 2023
+      Representation Engineering
+        RepE — Zou 2023
+        ITI — Li 2023
+        Affine Steering — Singh 2024
+      Style & Persona
+        Style Vectors — Konen 2024
+        Persona Vectors — Anthropic 2025
+        Assistant Axis — Anthropic 2026
+        Concept Activation Vectors — Zhang 2025
+      Advanced 2025-2026
+        HyperSteer — Sun 2025
+        Steer2Adapt — Han 2026
+        MSRS Multi-Subspace — Jiang 2025
+        FASB Backtracking — Gan 2025
+        ASA Tool-Calling — Wang 2026
+        Dynamic Activation Composition — Scalena 2024
+    Interpretability
+      Circuits
+        Math Framework — Elhage 2021
+        Induction Heads — Olsson 2022
+        Attribution Graphs — Anthropic 2025
+        ACDC Circuit Discovery — Conmy 2023
+        Transcoders — Dunefsky 2024
+        Knowledge Circuits — Yao 2024
+      SAE and Dictionary Learning
+        SAE Survey — Shu 2025
+        End-to-End SDL — Braun 2024
+        Feature Consistency — Song 2025
+        SNMF Decomposition — Shafran 2025
+      Crosscoders
+        Model Diffing — Anthropic 2024-25
+    Safety and Alignment
+      Refusal Mechanics
+        Refusal Direction — Arditi 2024
+        Harmfulness vs Refusal — Zhao 2025
+        Refusal Steering — Garcia-Ferrero 2025
+        SAE Refusal Steering — OBrien 2024
+      Dual-Use Risks
+        Rogue Scalpel — Korznikov 2025
+        Compliance Increases Jailbreak — 2026
+        Safety Compromised by Fine-tuning — Qi 2023
+      Defenses
+        Constitutional Classifiers — Anthropic 2025
+        Next-Gen Classifiers — Anthropic 2026
+        X-Boundary — Lu 2025
+        Lifelong Safety Alignment — Wang 2025
+      Evaluation
+        LLM-as-Judge — Zheng 2023
+        TruthfulQA — Lin 2022
+        Feature Steering Eval — Anthropic 2024
+    Knowledge Editing
+      ROME — Meng 2022
+      MEMIT — Meng 2023
+      Unified Framework — Gupta 2024
+      Editing at Scale Forgetting — Gupta 2024
+      Localization vs Editing — Hase 2023
+    Target Architecture
+      Qwen3 Technical Report — 2025
+      Qwen2 — 2024
+      Qwen — 2023
+      Deployment Constraints
+#+end_src
+
 * Part I: Foundations -- Why Steering Vectors Work
 
 ** Linear Representation Hypothesis
