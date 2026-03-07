@@ -3,17 +3,24 @@
     "model": "Qwen3-0.6B",
     "num_layers": 28,
     "d_model": 1024,
-    "description": "Per-layer functional roles and steering parameters for Qwen3-0.6B (28 transformer layers). Residual/vector norms from diagnose_steering.py; word counts from sweep at alpha=2.0 (CPRR conjecture 27). Roles synthesized from probing literature + empirical steering behavior.",
+    "description": "Per-layer functional roles and steering parameters for Qwen3-0.6B (28 transformer layers). Norms from layer_scorecard.py (all 28 layers measured). Word counts from sweep at alpha=2.0. Verbosity direction experiment (verbosity_direction.py) validates layer boundaries. CPRR conjectures 1-8.",
+    "confidence_key": {
+      "prior": "Inferred from literature, not yet tested on this model",
+      "empirical": "Measured on Qwen3-0.6B via layer_scorecard.py or verbosity_direction.py",
+      "confirmed": "Tested and confirmed via CPRR workflow with 2+ evidence pieces"
+    },
     "sources": [
-      "diagnose_steering.py measurements (this repo)",
-      "CPRR conjecture 27: layer sweep alpha=2.0",
+      "layer_scorecard.py: full 14-layer sweep (this repo)",
+      "verbosity_direction.py: contrastive pair experiment (this repo)",
+      "CPRR conjectures 1-8 (this repo)",
       "Geva 2021 — FFN as key-value memories",
       "Meng 2022 — causal tracing (ROME)",
       "Dang & Ngo 2026 — Selective Steering layer selection",
       "Sharma 2025 — G-ACT per-layer probes",
       "Hegazy 2025 — Guiding Giants learned layer weights",
       "Sinii 2025 — Small Vectors Big Effects mechanistic study"
-    ]
+    ],
+    "key_finding": "||delta|| norm grows monotonically through layers (NOT peaking at deep_semantics). But direction STABILITY peaks at L12 (cos=0.962) and SNR is in usable range only at L12-17 (3.6-5.5%). Injection at late layers causes collapse. Steerability = f(stability, SNR), not just norm."
   },
   "regions": [
     {
@@ -22,9 +29,10 @@
       "depth_pct": "0-7%",
       "role": "Token embedding refinement, positional encoding integration",
       "encodes": "subword identity, position, basic token co-occurrence",
-      "steering_effect": "Catastrophic — corrupts token-level representations, produces gibberish or language-switching",
+      "steering_effect": "L0 survives at alpha=2.0 (167 words, topic=0.78) due to low residual norm (10.5). But SNR=16% is dangerously high.",
       "steering_suitability": "never",
-      "evidence": "H-LS-3: layers 0-7 produce topic drift not style shift"
+      "confidence": "empirical",
+      "evidence": "CPRR-1 confirmed; layer_scorecard L0=167w at alpha=2.0; verbosity delta L0-2 near zero (0.13-0.44)"
     },
     {
       "name": "syntax",
@@ -32,9 +40,10 @@
       "depth_pct": "11-25%",
       "role": "Syntactic structure, phrase boundaries, grammatical relations",
       "encodes": "POS tags, dependency structure, agreement features, basic word order",
-      "steering_effect": "Topic drift, ungrammatical output, language contamination. Steering here changes WHAT is said, not HOW.",
-      "steering_suitability": "avoid",
-      "evidence": "H-LS-3; Geva 2021 lower layers as syntactic key-value stores"
+      "steering_effect": "ZERO output at L3 and L5 with alpha=2.0. Complete generation collapse, not topic drift.",
+      "steering_suitability": "never",
+      "confidence": "confirmed",
+      "evidence": "CPRR-1 confirmed; layer_scorecard L3=0w, L5=0w, topic_cosine=0.0, ppl_ratio=inf"
     },
     {
       "name": "early_semantics",
@@ -42,9 +51,10 @@
       "depth_pct": "29-39%",
       "role": "Semantic composition, entity recognition, basic concept formation",
       "encodes": "Word sense disambiguation, entity types, semantic roles, basic factual associations",
-      "steering_effect": "Marginal style effect, some content blending. Layer 10 shows terse effect (23 words at alpha=2.0) but with semantic artifacts.",
+      "steering_effect": "Moderate terse effect (L8=35w, L10=37w) but high perplexity (2.7x, 2.2x). Verbosity delta norms rising (2.6-8.9). Direction stability high (cos>0.90).",
       "steering_suitability": "marginal",
-      "evidence": "Conjecture 27: layer 10 = 23 words but quality concerns; Meng 2022 early-mid causal tracing"
+      "confidence": "empirical",
+      "evidence": "layer_scorecard L8=35w/ppl=2.7, L10=37w/ppl=2.2; verbosity_direction stability L8=0.928, L10=0.909"
     },
     {
       "name": "deep_semantics",
@@ -52,9 +62,10 @@
       "depth_pct": "43-61%",
       "role": "Abstract concept representation, style encoding, behavioral conditioning",
       "encodes": "Tone, verbosity, formality, persona traits, reasoning depth, conceptual relationships",
-      "steering_effect": "Strong, clean style modulation. This is where contrastive vectors produce intended behavioral shifts with minimal side effects.",
+      "steering_effect": "Strong, clean bidirectional style control. L12: terse=11w(-92%), verbose=202w(+42%) from 142w baseline. Highest direction stability (cos=0.962 at L12). SNR 3.6-5.5%.",
       "steering_suitability": "optimal",
-      "evidence": "Conjecture 27: L12=16w, L14=29w, L16=48w at alpha=2.0; BEST_LAYER=12; SWEET_SPOT_RANGE=(12,18)"
+      "confidence": "confirmed",
+      "evidence": "CPRR-2,8 confirmed; L12=20w, L14=36w, L16=52w at alpha=2.0; ActAdd bidirectional test: L12=11w/202w, L14=22w/189w; verbosity stability L12=0.962 (peak)"
     },
     {
       "name": "output_preparation",
@@ -62,9 +73,10 @@
       "depth_pct": "64-79%",
       "role": "Output formatting, task-specific features, response structure",
       "encodes": "Markdown formatting, list vs prose decisions, code block boundaries, response length planning",
-      "steering_effect": "Diminishing style effect, increasing formatting artifacts. Steering here changes surface presentation more than underlying style.",
+      "steering_effect": "Minimal word count change (L18=144w, L20=171w, L22=180w vs 149w baseline). High markdown density (14.4%). Verbosity delta norms are LARGE (71-116) but direction stability declining (cos 0.90→0.79).",
       "steering_suitability": "weak",
-      "evidence": "Conjecture 27: L18=169w, L20=174w (near baseline); residual norms rising sharply (538→595)"
+      "confidence": "confirmed",
+      "evidence": "CPRR-3 confirmed; layer_scorecard L18=144w, L20=171w, L22=180w; verbosity_direction norms 71-116 but stability dropping; markdown_density=14.37"
     },
     {
       "name": "logit_projection",
@@ -72,40 +84,41 @@
       "depth_pct": "82-96%",
       "role": "Vocabulary projection, next-token distribution shaping",
       "encodes": "Token probabilities, final vocabulary selection, repetition avoidance",
-      "steering_effect": "Vocabulary-level distortion. Can force specific tokens but destroys coherent style modulation. Very high vec norms (70.8 at L24) make calibration fragile.",
+      "steering_effect": "Highest verbosity delta norms (131-211) but lowest stability (cos 0.69-0.74). Injection at L27 causes collapse (3 words of garbage). Residual norm drops at L27 (620 vs L24=809) — NOT monotonic.",
       "steering_suitability": "never",
-      "evidence": "RAW_VEC_NORM L24=70.8, residual norm=810; SNR=8.7% (unstable territory)"
+      "confidence": "confirmed",
+      "evidence": "CPRR-4,5 confirmed; layer_scorecard L24=174w, L27=168w (near baseline); verbosity_direction injection at L27: +verbose=3w(collapse), -terse=185w(inverted); norm non-monotonic L24=809→L27=620"
     }
   ],
   "layers": [
-    {"idx":  0, "region": "tokenization",      "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx":  1, "region": "tokenization",      "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx":  2, "region": "tokenization",      "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx":  3, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx":  4, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx":  5, "region": "syntax",            "residual_norm": 455,   "raw_vec_norm": 14.1,  "snr_pct": 3.1,   "steering_alpha": null,   "terse_words_a2": null},
-    {"idx":  6, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx":  7, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx":  8, "region": "early_semantics",   "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx":  9, "region": "early_semantics",   "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx": 10, "region": "early_semantics",   "residual_norm": 472,   "raw_vec_norm": 15.8,  "snr_pct": 3.3,   "steering_alpha": 1.5,    "terse_words_a2": 23},
-    {"idx": 11, "region": "early_semantics",   "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx": 12, "region": "deep_semantics",    "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": 2.0,    "terse_words_a2": 16},
-    {"idx": 13, "region": "deep_semantics",    "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": 2.0,    "terse_words_a2": null},
-    {"idx": 14, "region": "deep_semantics",    "residual_norm": 481,   "raw_vec_norm": 18.7,  "snr_pct": 3.9,   "steering_alpha": 2.0,    "terse_words_a2": 29},
-    {"idx": 15, "region": "deep_semantics",    "residual_norm": 488,   "raw_vec_norm": 19.6,  "snr_pct": 4.0,   "steering_alpha": 2.0,    "terse_words_a2": null},
-    {"idx": 16, "region": "deep_semantics",    "residual_norm": 501,   "raw_vec_norm": 22.9,  "snr_pct": 4.6,   "steering_alpha": 1.5,    "terse_words_a2": 48},
-    {"idx": 17, "region": "deep_semantics",    "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": 1.5,    "terse_words_a2": null},
-    {"idx": 18, "region": "output_preparation","residual_norm": 538,   "raw_vec_norm": 29.8,  "snr_pct": 5.5,   "steering_alpha": 1.0,    "terse_words_a2": 169},
-    {"idx": 19, "region": "output_preparation","residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx": 20, "region": "output_preparation","residual_norm": 595,   "raw_vec_norm": 40.3,  "snr_pct": 6.8,   "steering_alpha": null,   "terse_words_a2": 174},
-    {"idx": 21, "region": "output_preparation","residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx": 22, "region": "output_preparation","residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx": 23, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx": 24, "region": "logit_projection",  "residual_norm": 810,   "raw_vec_norm": 70.8,  "snr_pct": 8.7,   "steering_alpha": null,   "terse_words_a2": null},
-    {"idx": 25, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx": 26, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null},
-    {"idx": 27, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null}
+    {"idx":  0, "region": "tokenization",      "residual_norm": 10.5,  "raw_vec_norm": 1.7,   "snr_pct": 16.19, "steering_alpha": null,   "terse_words_a2": 167,  "verbosity_delta": 0.13,  "direction_stability": 0.958, "confidence": "empirical"},
+    {"idx":  1, "region": "tokenization",      "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 0.16,  "direction_stability": 0.909, "confidence": "empirical"},
+    {"idx":  2, "region": "tokenization",      "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 0.44,  "direction_stability": 0.969, "confidence": "empirical"},
+    {"idx":  3, "region": "syntax",            "residual_norm": 449.8, "raw_vec_norm": 13.3,  "snr_pct": 2.96,  "steering_alpha": null,   "terse_words_a2": 0,    "verbosity_delta": 0.98,  "direction_stability": 0.912, "confidence": "confirmed"},
+    {"idx":  4, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 0.83,  "direction_stability": 0.908, "confidence": "empirical"},
+    {"idx":  5, "region": "syntax",            "residual_norm": 455.5, "raw_vec_norm": 14.1,  "snr_pct": 3.10,  "steering_alpha": null,   "terse_words_a2": 0,    "verbosity_delta": 0.99,  "direction_stability": 0.909, "confidence": "confirmed"},
+    {"idx":  6, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 2.23,  "direction_stability": 0.949, "confidence": "empirical"},
+    {"idx":  7, "region": "syntax",            "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 2.46,  "direction_stability": 0.949, "confidence": "empirical"},
+    {"idx":  8, "region": "early_semantics",   "residual_norm": 460.8, "raw_vec_norm": 15.0,  "snr_pct": 3.26,  "steering_alpha": null,   "terse_words_a2": 35,   "verbosity_delta": 2.61,  "direction_stability": 0.928, "confidence": "empirical"},
+    {"idx":  9, "region": "early_semantics",   "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 7.52,  "direction_stability": 0.896, "confidence": "empirical"},
+    {"idx": 10, "region": "early_semantics",   "residual_norm": 471.8, "raw_vec_norm": 15.8,  "snr_pct": 3.35,  "steering_alpha": 1.5,    "terse_words_a2": 37,   "verbosity_delta": 8.88,  "direction_stability": 0.909, "confidence": "empirical"},
+    {"idx": 11, "region": "early_semantics",   "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 16.99, "direction_stability": 0.953, "confidence": "empirical"},
+    {"idx": 12, "region": "deep_semantics",    "residual_norm": 479.5, "raw_vec_norm": 17.4,  "snr_pct": 3.63,  "steering_alpha": 2.0,    "terse_words_a2": 20,   "verbosity_delta": 23.21, "direction_stability": 0.962, "confidence": "confirmed"},
+    {"idx": 13, "region": "deep_semantics",    "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": 2.0,    "terse_words_a2": null, "verbosity_delta": 22.98, "direction_stability": 0.958, "confidence": "empirical"},
+    {"idx": 14, "region": "deep_semantics",    "residual_norm": 481.0, "raw_vec_norm": 18.7,  "snr_pct": 3.89,  "steering_alpha": 2.0,    "terse_words_a2": 36,   "verbosity_delta": 22.88, "direction_stability": 0.951, "confidence": "confirmed"},
+    {"idx": 15, "region": "deep_semantics",    "residual_norm": 487.5, "raw_vec_norm": 19.6,  "snr_pct": 4.02,  "steering_alpha": 2.0,    "terse_words_a2": 58,   "verbosity_delta": 31.70, "direction_stability": 0.952, "confidence": "confirmed"},
+    {"idx": 16, "region": "deep_semantics",    "residual_norm": 500.8, "raw_vec_norm": 22.8,  "snr_pct": 4.55,  "steering_alpha": 1.5,    "terse_words_a2": 52,   "verbosity_delta": 40.83, "direction_stability": 0.947, "confidence": "confirmed"},
+    {"idx": 17, "region": "deep_semantics",    "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": 1.5,    "terse_words_a2": null, "verbosity_delta": 53.08, "direction_stability": 0.919, "confidence": "empirical"},
+    {"idx": 18, "region": "output_preparation","residual_norm": 538.0, "raw_vec_norm": 29.8,  "snr_pct": 5.54,  "steering_alpha": 1.0,    "terse_words_a2": 144,  "verbosity_delta": 71.22, "direction_stability": 0.898, "confidence": "confirmed"},
+    {"idx": 19, "region": "output_preparation","residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 81.53, "direction_stability": 0.869, "confidence": "empirical"},
+    {"idx": 20, "region": "output_preparation","residual_norm": 595.0, "raw_vec_norm": 40.3,  "snr_pct": 6.77,  "steering_alpha": null,   "terse_words_a2": 171,  "verbosity_delta": 89.96, "direction_stability": 0.834, "confidence": "confirmed"},
+    {"idx": 21, "region": "output_preparation","residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 101.78,"direction_stability": 0.804, "confidence": "empirical"},
+    {"idx": 22, "region": "output_preparation","residual_norm": 686.5, "raw_vec_norm": 54.1,  "snr_pct": 7.88,  "steering_alpha": null,   "terse_words_a2": 180,  "verbosity_delta": 115.58,"direction_stability": 0.787, "confidence": "confirmed"},
+    {"idx": 23, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 130.72,"direction_stability": 0.768, "confidence": "empirical"},
+    {"idx": 24, "region": "logit_projection",  "residual_norm": 809.0, "raw_vec_norm": 70.8,  "snr_pct": 8.75,  "steering_alpha": null,   "terse_words_a2": 174,  "verbosity_delta": 144.44,"direction_stability": 0.741, "confidence": "confirmed"},
+    {"idx": 25, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 162.00,"direction_stability": 0.704, "confidence": "empirical"},
+    {"idx": 26, "region": "logit_projection",  "residual_norm": null,  "raw_vec_norm": null,  "snr_pct": null,  "steering_alpha": null,   "terse_words_a2": null, "verbosity_delta": 167.70,"direction_stability": 0.693, "confidence": "empirical"},
+    {"idx": 27, "region": "logit_projection",  "residual_norm": 620.0, "raw_vec_norm": 92.1,  "snr_pct": 14.85, "steering_alpha": null,   "terse_words_a2": 168,  "verbosity_delta": 211.43,"direction_stability": 0.725, "confidence": "confirmed"}
   ],
   "recommended_schedules": {
     "single_layer_terse": {

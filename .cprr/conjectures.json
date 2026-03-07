@@ -1,467 +1,142 @@
 {
   "conjectures": [
     {
-      "id": "H-LS-1",
-      "title": "Proportional Layer Sweet Spot Holds at 0.6B Scale",
-      "status": "proposed",
-      "category": "layer-selection",
-      "claim": "Optimal style steering layers are 14-20 (50-71% depth), matching proportional range from 7B literature",
-      "literature": [
-        "Rimsky 2024",
-        "Turner 2023",
-        "Li 2023 (ITI)"
+      "id": 1,
+      "title": "Layers 0-7 produce topic drift not style shift",
+      "hypothesis": "Steering at layers 0-7 disrupts semantics (topic drift, language-switching) without producing intended style change. TF-IDF cosine similarity with baseline \u003c 0.5",
+      "evidence": [
+        "Layers [0, 3, 5]: avg topic_cosine=0.259, avg words=56 at alpha=2.0 [source: this-project-sweep]",
+        "Prior: Geva 2021 (FFN as KV memories) + Meng 2022 (ROME causal tracing) identify early layers as encoding surface/syntactic features [confidence: prior, source: rimsky2024]"
       ],
-      "depends_on": [],
-      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+      "status": "confirmed",
+      "tags": [
+        "layer-roles",
+        "syntax",
+        "prior"
+      ],
+      "created_at": "2026-03-06T19:56:51.879923-05:00",
+      "updated_at": "2026-03-06T20:02:17.784375-05:00"
     },
     {
-      "id": "H-LS-2",
-      "title": "Alpha Coherence Threshold Is Lower at 0.6B Than at 7B",
-      "status": "proposed",
-      "category": "alpha-sensitivity",
-      "claim": "Coherence collapse onset at alpha >= 0.30, safe range 0.20-0.25 (vs 0.35 at 7B)",
-      "literature": [
-        "Park 2023",
-        "Elhage 2022",
-        "Singh & Ravfogel 2024"
+      "id": 2,
+      "title": "Layers 12-17 are the semantic sweet spot for style steering",
+      "hypothesis": "Terse steering at layers 12-17 produces \u003e50% word count reduction with topic cosine \u003e0.5, outperforming all other layer ranges",
+      "evidence": [
+        "Layers [12, 14, 15, 16]: avg words=42 (72% reduction), avg topic_cosine=0.605 at alpha=2.0 [source: this-project-sweep]",
+        "Prior: Rimsky 2024 CAA layer sweep + Turner 2023 ActAdd identify 50-70% depth as optimal [confidence: prior, source: rimsky2024]"
       ],
-      "depends_on": [
-        "H-LS-1"
+      "status": "confirmed",
+      "tags": [
+        "layer-roles",
+        "deep-semantics",
+        "prior"
       ],
-      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+      "created_at": "2026-03-06T19:56:57.119217-05:00",
+      "updated_at": "2026-03-06T20:02:17.83729-05:00"
     },
     {
-      "id": "H-LS-3",
-      "title": "Early Layers (0-7) Produce Topic Drift Not Style Shift",
-      "status": "proposed",
-      "category": "layer-selection",
-      "claim": "Steering at layers 0-7 disrupts semantics (topic drift, language-switching) without producing intended style",
-      "literature": [
-        "Meng 2022 (ROME)",
-        "Geva 2021"
+      "id": 3,
+      "title": "Layers 18-22 affect formatting more than style",
+      "hypothesis": "Steering at layers 18-22 produces \u003c20% word count change but \u003e2x markdown density increase vs baseline",
+      "evidence": [
+        "Layers [18, 20, 22]: avg words=165 (change=11%), avg markdown_density=14.37 at alpha=2.0 [source: this-project-sweep]",
+        "Prior: CPRR-27 showed L18=169w, L20=174w (near baseline 149w) — minimal word count change [confidence: empirical, source: this-project-sweep]"
       ],
-      "depends_on": [],
-      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+      "status": "confirmed",
+      "tags": [
+        "layer-roles",
+        "output-preparation",
+        "prior"
+      ],
+      "created_at": "2026-03-06T19:57:01.769572-05:00",
+      "updated_at": "2026-03-06T20:02:17.893335-05:00"
     },
     {
-      "id": "H-LS-4",
-      "title": "Corpus Mean Vectors Tolerate Higher Alpha Than Contrastive Pairs",
-      "status": "proposed",
-      "category": "alpha-sensitivity",
-      "claim": "Corpus-mean vectors (Konen 2024 method) maintain coherence at >= 1.3x the alpha of single contrastive pair vectors",
-      "literature": [
-        "Konen 2024 (EACL)",
-        "Jorgensen 2023"
+      "id": 4,
+      "title": "Layers 23-27 cause vocabulary distortion not style modulation",
+      "hypothesis": "Steering at layers 23-27 produces perplexity ratio \u003e1.5 (vocabulary distortion) with minimal word count change (\u003c15%)",
+      "evidence": [
+        "Layers [24, 27]: avg perplexity_ratio=1.290, avg words=171 at alpha=2.0 [source: this-project-sweep]",
+        "Prior: RAW_VEC_NORM L24=70.8, residual_norm=810, SNR=8.7% — extreme perturbation territory [confidence: empirical, source: this-project-sweep]"
       ],
-      "depends_on": [
-        "H-LS-2"
+      "status": "confirmed",
+      "tags": [
+        "layer-roles",
+        "logit-projection",
+        "prior"
       ],
-      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+      "created_at": "2026-03-06T19:57:07.129633-05:00",
+      "updated_at": "2026-03-06T20:02:17.953613-05:00"
     },
     {
-      "id": "H-LS-5",
-      "title": "Multi-Layer Injection at Reduced Per-Layer Alpha Outperforms Single-Layer",
-      "status": "proposed",
-      "category": "layer-selection",
-      "claim": "Two layers at alpha=0.10 each produce stronger style shift with better coherence than one layer at alpha=0.20",
-      "literature": [
-        "Rimsky 2024",
-        "Zou 2023 (RepE)"
+      "id": 5,
+      "title": "Residual stream norm grows monotonically through layers",
+      "hypothesis": "Residual L2 norm at layer L+1 \u003e= norm at layer L for all L in [0,27], with \u003e40% growth from L0 to L27",
+      "evidence": [
+        "Norms: L0=10, L3=450, L5=456, L8=461, L10=472, L12=480, L14=481... Monotonic=False, growth=5805% [source: this-project-sweep]",
+        "Remaining: L15=488, L16=501, L18=538, L20=595, L22=686, L24=809, L27=620 [source: this-project-sweep]",
+        "CORRECTION: L27 residual_norm=620 \u003c L24=809. Norms NOT monotonic — drops at final layers (post-norm effect?). Monotonic=False. Growth L0→L24=7600% but L27 drops 23% from L24. [confidence: empirical, source: this-project-sweep]"
       ],
-      "depends_on": [
-        "H-LS-1"
+      "status": "refuted",
+      "tags": [
+        "layer-roles",
+        "norms",
+        "prior"
       ],
-      "file": "H-LS-layer-selection-alpha-sensitivity.org"
+      "created_at": "2026-03-06T19:57:12.253593-05:00",
+      "updated_at": "2026-03-06T20:02:44.227331-05:00"
     },
     {
-      "id": "H-SV-1",
-      "title": "Style Axes Are Non-Orthogonal at 0.6B Scale",
-      "status": "proof",
-      "category": "style-vector",
-      "evidence": {
-        "layer": 12,
-        "mean_abs_cos_sim": 0.835,
-        "max_pair": "socratic/dry-wit",
-        "max_cos_sim": 0.979,
-        "terse_vs_others": [-0.692, -0.727, -0.693],
-        "note": "formal/socratic/dry-wit cluster at cos_sim>0.95; terse anti-correlated at ~-0.70. Extreme superposition."
-      },
-      "claim": "4 ActAdd style vectors have mean |cos_sim| > 0.15, with terse-formal more correlated than terse-socratic",
-      "literature": [
-        "Park 2023",
-        "Elhage 2022",
-        "Marks & Tegmark 2023"
+      "id": 6,
+      "title": "Multi-layer distributed steering outperforms single-layer",
+      "hypothesis": "Two layers at alpha=1.0 each (L12+L16) produce better terseness-to-coherence ratio than single layer at alpha=2.0 (L12)",
+      "status": "testing",
+      "tags": [
+        "layer-roles",
+        "multi-layer",
+        "prior"
       ],
-      "depends_on": [],
-      "file": "hypotheses-style-vector-geometry.org"
+      "created_at": "2026-03-06T19:57:17.146865-05:00",
+      "updated_at": "2026-03-06T19:57:25.956029-05:00"
     },
     {
-      "id": "H-SV-2",
-      "title": "Corpus-Mean and ActAdd Terse Vectors Are Co-Directional but Not Identical",
-      "status": "proposed",
-      "category": "style-vector",
-      "claim": "Cosine similarity between corpus-mean and ActAdd terse vectors falls in (0.30, 0.80), corpus-mean more stable across layers",
-      "literature": [
-        "Konen 2024",
-        "Turner 2023"
+      "id": 7,
+      "title": "Verbosity direction peaks in deep_semantics region (L12-17)",
+      "hypothesis": "The norm of the verbosity delta (verbose_activation - terse_activation) peaks at layers 12-17, confirming deep_semantics as the primary region encoding style register. Peak layer has mean ||delta|| \u003e 2x the mean of layers 0-7 and 23-27.",
+      "evidence": [
+        "Peak at L27 (||delta||=211.42). Early(0-7) mean=1.03, Sweet(12-17) mean=32.45, Late(23-27) mean=163.26. Ratio sweet/early=31.6x, sweet/late=0.2x [confidence: empirical, source: this-project-sweep]",
+        "Direction stability (cos\u003e0.5) at layers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]. Peak stability: L2 (cos=0.969). n=5 probe pairs [confidence: empirical, source: this-project-sweep]",
+        "Injection at L27: baseline=142w, +verbose=3w (+-97.9%), -terse=185w (--30.3%) [confidence: empirical, source: this-project-sweep]"
       ],
-      "depends_on": [],
-      "file": "hypotheses-style-vector-geometry.org"
+      "status": "refuted",
+      "tags": [
+        "layer-roles",
+        "verbosity",
+        "empirical"
+      ],
+      "created_at": "2026-03-06T20:04:59.469892-05:00",
+      "updated_at": "2026-03-06T20:05:18.008778-05:00"
     },
     {
-      "id": "H-SV-3",
-      "title": "Style Vectors Occupy a Low-Dimensional Subspace (Rank < 3)",
-      "status": "proposed",
-      "category": "style-vector",
-      "claim": "PCA on 4x1024 style vector matrix: first 3 PCs explain >90% variance",
-      "literature": [
-        "Marks & Tegmark 2023",
-        "Elhage 2022"
+      "id": 8,
+      "title": "Verbosity direction is steerably useful only at high-stability layers (12-17)",
+      "hypothesis": "Although ||delta|| norm grows monotonically through layers, only layers where direction stability (cross-pair cosine) \u003e 0.95 AND norm is in 3-6% SNR range produce clean style steering. This is layers 12-17. Injection at peak-norm layers (23-27) causes collapse.",
+      "evidence": [
+        "||delta|| grows monotonically: L0=0.13, L12=23.2, L17=53.1, L27=211.4. Peak is NOT at deep_semantics. But injection at L27 causes collapse (3 words of garbage). [confidence: empirical, source: this-project-sweep]",
+        "Direction stability peaks at L12 (cos=0.962) and decreases to L27 (cos=0.725). Sweet spot L12-17 has both high stability (\u003e0.95) and manageable SNR (3.6-5.5%). [confidence: empirical, source: this-project-sweep]",
+        "ActAdd validation: L12 terse=11w(-92%), L14=22w(-85%), L15=25w(-82%) from 142w baseline. Reverse direction (-alpha) produces verbose: L12=202w(+42%), L14=189w(+33%). Clean bidirectional control at sweet spot. [confidence: confirmed, source: this-project-sweep]"
       ],
-      "depends_on": [
-        "H-SV-1"
+      "status": "confirmed",
+      "tags": [
+        "layer-roles",
+        "verbosity",
+        "empirical"
       ],
-      "file": "hypotheses-style-vector-geometry.org"
-    },
-    {
-      "id": "H-SV-4",
-      "title": "PTS Thinking Vectors Are Geometrically Distinct from Style Vectors",
-      "status": "proposed",
-      "category": "style-vector",
-      "claim": "PTS thinking vectors have |cos_sim| < 0.20 with all style axes, <15% projection onto style subspace",
-      "literature": [
-        "codelion/Qwen3-0.6B-pts-steering-vectors"
-      ],
-      "depends_on": [
-        "H-SV-3"
-      ],
-      "file": "hypotheses-style-vector-geometry.org"
-    },
-    {
-      "id": "H-SV-5",
-      "title": "Cross-Axis Interference Under Composition Is Asymmetric and Layer-Dependent",
-      "status": "proposed",
-      "category": "style-vector",
-      "claim": "Same-layer terse+socratic injection produces more interference than different-layer; terse dominates at same layer",
-      "literature": [
-        "Rimsky 2024",
-        "Zou 2023 (RepE)"
-      ],
-      "depends_on": [
-        "H-SV-1"
-      ],
-      "file": "hypotheses-style-vector-geometry.org"
-    },
-    {
-      "id": "H-SF-1",
-      "title": "Weak Refusal Direction in Distilled 0.6B",
-      "status": "proposed",
-      "category": "safety",
-      "claim": "Refusal probe accuracy < 0.80 (vs >0.95 in RLHF'd 7B) due to distillation compressing safety into diffuse subspace",
-      "literature": [
-        "Arditi 2024",
-        "Qi 2023",
-        "Elhage 2022"
-      ],
-      "depends_on": []
-    },
-    {
-      "id": "H-SF-2",
-      "title": "Style Vectors Orthogonal to Refusal Direction",
-      "status": "proposed",
-      "category": "safety",
-      "claim": "|cos_sim| < 0.10 between all style vectors and refusal direction; terse may be highest at 0.10-0.14",
-      "literature": [
-        "Arditi 2024",
-        "arxiv:2602.04896"
-      ],
-      "depends_on": [
-        "H-SF-1"
-      ]
-    },
-    {
-      "id": "H-SF-3",
-      "title": "Safe-Alpha Steering Does Not Degrade Refusal Rate",
-      "status": "proposed",
-      "category": "safety",
-      "claim": "At alpha <= 0.25, refusal rate delta < 5pp from baseline; at alpha > 0.35, delta > 15pp",
-      "literature": [
-        "Rimsky 2024",
-        "arxiv:2602.04896"
-      ],
-      "depends_on": [
-        "H-SF-1"
-      ]
-    },
-    {
-      "id": "H-SF-4",
-      "title": "Multi-Layer Injection Distributes Rather Than Concentrates Safety Risk",
-      "status": "proposed",
-      "category": "safety",
-      "claim": "2x0.10 across layers shows >= 5pp less refusal degradation than 1x0.20 at single layer, at total alpha >= 0.30",
-      "literature": [
-        "Rimsky 2024",
-        "Arditi 2024"
-      ],
-      "depends_on": [
-        "H-SF-3",
-        "H-LS-5"
-      ]
-    },
-    {
-      "id": "H-SF-5",
-      "title": "Projecting Out Refusal Direction Preserves Style Effect",
-      "status": "proposed",
-      "category": "safety",
-      "claim": "Gram-Schmidt projection removes refusal component; style retention >= 85%, refusal rate within 1pp of baseline at alpha=0.35",
-      "literature": [
-        "Arditi 2024",
-        "Singh & Ravfogel 2024"
-      ],
-      "depends_on": [
-        "H-SF-1",
-        "H-SF-2"
-      ]
-    },
-    {
-      "id": "H-EV-1",
-      "title": "Token-Count Compression as Terse Proxy",
-      "status": "proposed",
-      "category": "evaluation",
-      "claim": "Terse-steered outputs have >= 40% fewer tokens than baseline across 20 prompts, with min 10 tokens per output",
-      "literature": [
-        "Konen 2024"
-      ],
-      "depends_on": []
-    },
-    {
-      "id": "H-EV-2",
-      "title": "Perplexity Increases Monotonically with Alpha, Inflection at 0.25-0.35",
-      "status": "proposed",
-      "category": "evaluation",
-      "claim": "Cross-entropy under unsteered model increases monotonically; slope doubles between alpha=0.25 and alpha=0.35",
-      "literature": [
-        "Rimsky 2024"
-      ],
-      "depends_on": []
-    },
-    {
-      "id": "H-EV-3",
-      "title": "Self-Classification Accuracy > 75% (Predicted: Fails at 0.6B)",
-      "status": "proposed",
-      "category": "evaluation",
-      "claim": "0.6B model classifying own output as TERSE/VERBOSE achieves > 75% accuracy; predicted to fail at ~0.60-0.70",
-      "literature": [
-        "Zheng 2023 (MT-Bench)"
-      ],
-      "depends_on": []
-    },
-    {
-      "id": "H-EV-4",
-      "title": "Lexical Proxy Features Separate Steered vs Unsteered (AUROC > 0.85)",
-      "status": "proposed",
-      "category": "evaluation",
-      "claim": "Sentence length, hedging frequency, punctuation density discriminate steered vs baseline; mean_sentence_length alone AUROC ~0.90",
-      "literature": [],
-      "depends_on": []
-    },
-    {
-      "id": "H-EV-5",
-      "title": "Representation Cosine Similarity Decreases Linearly with Alpha",
-      "status": "proposed",
-      "category": "evaluation",
-      "claim": "Final-layer cos_sim vs baseline decreases linearly (R^2 > 0.95); slope differs across style axes (terse steepest)",
-      "literature": [
-        "Park 2023"
-      ],
-      "depends_on": []
-    },
-    {
-      "id": "H-SM-1",
-      "title": "Superposition Density Threshold",
-      "status": "proposed",
-      "category": "small-model",
-      "claim": "At d_model=1024, effective rank < 200 at mid-layers causes steering vectors to collide with 30%+ of top principal components",
-      "literature": [
-        "Elhage 2022",
-        "Park 2023"
-      ],
-      "depends_on": []
-    },
-    {
-      "id": "H-SM-2",
-      "title": "Distillation Creates Anisotropic Activation Geometry",
-      "status": "proposed",
-      "category": "small-model",
-      "claim": "Distilled 0.6B has top-10 PCs explaining >60% variance vs <45% for from-scratch models",
-      "literature": [
-        "Razzhigaev 2024",
-        "Ethayarajh 2019"
-      ],
-      "depends_on": [
-        "H-SM-1"
-      ]
-    },
-    {
-      "id": "H-SM-3",
-      "title": "GQA KV-Head Sharing Compresses Style Subspaces",
-      "status": "proposed",
-      "category": "small-model",
-      "claim": "8 shared KV heads compress style into fewer attention subspaces; attention-head steering 2x coarser than MHA models",
-      "literature": [
-        "Ainslie 2023 (GQA)",
-        "Li 2023 (ITI)"
-      ],
-      "depends_on": []
-    },
-    {
-      "id": "H-SM-4",
-      "title": "Narrow-But-Deep: Multi-Layer Advantage Larger at 0.6B",
-      "status": "proposed",
-      "category": "small-model",
-      "claim": "Multi-layer injection (4+ layers, low alpha each) outperforms single-layer by >= 1.5x at 0.6B, more than at 7B",
-      "literature": [
-        "Rimsky 2024",
-        "Razzhigaev 2024"
-      ],
-      "depends_on": [
-        "H-SM-1"
-      ]
-    },
-    {
-      "id": "H-SM-5",
-      "title": "Minimum Effective d_model for Contrastive Steering",
-      "status": "proposed",
-      "category": "small-model",
-      "claim": "d_model=1024 is near practical boundary for ActAdd: SNR < 4.0, only binary style shifts, not graded control",
-      "literature": [
-        "Turner 2023",
-        "Konen 2024"
-      ],
-      "depends_on": [
-        "H-SM-1"
-      ]
-    },
-    {
-      "id": 26,
-      "status": "refutation",
-      "hypothesis": "Layer 10 is optimal for 'terse' steering at \u03b1=0.2 on Qwen3-0.6B",
-      "evidence": {
-        "method": "layer_sweep",
-        "style": "terse",
-        "alpha": 0.2,
-        "prompt": "Explain what a mutex is.",
-        "best_layer": 10,
-        "all_scores": {
-          "10": {
-            "text_preview": "A **mutex** (mutual exclusion lock) is a synchronization mechanism used to protect shared resources from concurrent acce",
-            "word_count": 149,
-            "words_per_sentence": 16.67,
-            "terseness_score": 0.0377
-          },
-          "12": {
-            "text_preview": "A **mutex** (mutual exclusion lock) is a synchronization mechanism used to protect shared resources from concurrent acce",
-            "word_count": 149,
-            "words_per_sentence": 16.67,
-            "terseness_score": 0.0377
-          },
-          "14": {
-            "text_preview": "A **mutex** (mutual exclusion lock) is a synchronization mechanism used to protect shared resources from concurrent acce",
-            "word_count": 149,
-            "words_per_sentence": 16.67,
-            "terseness_score": 0.0377
-          },
-          "16": {
-            "text_preview": "A **mutex** (mutual exclusion lock) is a synchronization mechanism used to protect shared resources from concurrent acce",
-            "word_count": 149,
-            "words_per_sentence": 16.67,
-            "terseness_score": 0.0377
-          },
-          "18": {
-            "text_preview": "A **mutex** (mutual exclusion lock) is a synchronization mechanism used to protect shared resources from concurrent acce",
-            "word_count": 149,
-            "words_per_sentence": 16.67,
-            "terseness_score": 0.0377
-          },
-          "20": {
-            "text_preview": "A **mutex** (mutual exclusion lock) is a synchronization mechanism used to protect shared resources from concurrent acce",
-            "word_count": 149,
-            "words_per_sentence": 16.67,
-            "terseness_score": 0.0377
-          }
-        }
-      },
-      "created": "2026-03-06T21:33:08.577921+00:00"
-    },
-    {
-      "id": 27,
-      "status": "proof",
-      "hypothesis": "Layer 12 is optimal for 'terse' steering at \u03b1=2.0 on Qwen3-0.6B",
-      "evidence": {
-        "method": "layer_sweep",
-        "style": "terse",
-        "alpha": 2.0,
-        "prompt": "Explain what a mutex is.",
-        "best_layer": 12,
-        "all_scores": {
-          "10": {
-            "text_preview": "A mutex is a synchronization primitive used to protect access to shared resources. It is used to prevent race conditions",
-            "word_count": 23,
-            "words_per_sentence": 11.5,
-            "terseness_score": 0.3333
-          },
-          "12": {
-            "text_preview": "A mutex is a keyword used in programming languages that is used to prevent concurrent access.",
-            "word_count": 16,
-            "words_per_sentence": 16.0,
-            "terseness_score": 0.346
-          },
-          "14": {
-            "text_preview": "A mutex is a synchronization primitive used to prevent multiple threads from accessing a resource simultaneously. It ens",
-            "word_count": 29,
-            "words_per_sentence": 14.5,
-            "terseness_score": 0.2151
-          },
-          "16": {
-            "text_preview": "A mutex (short for mutual exclusion) is a type of lock used in concurrent programming. It is a synchronization mechanism",
-            "word_count": 48,
-            "words_per_sentence": 16.0,
-            "terseness_score": 0.12
-          },
-          "18": {
-            "text_preview": "A **mutex** (short for **mutual exclusion**) is a type of lock used in concurrent programming. It is a synchronization p",
-            "word_count": 169,
-            "words_per_sentence": 12.21,
-            "terseness_score": 0.0445
-          },
-          "20": {
-            "text_preview": "A **mutex** (short for **mutex** or **mutex** in C) is a **critical section** or **atomic lock** used to control access ",
-            "word_count": 174,
-            "words_per_sentence": 21.75,
-            "terseness_score": 0.0251
-          }
-        }
-      },
-      "created": "2026-03-06T21:40:17.664682+00:00"
-    },
-    {
-      "id": 28,
-      "status": "proposed",
-      "hypothesis": "Surface features (word_count, token_count, char_count) are sufficient to recover the screening conditions without oracle labels",
-      "claim": "K-means on 3 surface features recovers terse/baseline/verbose partition with ARI >= 0.50",
-      "refutation_criterion": "ARI < 0.50 on full 100-prompt run",
-      "burke_framing": "If terministic screens are real, they select/deflect enough to show up in the simplest possible features",
-      "preliminary": {
-        "n": 10,
-        "ari": 0.395,
-        "best_k_silhouette": 2,
-        "note": "10-prompt test run; baseline/verbose overlap at n=10 expected"
-      },
-      "depends_on": ["H-EV-1", "H-EV-4"],
-      "created": "2026-03-07T00:00:00+00:00"
+      "created_at": "2026-03-06T20:05:18.014318-05:00",
+      "updated_at": "2026-03-06T20:07:17.611337-05:00"
     }
   ],
-  "next_id": 29,
+  "next_id": 9,
   "config": {
     "local": true
   }

@@ -1,0 +1,518 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "style": "terse",
+  "prompts": [
+    "Explain what a mutex is.",
+    "How does photosynthesis work?"
+  ],
+  "alphas": [
+    2.0
+  ],
+  "timestamp": "2026-03-06T20:02:17-0500",
+  "layers": {
+    "0": {
+      "residual_norm": 10.5,
+      "raw_vec_norm": 1.7,
+      "snr_pct": 16.19,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 167.0,
+          "avg_topic_cosine": 0.776,
+          "avg_words_per_sentence": 20.1,
+          "avg_markdown_density": 6.61,
+          "avg_perplexity_ratio": 1.218,
+          "per_prompt": [
+            {
+              "word_count": 206,
+              "sentence_count": 14,
+              "words_per_sentence": 14.7,
+              "topic_cosine": 0.808,
+              "markdown_density": 11.65,
+              "perplexity_ratio": 0.926,
+              "text_preview": "A **mutex** (short for **mutual exclusion** or **mutex lock**) is a synchronization primitive used in operating systems "
+            },
+            {
+              "word_count": 128,
+              "sentence_count": 5,
+              "words_per_sentence": 25.6,
+              "topic_cosine": 0.744,
+              "markdown_density": 1.56,
+              "perplexity_ratio": 1.511,
+              "text_preview": "Photosynthesis is the process by which plants, algae, and some bacteria convert light energy from the sun into chemical "
+            }
+          ]
+        }
+      },
+      "classified_role": "tokenization",
+      "empirical_note": "words=167 topic=0.78"
+    },
+    "3": {
+      "residual_norm": 449.8,
+      "raw_vec_norm": 13.3,
+      "snr_pct": 2.96,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 0.0,
+          "avg_topic_cosine": 0.0,
+          "avg_words_per_sentence": 0.0,
+          "avg_markdown_density": 0.0,
+          "avg_perplexity_ratio": Infinity,
+          "per_prompt": [
+            {
+              "word_count": 0,
+              "sentence_count": 0,
+              "words_per_sentence": 0.0,
+              "topic_cosine": 0.0,
+              "markdown_density": 0.0,
+              "perplexity_ratio": Infinity,
+              "text_preview": ""
+            },
+            {
+              "word_count": 0,
+              "sentence_count": 0,
+              "words_per_sentence": 0.0,
+              "topic_cosine": 0.0,
+              "markdown_density": 0.0,
+              "perplexity_ratio": Infinity,
+              "text_preview": ""
+            }
+          ]
+        }
+      },
+      "classified_role": "syntax",
+      "empirical_note": "CONFIRMED: topic drift (cosine < 0.3)"
+    },
+    "5": {
+      "residual_norm": 455.5,
+      "raw_vec_norm": 14.1,
+      "snr_pct": 3.1,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 0.0,
+          "avg_topic_cosine": 0.0,
+          "avg_words_per_sentence": 0.0,
+          "avg_markdown_density": 0.0,
+          "avg_perplexity_ratio": Infinity,
+          "per_prompt": [
+            {
+              "word_count": 0,
+              "sentence_count": 0,
+              "words_per_sentence": 0.0,
+              "topic_cosine": 0.0,
+              "markdown_density": 0.0,
+              "perplexity_ratio": Infinity,
+              "text_preview": ""
+            },
+            {
+              "word_count": 0,
+              "sentence_count": 0,
+              "words_per_sentence": 0.0,
+              "topic_cosine": 0.0,
+              "markdown_density": 0.0,
+              "perplexity_ratio": Infinity,
+              "text_preview": ""
+            }
+          ]
+        }
+      },
+      "classified_role": "syntax",
+      "empirical_note": "CONFIRMED: topic drift (cosine < 0.3)"
+    },
+    "8": {
+      "residual_norm": 460.8,
+      "raw_vec_norm": 15.0,
+      "snr_pct": 3.26,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 35.0,
+          "avg_topic_cosine": 0.584,
+          "avg_words_per_sentence": 14.2,
+          "avg_markdown_density": 0.0,
+          "avg_perplexity_ratio": 2.707,
+          "per_prompt": [
+            {
+              "word_count": 39,
+              "sentence_count": 3,
+              "words_per_sentence": 13.0,
+              "topic_cosine": 0.625,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 1.595,
+              "text_preview": "A mutex is a synchronization primitive used to control access to shared resources. It is used to ensure that a resource "
+            },
+            {
+              "word_count": 31,
+              "sentence_count": 2,
+              "words_per_sentence": 15.5,
+              "topic_cosine": 0.542,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 3.819,
+              "text_preview": "Photosynthesis works by capturing light energy in chlorophyll molecules, which then convert this energy into chemical bo"
+            }
+          ]
+        }
+      },
+      "classified_role": "early_semantics",
+      "empirical_note": "words=35 topic=0.58"
+    },
+    "10": {
+      "residual_norm": 471.8,
+      "raw_vec_norm": 15.8,
+      "snr_pct": 3.35,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 37.0,
+          "avg_topic_cosine": 0.607,
+          "avg_words_per_sentence": 14.2,
+          "avg_markdown_density": 0.0,
+          "avg_perplexity_ratio": 2.177,
+          "per_prompt": [
+            {
+              "word_count": 23,
+              "sentence_count": 2,
+              "words_per_sentence": 11.5,
+              "topic_cosine": 0.58,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 1.835,
+              "text_preview": "A mutex is a synchronization primitive used to protect access to shared resources. It is used to prevent race conditions"
+            },
+            {
+              "word_count": 51,
+              "sentence_count": 3,
+              "words_per_sentence": 17.0,
+              "topic_cosine": 0.633,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 2.519,
+              "text_preview": "Photosynthesis is a process that occurs in plants, algae, and some bacteria, which use light to convert carbon dioxide a"
+            }
+          ]
+        }
+      },
+      "classified_role": "early_semantics",
+      "empirical_note": "CONFIRMED: strong style shift (37 words)"
+    },
+    "12": {
+      "residual_norm": 479.5,
+      "raw_vec_norm": 17.4,
+      "snr_pct": 3.63,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 20.0,
+          "avg_topic_cosine": 0.525,
+          "avg_words_per_sentence": 14.0,
+          "avg_markdown_density": 16.66,
+          "avg_perplexity_ratio": 3.549,
+          "per_prompt": [
+            {
+              "word_count": 16,
+              "sentence_count": 1,
+              "words_per_sentence": 16.0,
+              "topic_cosine": 0.515,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 3.138,
+              "text_preview": "A mutex is a keyword used in programming languages that is used to prevent concurrent access."
+            },
+            {
+              "word_count": 24,
+              "sentence_count": 2,
+              "words_per_sentence": 12.0,
+              "topic_cosine": 0.535,
+              "markdown_density": 33.33,
+              "perplexity_ratio": 3.96,
+              "text_preview": "The **photosynthesis** is a process that captures light energy and converts carbon dioxide into oxygen. The **process** "
+            }
+          ]
+        }
+      },
+      "classified_role": "deep_semantics",
+      "empirical_note": "CONFIRMED: strong style shift (20 words)"
+    },
+    "14": {
+      "residual_norm": 481.0,
+      "raw_vec_norm": 18.7,
+      "snr_pct": 3.89,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 36.0,
+          "avg_topic_cosine": 0.624,
+          "avg_words_per_sentence": 14.4,
+          "avg_markdown_density": 0.0,
+          "avg_perplexity_ratio": 2.43,
+          "per_prompt": [
+            {
+              "word_count": 29,
+              "sentence_count": 2,
+              "words_per_sentence": 14.5,
+              "topic_cosine": 0.691,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 1.615,
+              "text_preview": "A mutex is a synchronization primitive used to prevent multiple threads from accessing a resource simultaneously. It ens"
+            },
+            {
+              "word_count": 43,
+              "sentence_count": 3,
+              "words_per_sentence": 14.3,
+              "topic_cosine": 0.557,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 3.246,
+              "text_preview": "Photosynthesis is a biological process that occurs in plants, algae, and some other organisms. It involves the conversio"
+            }
+          ]
+        }
+      },
+      "classified_role": "deep_semantics",
+      "empirical_note": "CONFIRMED: strong style shift (36 words)"
+    },
+    "15": {
+      "residual_norm": 487.5,
+      "raw_vec_norm": 19.6,
+      "snr_pct": 4.02,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 57.5,
+          "avg_topic_cosine": 0.689,
+          "avg_words_per_sentence": 14.4,
+          "avg_markdown_density": 0.0,
+          "avg_perplexity_ratio": 1.904,
+          "per_prompt": [
+            {
+              "word_count": 35,
+              "sentence_count": 2,
+              "words_per_sentence": 17.5,
+              "topic_cosine": 0.763,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 1.372,
+              "text_preview": "A mutex is a type of lock used in programming to prevent multiple threads from accessing a resource simultaneously. It i"
+            },
+            {
+              "word_count": 80,
+              "sentence_count": 7,
+              "words_per_sentence": 11.4,
+              "topic_cosine": 0.615,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 2.436,
+              "text_preview": "Photosynthesis is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose an"
+            }
+          ]
+        }
+      },
+      "classified_role": "deep_semantics",
+      "empirical_note": "words=58 topic=0.69"
+    },
+    "16": {
+      "residual_norm": 500.8,
+      "raw_vec_norm": 22.8,
+      "snr_pct": 4.55,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 52.5,
+          "avg_topic_cosine": 0.584,
+          "avg_words_per_sentence": 15.1,
+          "avg_markdown_density": 1.75,
+          "avg_perplexity_ratio": 2.376,
+          "per_prompt": [
+            {
+              "word_count": 48,
+              "sentence_count": 3,
+              "words_per_sentence": 16.0,
+              "topic_cosine": 0.676,
+              "markdown_density": 0.0,
+              "perplexity_ratio": 1.752,
+              "text_preview": "A mutex (short for mutual exclusion) is a type of lock used in concurrent programming. It is a synchronization mechanism"
+            },
+            {
+              "word_count": 57,
+              "sentence_count": 4,
+              "words_per_sentence": 14.2,
+              "topic_cosine": 0.492,
+              "markdown_density": 3.51,
+              "perplexity_ratio": 2.999,
+              "text_preview": "Photosynthesis is a biological process that converts carbon dioxide and water into glucose and oxygen. It occurs in plan"
+            }
+          ]
+        }
+      },
+      "classified_role": "deep_semantics",
+      "empirical_note": "words=52 topic=0.58"
+    },
+    "18": {
+      "residual_norm": 538.0,
+      "raw_vec_norm": 29.8,
+      "snr_pct": 5.54,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 144.0,
+          "avg_topic_cosine": 0.583,
+          "avg_words_per_sentence": 13.6,
+          "avg_markdown_density": 14.16,
+          "avg_perplexity_ratio": 1.568,
+          "per_prompt": [
+            {
+              "word_count": 170,
+              "sentence_count": 12,
+              "words_per_sentence": 14.2,
+              "topic_cosine": 0.634,
+              "markdown_density": 16.47,
+              "perplexity_ratio": 1.139,
+              "text_preview": "A **mutex** (short for **mutual exclusion**) is a type of lock used in concurrent programming. It is a synchronization p"
+            },
+            {
+              "word_count": 118,
+              "sentence_count": 9,
+              "words_per_sentence": 13.1,
+              "topic_cosine": 0.532,
+              "markdown_density": 11.86,
+              "perplexity_ratio": 1.997,
+              "text_preview": "Photosynthesis is a fundamental process in photosynthetic organisms like plants, algae, and cyanobacteria. It involves t"
+            }
+          ]
+        }
+      },
+      "classified_role": "output_preparation",
+      "empirical_note": "CONFIRMED: weak effect (144 words \u2248 baseline)"
+    },
+    "20": {
+      "residual_norm": 595.0,
+      "raw_vec_norm": 40.3,
+      "snr_pct": 6.77,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 171.0,
+          "avg_topic_cosine": 0.774,
+          "avg_words_per_sentence": 17.4,
+          "avg_markdown_density": 14.91,
+          "avg_perplexity_ratio": 1.504,
+          "per_prompt": [
+            {
+              "word_count": 174,
+              "sentence_count": 8,
+              "words_per_sentence": 21.8,
+              "topic_cosine": 0.79,
+              "markdown_density": 14.94,
+              "perplexity_ratio": 1.244,
+              "text_preview": "A **mutex** (short for **mutex** or **mutex** in C) is a **critical section** or **atomic lock** used to control access "
+            },
+            {
+              "word_count": 168,
+              "sentence_count": 13,
+              "words_per_sentence": 12.9,
+              "topic_cosine": 0.759,
+              "markdown_density": 14.88,
+              "perplexity_ratio": 1.764,
+              "text_preview": "Photosynthesis is the process by which plants, algae, and some bacteria convert light energy from the atmosphere into ch"
+            }
+          ]
+        }
+      },
+      "classified_role": "output_preparation",
+      "empirical_note": "CONFIRMED: weak effect (171 words \u2248 baseline)"
+    },
+    "22": {
+      "residual_norm": 686.5,
+      "raw_vec_norm": 54.1,
+      "snr_pct": 7.88,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 179.5,
+          "avg_topic_cosine": 0.764,
+          "avg_words_per_sentence": 14.3,
+          "avg_markdown_density": 14.05,
+          "avg_perplexity_ratio": 1.413,
+          "per_prompt": [
+            {
+              "word_count": 195,
+              "sentence_count": 16,
+              "words_per_sentence": 12.2,
+              "topic_cosine": 0.791,
+              "markdown_density": 15.9,
+              "perplexity_ratio": 1.195,
+              "text_preview": "A **mutex** (short for **mutex** or **mutex lock**) is a **hardware or software lock** used to control **shared resource"
+            },
+            {
+              "word_count": 164,
+              "sentence_count": 10,
+              "words_per_sentence": 16.4,
+              "topic_cosine": 0.737,
+              "markdown_density": 12.2,
+              "perplexity_ratio": 1.63,
+              "text_preview": "Photosynthesis is the process by which plants, algae, and some bacteria convert light energy from the sun into chemical "
+            }
+          ]
+        }
+      },
+      "classified_role": "output_preparation",
+      "empirical_note": "CONFIRMED: weak effect (180 words \u2248 baseline)"
+    },
+    "24": {
+      "residual_norm": 809.0,
+      "raw_vec_norm": 70.8,
+      "snr_pct": 8.75,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 174.5,
+          "avg_topic_cosine": 0.743,
+          "avg_words_per_sentence": 9.9,
+          "avg_markdown_density": 9.23,
+          "avg_perplexity_ratio": 1.216,
+          "per_prompt": [
+            {
+              "word_count": 187,
+              "sentence_count": 21,
+              "words_per_sentence": 8.9,
+              "topic_cosine": 0.825,
+              "markdown_density": 12.3,
+              "perplexity_ratio": 1.017,
+              "text_preview": "A **mutex** (mutual exclusion lock) is a synchronization primitive used to control concurrent access to shared resources"
+            },
+            {
+              "word_count": 162,
+              "sentence_count": 15,
+              "words_per_sentence": 10.8,
+              "topic_cosine": 0.661,
+              "markdown_density": 6.17,
+              "perplexity_ratio": 1.414,
+              "text_preview": "Photosynthesis is the process by which plants, algae, and some bacteria convert water and carbon dioxide into glucose an"
+            }
+          ]
+        }
+      },
+      "classified_role": "logit_projection",
+      "empirical_note": "CONFIRMED: weak effect (174 words \u2248 baseline)"
+    },
+    "27": {
+      "residual_norm": 620.0,
+      "raw_vec_norm": 92.1,
+      "snr_pct": 14.85,
+      "alphas": {
+        "2.0": {
+          "avg_word_count": 167.5,
+          "avg_topic_cosine": 0.695,
+          "avg_words_per_sentence": 10.6,
+          "avg_markdown_density": 10.85,
+          "avg_perplexity_ratio": 1.365,
+          "per_prompt": [
+            {
+              "word_count": 184,
+              "sentence_count": 15,
+              "words_per_sentence": 12.3,
+              "topic_cosine": 0.766,
+              "markdown_density": 9.78,
+              "perplexity_ratio": 1.245,
+              "text_preview": "A **mutex** (short for **mutual exclusion** lock) is a synchronization primitive used to protect concurrent access to sh"
+            },
+            {
+              "word_count": 151,
+              "sentence_count": 17,
+              "words_per_sentence": 8.9,
+              "topic_cosine": 0.623,
+              "markdown_density": 11.92,
+              "perplexity_ratio": 1.484,
+              "text_preview": "Photosynthesis is a critical biological process used by plants, algae, and certain bacteria to convert light energy, wat"
+            }
+          ]
+        }
+      },
+      "classified_role": "logit_projection",
+      "empirical_note": "CONFIRMED: weak effect (168 words \u2248 baseline)"
+    }
+  }
+}
