@@ -21,7 +21,7 @@ multilayer.py. These files are defined in setup.org via =:tangle= directives. Be
 running any test, tangle the source blocks:
 
 #+begin_src sh
-cd /Users/jwalsh/ghq/github.com/aygp-dr/qwen3-steering
+cd "$(git rev-parse --show-toplevel)"
 emacs --batch --eval '(org-babel-tangle-file "setup.org")'
 # Or manually extract the Python blocks from setup.org
 #+end_src
