@@ -1,0 +1,18 @@
+X-Agent: claude-opus-4-6 + jwalsh (interactive)
+X-Session: 2026-03-06T22:12-05:00
+
+## Reasoning
+User ran `ox init` for SageOx integration. CLI initialized but hit 422 on
+GET /api/v1/cli/repos with "account setup failed: invalid user data".
+
+## Issues
+- 422 is server-side: strings "account setup" / "invalid user data" do not
+  exist in ox CLI codebase. Server's user provisioning path (git PAT creation)
+  rejects something in the OAuth profile for j@wal.sh.
+- Single-repo endpoint (/repos/{id}) returns 200 — different server handler.
+- ox 0.2.0 installed, 0.3.0 available. Upgrade may resolve.
+- CLAUDE.md is a symlink to AGENTS.md (ox convention).
+
+## Deviations
+- Committed despite 422 — local config is functional, only git credential
+  caching is broken. Not blocking for our workflow.
