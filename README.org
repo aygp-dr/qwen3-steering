@@ -3,22 +3,15 @@
 #+STARTUP: overview
 #+OPTIONS: toc:3 num:nil
 
-# Inline SVG badges — rendered directly by GitHub's org-mode parser.
-# Using shields.io with explicit colors.
-
-#+begin_export html
-<p>
-  <img src="https://img.shields.io/badge/model-Qwen3--0.6B-blue?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PHBhdGggZD0iTTEyIDJMMiA3bDEwIDUgMTAtNS0xMC01em0wIDYuNUwyIDE0bDEwIDUgMTAtNS0xMC01em0wIDYuNUwyIDIwbDEwIDUgMTAtNS0xMC01eiIvPjwvc3ZnPg==" alt="Model: Qwen3-0.6B" />
-  <img src="https://img.shields.io/badge/d__model-1024-informational?style=flat-square" alt="d_model: 1024" />
-  <img src="https://img.shields.io/badge/layers-28-informational?style=flat-square" alt="Layers: 28" />
-  <img src="https://img.shields.io/badge/method-ActAdd-orange?style=flat-square" alt="Method: ActAdd" />
-  <img src="https://img.shields.io/badge/tests-13%2F13_passing-brightgreen?style=flat-square" alt="Tests: 13/13 passing" />
-  <img src="https://img.shields.io/badge/conjectures-14_(6_confirmed,_7_refuted)-purple?style=flat-square" alt="Conjectures: 14" />
-  <img src="https://img.shields.io/badge/lenses-12-yellow?style=flat-square" alt="Lenses: 12" />
-  <img src="https://img.shields.io/badge/python-≥3.11-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python ≥3.11" />
-  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License: MIT" />
-</p>
-#+end_export
+[[https://img.shields.io/badge/model-Qwen3--0.6B-blue.svg?style=flat-square][https://img.shields.io/badge/model-Qwen3--0.6B-blue.svg?style=flat-square]]
+[[https://img.shields.io/badge/d__model-1024-informational.svg?style=flat-square][https://img.shields.io/badge/d__model-1024-informational.svg?style=flat-square]]
+[[https://img.shields.io/badge/layers-28-informational.svg?style=flat-square][https://img.shields.io/badge/layers-28-informational.svg?style=flat-square]]
+[[https://img.shields.io/badge/method-ActAdd-orange.svg?style=flat-square][https://img.shields.io/badge/method-ActAdd-orange.svg?style=flat-square]]
+[[https://img.shields.io/badge/tests-13%2F13_passing-brightgreen.svg?style=flat-square][https://img.shields.io/badge/tests-13%2F13_passing-brightgreen.svg?style=flat-square]]
+[[https://img.shields.io/badge/conjectures-14_(6c,_7r)-purple.svg?style=flat-square][https://img.shields.io/badge/conjectures-14_(6c,_7r)-purple.svg?style=flat-square]]
+[[https://img.shields.io/badge/lenses-12-yellow.svg?style=flat-square][https://img.shields.io/badge/lenses-12-yellow.svg?style=flat-square]]
+[[https://img.shields.io/badge/python-≥3.11-3776AB.svg?style=flat-square][https://img.shields.io/badge/python-≥3.11-3776AB.svg?style=flat-square]]
+[[https://img.shields.io/badge/license-MIT-green.svg?style=flat-square][https://img.shields.io/badge/license-MIT-green.svg?style=flat-square]]
 
 #+ATTR_HTML: :width 100%
 [[file:images/output/01-activation-steering_banner.png]]
