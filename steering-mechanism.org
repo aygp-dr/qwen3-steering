@@ -1,0 +1,302 @@
+#+TITLE: Steering Vector Injection: A Visual Explainer
+#+AUTHOR: jwalsh / aygp-dr
+#+DATE: 2026-03-06
+#+STARTUP: showall
+#+PROPERTY: header-args:mermaid :exports results
+
+* Qwen3-0.6B Architecture Summary
+
+| Parameter          | Value              |
+|--------------------+--------------------|
+| Transformer layers | 28                 |
+| Hidden size        | 1024 (d_model)     |
+| FFN width          | 4096 (SwiGLU)      |
+| Attention heads    | 16 query, 8 KV     |
+| Attention type     | Grouped Query (GQA)|
+| Normalization      | RMSNorm            |
+| Position encoding  | RoPE               |
+| Vocab size         | 151,936            |
+| Total params       | ~751M              |
+
+The model has *28 transformer layers* (indexed 0-27). Each layer contains
+self-attention + feed-forward, with residual connections. The residual stream
+is a 1024-dimensional vector that flows through all 28 layers sequentially.
+
+* How a Steering Vector Is Computed (Terse/Verbose Example)
+
+The steering vector is the *difference in activation patterns* between two
+contrastive prompts at a chosen layer.
+
+#+begin_src mermaid :file steering-compute.png :exports results
+flowchart LR
+    subgraph pos["Positive Prompt (terse)"]
+        P1["'Be extremely concise<br/>and technical. No filler<br/>words. Dense signal.'"]
+    end
+    subgraph neg["Negative Prompt (verbose)"]
+        N1["'Please explain this<br/>thoroughly and helpfully<br/>with lots of context<br/>and examples.'"]
+    end
+
+    P1 -->|"forward pass<br/>through layers 0-L"| AP["act_pos<br/>∈ ℝ¹⁰²⁴"]
+    N1 -->|"forward pass<br/>through layers 0-L"| AN["act_neg<br/>∈ ℝ¹⁰²⁴"]
+    AP --> SUB["v = act_pos − act_neg"]
+    AN --> SUB
+    SUB --> SV["steering vector<br/>v ∈ ℝ¹⁰²⁴"]
+
+    style pos fill:#2d4a2d,color:#e2e8f0
+    style neg fill:#4a2d2d,color:#e2e8f0
+    style SV fill:#2d3a4a,color:#e2e8f0
+#+end_src
+
+The activations are captured at a single layer (typically layer 12-18 for
+Qwen3-0.6B) and mean-pooled across token positions to produce one
+1024-dimensional vector per prompt. The difference encodes the "terse
+direction" in activation space.
+
+* The Injection Mechanism
+
+** Single-Layer Injection (ActAdd)
+
+A PyTorch =register_forward_hook= is attached to one transformer layer.
+During generation, *every forward pass through that layer* adds the steering
+vector to the residual stream:
+
+#+begin_example
+h_L' = h_L + α · v
+#+end_example
+
+Where:
+- =h_L= is the hidden state at layer L (shape: [batch, seq_len, 1024])
+- =v= is the steering vector (shape: [1024]), broadcast across all positions
+- =α= is the scaling factor (typically 2.0 for raw vectors)
+
+#+begin_src mermaid :file injection-single.png :exports results
+flowchart TB
+    subgraph model["Qwen3-0.6B Forward Pass"]
+        E["Embedding<br/>token → ℝ¹⁰²⁴"] --> L0["Layer 0"]
+        L0 --> L1["Layer 1"]
+        L1 --> dots1["..."]
+        dots1 --> L11["Layer 11"]
+        L11 --> L12["Layer 12<br/>⚡ HOOK"]
+        L12 --> L13["Layer 13"]
+        L13 --> dots2["..."]
+        dots2 --> L27["Layer 27"]
+        L27 --> LMH["LM Head<br/>→ logits"]
+    end
+
+    SV["Steering Vector<br/>v ∈ ℝ¹⁰²⁴<br/>α = 2.0"] -->|"h₁₂' = h₁₂ + αv"| L12
+
+    style L12 fill:#2d4a2d,color:#e2e8f0,stroke:#4ade80,stroke-width:3px
+    style SV fill:#2d3a4a,color:#e2e8f0
+#+end_src
+
+** Multi-Layer Injection
+
+Multiple hooks can be registered at different layers, each with its own
+vector and alpha. This is not "recursive" — each hook fires independently
+when its layer executes:
+
+#+begin_src mermaid :file injection-multi.png :exports results
+flowchart TB
+    subgraph model["Qwen3-0.6B Forward Pass"]
+        E["Embedding"] --> L0["Layer 0"]
+        L0 --> dots0["..."]
+        dots0 --> L10["Layer 10<br/>⚡ HOOK α=1.0"]
+        L10 --> dots1["..."]
+        dots1 --> L14["Layer 14<br/>⚡ HOOK α=2.0"]
+        L14 --> dots2["..."]
+        dots2 --> L18["Layer 18<br/>⚡ HOOK α=1.5"]
+        L18 --> dots3["..."]
+        dots3 --> L27["Layer 27"]
+        L27 --> LMH["LM Head"]
+    end
+
+    SV1["v₁₀"] -->|"+α₁v"| L10
+    SV2["v₁₄"] -->|"+α₂v"| L14
+    SV3["v₁₈"] -->|"+α₃v"| L18
+
+    style L10 fill:#2d4a2d,color:#e2e8f0,stroke:#4ade80,stroke-width:2px
+    style L14 fill:#2d4a2d,color:#e2e8f0,stroke:#4ade80,stroke-width:3px
+    style L18 fill:#2d4a2d,color:#e2e8f0,stroke:#4ade80,stroke-width:2px
+#+end_src
+
+* Is It Recursive? No — It Is Repeated per Token
+
+The hook fires once per layer per forward pass. But autoregressive generation
+calls the model *once per output token*. This is where the repetition comes
+from: it is not recursion within a single pass, but iteration across tokens.
+
+#+begin_src mermaid :file token-iteration.png :exports results
+sequenceDiagram
+    participant G as Generator
+    participant M as Model (28 layers)
+    participant H as Hook @ Layer 12
+
+    Note over G: Prompt: "Explain gravity"
+    G->>M: Forward pass (all prompt tokens)
+    M->>H: Layer 12 fires
+    H->>M: h₁₂' = h₁₂ + αv (all positions)
+    M->>G: logits → token₁ = "Mass"
+
+    G->>M: Forward pass (token₁)
+    M->>H: Layer 12 fires
+    H->>M: h₁₂' = h₁₂ + αv
+    M->>G: logits → token₂ = "curves"
+
+    G->>M: Forward pass (token₂)
+    M->>H: Layer 12 fires
+    H->>M: h₁₂' = h₁₂ + αv
+    M->>G: logits → token₃ = "spacetime"
+
+    Note over G: ... repeats for every generated token
+#+end_src
+
+** Key insight
+
+The steering vector is added at the *same magnitude* every time. It does not
+accumulate in the residual stream across tokens (each token's forward pass
+starts fresh from the KV cache + new token embedding). The effect is
+*constant pressure*, not compounding.
+
+* What Happens at Scale: 128 vs 1024 Tokens
+
+** Per-token cost
+
+Each generated token requires one forward pass through all 28 layers. The
+hook adds a single vector addition at the hooked layer(s). This is O(d_model)
+= O(1024) — negligible compared to attention (O(seq_len × d_model)).
+
+** Scaling behavior
+
+#+begin_src mermaid :file scaling.png :exports results
+flowchart TB
+    subgraph seq128["128-token generation"]
+        direction LR
+        T1_128["token 1<br/>28 layers<br/>1 hook fire"] ~~~ T2_128["token 2<br/>28 layers<br/>1 hook fire"] ~~~ dots128["..."] ~~~ T128["token 128<br/>28 layers<br/>1 hook fire"]
+    end
+
+    subgraph seq1024["1024-token generation"]
+        direction LR
+        T1_1k["token 1<br/>28 layers<br/>1 hook fire"] ~~~ T2_1k["token 2<br/>28 layers<br/>1 hook fire"] ~~~ dots1k["..."] ~~~ T1024["token 1024<br/>28 layers<br/>1 hook fire"]
+    end
+
+    subgraph counts["Hook Invocation Counts"]
+        direction LR
+        C1["128 tokens × 1 hook<br/>= 128 additions"] ~~~ C2["1024 tokens × 1 hook<br/>= 1024 additions"]
+    end
+
+    seq128 ~~~ seq1024 ~~~ counts
+#+end_src
+
+| Sequence length | Forward passes | Hook fires (1 layer) | Hook fires (3 layers) | Vector additions |
+|-----------------+----------------+----------------------+-----------------------+------------------|
+|             128 |            128 |                  128 |                   384 | 128 or 384       |
+|             512 |            512 |                  512 |                 1,536 | 512 or 1,536     |
+|           1,024 |          1,024 |                1,024 |                 3,072 | 1,024 or 3,072   |
+
+Each vector addition is a 1024-element add — trivial. The dominant cost
+remains attention's O(n²) over the growing KV cache, not the steering.
+
+* The Residual Stream View
+
+The residual stream is the central "highway" through the transformer. Each
+layer reads from it, computes, and writes back. The steering hook intercepts
+this highway at one point.
+
+#+begin_src mermaid :file residual-stream.png :exports results
+flowchart LR
+    subgraph stream["Residual Stream (ℝ¹⁰²⁴)"]
+        direction LR
+        X0["x₀<br/>embed"] -->|"+attn₀+ffn₀"| X1["x₁"]
+        X1 -->|"+attn₁+ffn₁"| X2["x₂"]
+        X2 --> D1["..."]
+        D1 --> X11["x₁₁"]
+        X11 -->|"+attn₁₁+ffn₁₁"| X12["x₁₂"]
+        X12 -->|"+ αv ⚡"| X12S["x₁₂'<br/>steered"]
+        X12S -->|"+attn₁₂+ffn₁₂"| X13["x₁₃"]
+        X13 --> D2["..."]
+        D2 --> X27["x₂₇"]
+        X27 --> OUT["logits"]
+    end
+
+    style X12 fill:#4a2d2d,color:#e2e8f0
+    style X12S fill:#2d4a2d,color:#e2e8f0,stroke:#4ade80,stroke-width:3px
+#+end_src
+
+The perturbation at layer 12 propagates through layers 13-27. Later layers
+can amplify, dampen, or redirect the effect. This is why layer choice matters:
+too early (layers 0-5) and attention overwrites it; too late (layers 24-27)
+and there are not enough downstream layers to propagate the effect into
+meaningful token predictions.
+
+* Layer Sweet Spot for Qwen3-0.6B
+
+Empirical measurements from this project:
+
+| Layer | Residual norm | Raw vec norm | Ratio (SNR) | Quality   |
+|-------+---------------+--------------+-------------+-----------|
+|     5 |           455 |         14.1 | 3.1%        | Too early |
+|    10 |           472 |         15.8 | 3.3%        | Marginal  |
+|    12 |             — |            — | —           | Best      |
+|    14 |           481 |         18.7 | 3.9%        | Good      |
+|    15 |           488 |         19.6 | 4.0%        | Good      |
+|    16 |           501 |         22.9 | 4.6%        | Good      |
+|    18 |           538 |         29.8 | 5.5%        | Marginal  |
+|    20 |           595 |         40.3 | 6.8%        | Unstable  |
+|    24 |           810 |         70.8 | 8.7%        | Too late  |
+
+Sweet spot: *layers 12-18*. The steering vector norm should be ~3-5% of
+the residual stream norm at the injection point.
+
+* Complete Picture: Terse Steering on a 128-Token Generation
+
+#+begin_src mermaid :file complete-picture.png :exports results
+flowchart TB
+    subgraph prep["1. Compute Steering Vector (once)"]
+        PP["Terse prompt"] -->|"fwd pass → layer 12"| AP["act_pos ∈ ℝ¹⁰²⁴"]
+        NP["Verbose prompt"] -->|"fwd pass → layer 12"| AN["act_neg ∈ ℝ¹⁰²⁴"]
+        AP --> DIFF["v = act_pos − act_neg"]
+        AN --> DIFF
+    end
+
+    subgraph hook["2. Register Hook"]
+        DIFF --> REG["model.layers[12]<br/>.register_forward_hook()"]
+        REG --> READY["Hook active:<br/>h' = h + 2.0·v"]
+    end
+
+    subgraph gen["3. Generate 128 Tokens"]
+        READY --> T1["Token 1: 28 layers, hook @ L12"]
+        T1 --> T2["Token 2: 28 layers, hook @ L12"]
+        T2 --> T3["Token 3: 28 layers, hook @ L12"]
+        T3 --> Tdots["..."]
+        Tdots --> T128["Token 128: 28 layers, hook @ L12"]
+    end
+
+    subgraph stats["4. Totals"]
+        S1["28 × 128 = 3,584 layer executions"]
+        S2["128 hook fires (one per token at L12)"]
+        S3["128 × 1024 = 131,072 scalar additions"]
+        S4["Overhead: < 0.1% of total compute"]
+    end
+
+    gen ~~~ stats
+
+    style prep fill:#1a2a3a,color:#e2e8f0
+    style hook fill:#2d4a2d,color:#e2e8f0
+    style gen fill:#2d3a4a,color:#e2e8f0
+    style stats fill:#3a2a3a,color:#e2e8f0
+#+end_src
+
+* Terminology Reference
+
+| Term                 | Meaning                                                              |
+|----------------------+----------------------------------------------------------------------|
+| Layer                | One transformer block (attention + FFN + residual connections)       |
+| Residual stream      | The d_model-dimensional vector flowing through all layers            |
+| Forward pass         | One complete traversal of all 28 layers for one token                |
+| Hook                 | A callback registered on a layer, fires every forward pass           |
+| Steering vector      | The contrastive activation difference encoding a behavioral axis     |
+| Alpha (α)            | Scaling factor controlling intervention strength                     |
+| Autoregressive       | Generating one token at a time, each conditioned on all previous     |
+| KV cache             | Stored key/value matrices from prior tokens (avoids recomputation)   |
+| Superposition        | Multiple features compressed into fewer dimensions                   |
+| GQA                  | Grouped Query Attention — queries share key/value heads              |
