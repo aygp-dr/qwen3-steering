@@ -1,0 +1,13 @@
+X-Agent: claude-opus-4-6 + jwalsh (interactive)
+X-Reviews: cto (blocker: no LICENSE), cloud (blocker: hardcoded paths)
+
+## Pre-public Release Fixes
+- Added MIT LICENSE (was legally "all rights reserved" without it)
+- Replaced 4 hardcoded /Users/jwalsh/... paths with git rev-parse
+- Repo made PUBLIC after all 4 reviews cleared
+
+## Review Agents
+- CTO: CONDITIONAL GO → GO after LICENSE + path fixes
+- L7: P0 metric divergence noted for future (not blocking release)
+- Cloud: 3 blockers → all resolved
+- Security: 0 critical, 3 high → all resolved
