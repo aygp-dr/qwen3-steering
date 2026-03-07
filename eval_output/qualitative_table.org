@@ -1,0 +1,8 @@
+#+CAPTION: Baseline vs terse-steered outputs (alpha=2.0, layer=15)
+| Prompt | Baseline | Words | Terse (alpha=2.0) | Words | Reduction |
+|--------+----------+-------+--------------------+-------+-----------|
+| Why do stars twinkle? | Stars do not twinkle in the way we might think. The term "twinkle" is often used... | 155 | Stars do not twinkle. They are the most luminous and most intense in the sky. Th... | 43 | -72% |
+| How do magnets work? | Magnets work based on the principle of **electromagnetism**, where a **current-c... | 135 | Magnesium is a metal, but it does not have a magnetic property. It is a metal, b... | 36 | -73% |
+| How do airplanes fly? | Airplanes fly by using a combination of **airplanes' wings** and **air movement*... | 142 | Airplanes are designed to move through the air, and they do not "fly" in the sen... | 45 | -68% |
+| How do vaccines work? | Vaccines work by introducing a small, harmless piece of a pathogen (like a virus... | 128 | Vaccines are designed to stimulate the immune system, preventing the body from p... | 39 | -70% |
+| What is an atom? | An atom is the basic unit of matter, consisting of a nucleus and an electron clo... | 102 | An atom is the smallest unit of matter, and it cannot be divided. It consists of... | 31 | -70% |

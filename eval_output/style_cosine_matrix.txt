@@ -1,0 +1,1 @@
+4x4 cosine similarity heatmap of style steering vectors (terse, formal, socratic, dry-wit) at layer 12 of Qwen3-0.6B. Tests H-SV-1: whether style vectors are orthogonal at d_model=1024. Max off-diagonal pair: socratic/dry-wit (0.979). Mean absolute off-diagonal cosine similarity: 0.835.

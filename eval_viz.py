@@ -42,7 +42,7 @@ DARK_BG = "#0d1117"
 PANEL_BG = "#161b22"
 TEXT_CLR = "#c9d1d9"
 GRID_CLR = "#30363d"
-COLORS = {"terse": "#58a6ff", "baseline": "#8b949e", "verbose": "#f0883e"}
+COLORS = {"terse": "#58a6ff", "baseline": "#d2a8ff", "verbose": "#f0883e"}
 LABEL_ORDER = ["terse", "baseline", "verbose"]
 OUTPUT_DIR = Path("eval_output")
 
@@ -427,7 +427,7 @@ def plot_dashboard(X, labels, pred_labels, ari, output_dir):
              fontsize=10, verticalalignment="top", fontfamily="monospace")
     ax6.set_title("F. Summary", color=TEXT_CLR, fontsize=10)
 
-    fig.suptitle("Terse/Verbose Steering: Six-Panel Dashboard",
+    fig.suptitle(f"Surface Features Recover Terse Screen but Not Verbose (C-28, ARI={ari:.3f})",
                  color=TEXT_CLR, fontsize=14, fontweight="bold")
     path = output_dir / "06_dashboard.png"
     fig.savefig(path, dpi=150, facecolor=DARK_BG, bbox_inches="tight")
