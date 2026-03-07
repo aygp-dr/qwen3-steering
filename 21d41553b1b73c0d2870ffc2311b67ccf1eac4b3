@@ -1,0 +1,31 @@
+X-Agent: claude-opus-4-6 + jwalsh (interactive)
+X-Session: 2026-03-06T21:00-05:00/2026-03-06T22:30-05:00
+X-Timing: model-load=2s, vector-compute=8s, generation=~90s (5 prompts × 5 conditions)
+
+## Reasoning
+User requested ":yolo:" style — no hypothesis testing, just run all four
+README styles and see what happens. Prompts chosen as CS-domain to match
+project context. Metrics: word_count, topic_cosine, perplexity_ratio,
+markdown_density, question_ratio.
+
+## Key Findings
+- terse: works (33w, 80% reduction). Only style with validated effect.
+- formal: 175w (≈baseline), topic=0.21. Vector norm 47.3 → SNR ~9.2%, above sweet spot.
+- socratic: 248w, q_ratio=0.0 (no questions generated). ppl=0.69 (<1.0 — model finds
+  this "easier"). Vector norm 117.7 → SNR ~23%, way beyond usable range.
+- dry-wit: 204w, topic=0.27. Norm 55.4 → SNR ~10.8%.
+
+## Issues
+- All non-terse styles have topic_cosine < 0.3 — well below 0.6 threshold.
+  Steering at α=2.0 with these larger vectors destroys content.
+- question_ratio metric returned 0.0 for all conditions — regex splitting on
+  [.!?] may miss questions that end with '?' embedded in longer text, but
+  manual inspection confirms socratic output has no actual questions.
+- tfidf_cosine is bag-of-words, underestimates semantic similarity for
+  paraphrased content. Would need embedding-based metric for formal/dry-wit.
+
+## Deviations
+- α=2.0 was chosen for consistency with prior experiments but is clearly
+  too aggressive for non-terse styles (norm 47-118 vs terse 17).
+  Calibrated alpha per style (e.g., α=0.5 for socratic) would be needed.
+- No CPRR conjectures registered — this was exploratory/showcase.
