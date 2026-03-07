@@ -1,5 +1,6 @@
 .models/
 *.pt
+*.pyc
 __pycache__/
 
 # Dolt database files (added by bd init)
@@ -9,3 +10,18 @@ worktrees/
 .venv/
 lean4/.lake/
 .hypothesis/
+
+# Secrets / credentials
+.env
+.env.*
+*.pem
+*.key
+
+# OS artifacts
+.DS_Store
+
+# Runtime artifacts
+ollama_requests.jsonl
+
+# Local settings (user-specific hooks)
+.claude/settings.local.json

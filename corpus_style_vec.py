@@ -84,7 +84,7 @@ def save_style_vectors(vectors: dict, path: str):
 
 
 def load_style_vectors(path: str) -> dict[int, torch.Tensor]:
-    return {int(k): v for k, v in torch.load(path).items()}
+    return {int(k): v for k, v in torch.load(path, weights_only=True).items()}
 
 
 if __name__ == "__main__":

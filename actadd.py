@@ -50,20 +50,22 @@ def get_layer_activations(
 
     handle = model.model.layers[layer_idx].register_forward_hook(hook_fn)
 
-    # Disable thinking mode: append empty <think></think> block
-    messages = [{"role": "user", "content": prompt}]
-    text = tokenizer.apply_chat_template(
-        messages,
-        tokenize=False,
-        add_generation_prompt=True,
-        enable_thinking=False,
-    )
-    inputs = tokenizer(text, return_tensors="pt").to(model.device)
+    try:
+        # Disable thinking mode: append empty <think></think> block
+        messages = [{"role": "user", "content": prompt}]
+        text = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False,
+        )
+        inputs = tokenizer(text, return_tensors="pt").to(model.device)
 
-    with torch.no_grad():
-        model(**inputs)
+        with torch.no_grad():
+            model(**inputs)
+    finally:
+        handle.remove()
 
-    handle.remove()
     # Mean over sequence dimension → (d_model,)
     return captured["hs"].squeeze(0).mean(dim=0)
 
@@ -111,21 +113,22 @@ def generate_steered(
 
     handle = model.model.layers[layer_idx].register_forward_hook(steering_hook)
 
-    messages = [{"role": "user", "content": prompt}]
-    text = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
-    )
-    inputs = tokenizer(text, return_tensors="pt").to(model.device)
-
-    with torch.no_grad():
-        out = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            do_sample=False,
-            temperature=1.0,
+    try:
+        messages = [{"role": "user", "content": prompt}]
+        text = tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
         )
+        inputs = tokenizer(text, return_tensors="pt").to(model.device)
 
-    handle.remove()
+        with torch.no_grad():
+            out = model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=False,
+            )
+    finally:
+        handle.remove()
+
     new_ids = out[0][inputs.input_ids.shape[1]:]
     return tokenizer.decode(new_ids, skip_special_tokens=True)
 
