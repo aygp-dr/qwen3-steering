@@ -1,0 +1,6 @@
+X-AI-Agent: claude-opus-4-6
+X-Conjecture: C-28 (proposed)
+X-Detection: Burke prediction confirmed — terse/baseline bleed, verbose clean
+X-Testing: eval_viz.py generates 6 panels from terse_verbose_full.json
+X-Integration: No Ollama dependency — pure sklearn/seaborn post-hoc analysis
+X-Notes: Preliminary ARI=0.395 on n=10; full 100-prompt run pending for C-28 verdict

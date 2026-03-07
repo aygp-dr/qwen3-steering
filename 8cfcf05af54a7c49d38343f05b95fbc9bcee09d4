@@ -1,0 +1,6 @@
+X-AI-Agent: Claude Opus 4.6
+X-Testing: 5/5 pass — directional steering confirmed
+X-Note: This is the gate test. If test_terse_shorter_than_verbose fails,
+  the steering vector has no directional signal and all other tests are void.
+X-Note: Uses -alpha for verbose direction (negating the terse vector).
+  This is the ActAdd symmetry property: +v = terse, -v = verbose.

@@ -1,0 +1,6 @@
+X-AI-Agent: Claude Opus 4.6
+X-Testing: 8/8 property tests pass, 5/5 style contracts pass
+X-Detection: words/sentence increased 15.9->16.7 under terse steering
+  (model drops sentences rather than shortening them — characteristic of 0.6B scale)
+X-Conjecture: Supports H-SM-5 (d_model=1024 near practical boundary)
+  — steering effect is binary (sentences dropped/kept) not graded

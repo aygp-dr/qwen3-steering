@@ -1,0 +1,8 @@
+X-AI-Agent: Claude Opus 4.6 (subagent, 471s runtime, 37 tool uses)
+X-Conjecture: Agent recommended unit normalization as "essential" (line 374-377).
+  Empirically refuted by diagnose_steering.py in commit 6469f72.
+  The research doc was written before the diagnostic — keep but note the conflict.
+X-Detection: Mean-centering (Jorgensen 2023) identified as critical gap.
+  Would remove anisotropic common-mode from activation space before differencing.
+  At d_model=1024, anisotropy is MORE pronounced, so effect should be LARGER.
+X-Note: LoRA+steering hybrid identified as most promising unexplored direction.
