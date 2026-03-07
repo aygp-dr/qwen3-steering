@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qwen3-0.6B Activation Steering — Gallery</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --blue: #58a6ff;
+    --orange: #f0883e;
+    --purple: #d2a8ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid var(--border);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  header h1 { font-size: 1.6rem; font-weight: 600; }
+  header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  nav a {
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  nav a:hover, nav a.active {
+    background: var(--panel);
+    border-color: var(--blue);
+  }
+
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* -- Sections for hero images -- */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+  }
+  .card-header h2 { font-size: 1.1rem; font-weight: 600; }
+  .card-header .tag {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .card-body { padding: 1.2rem; }
+  .card-body img {
+    width: 100%;
+    border-radius: 4px;
+    display: block;
+  }
+  .card-body .alt-text {
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .card-body .prompt {
+    margin-top: 0.6rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    border-left: 3px solid var(--border);
+  }
+  .card-body .prompt strong { color: var(--text); }
+
+  /* -- Interactive section -- */
+  .interactive-section {
+    background: var(--panel);
+    border: 1px solid var(--blue);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .interactive-section .card-header { border-color: var(--blue); }
+  .interactive-section .card-header h2 { color: var(--blue); }
+  #p5-container {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+    background: var(--bg);
+  }
+  #p5-container canvas { border-radius: 4px; }
+  .controls {
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+  }
+  .controls label { color: var(--muted); }
+  .controls input[type="range"] { width: 120px; vertical-align: middle; }
+  .controls .value { color: var(--blue); font-family: monospace; min-width: 3em; }
+
+  /* -- Eval output grid -- */
+  .eval-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .eval-grid .card { margin-bottom: 0; }
+
+  /* -- Viz output grid -- */
+  .viz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .viz-grid .card { margin-bottom: 0; }
+
+  h3.section-title {
+    font-size: 1.2rem;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  footer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Qwen3-0.6B Activation Steering</h1>
+  <p>ActAdd style steering at d_model=1024 — hero images, interactive simulations, and evaluation visualizations</p>
+</header>
+
+<nav>
+  <a href="#interactive">Interactive: Superposition</a>
+  <a href="#hero-images">Hero Images (10)</a>
+  <a href="#eval-viz">Eval: Six-Panel Pipeline</a>
+  <a href="#viz-plots">Viz: Steering Analysis</a>
+</nav>
+
+<main>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h3 class="section-title" id="interactive">Interactive: Superposition at d_model=1024</h3>
+
+<div class="interactive-section">
+  <div class="card-header">
+    <h2>Superposition Entanglement Simulator</h2>
+    <span class="tag">p5.js</span>
+    <span class="tag">interactive</span>
+  </div>
+  <div id="p5-container"></div>
+  <div class="controls">
+    <label>Alpha: <input type="range" id="ctrl-alpha" min="0" max="5" step="0.1" value="2.0">
+      <span class="value" id="val-alpha">2.0</span></label>
+    <label>d_model: <input type="range" id="ctrl-dmodel" min="128" max="2048" step="128" value="1024">
+      <span class="value" id="val-dmodel">1024</span></label>
+    <label>Interference: <input type="range" id="ctrl-interference" min="0" max="1" step="0.05" value="0.3">
+      <span class="value" id="val-interference">0.30</span></label>
+  </div>
+  <div class="card-body">
+    <p class="alt-text">
+      Two helical feature strands (terse=blue, worldview=amber) intertwined in a
+      constrained d_model-dimensional cylinder. Where they overlap, interference
+      appears as white — the superposition region where pushing one feature drags the
+      other. Wider cylinder = more dimensions = less entanglement.
+      Drag to rotate. Adjust alpha to see steering perturbation magnitude.
+    </p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h3 class="section-title" id="hero-images">Hero Images</h3>
+
+<div id="hero-cards"></div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h3 class="section-title" id="eval-viz">Evaluation: Six-Panel Pipeline (C-28)</h3>
+
+<!-- Dashboard first, full width -->
+<div class="card" style="margin-bottom:1.5rem">
+  <div class="card-header">
+    <h2>Dashboard</h2>
+    <span class="tag">C-28</span>
+    <span class="tag">n=10 preliminary</span>
+  </div>
+  <div class="card-body">
+    <img src="eval_output/06_dashboard.png"
+         alt="Six-panel dashboard: KDE, silhouette, PCA scatter, confusion matrix, effect size, summary. ARI=0.395 on n=10 preliminary run.">
+    <p class="alt-text">Six-panel dashboard summarizing the terse/verbose steering evaluation. Panels: (A) word count KDE, (B) silhouette analysis preferring k=2, (C) PCA scatter with 2-sigma ellipses at ARI=0.395, (D) normalised confusion matrix, (E) rank-biserial effect size heatmap, (F) summary with C-28 verdict. Preliminary n=10: surface features recover terse cleanly but cannot distinguish baseline from verbose.</p>
+  </div>
+</div>
+
+<div class="eval-grid">
+  <div class="card">
+    <div class="card-header"><h2>1. Descriptive KDE</h2></div>
+    <div class="card-body">
+      <img src="eval_output/01_descriptive_kde.png" alt="KDE of word, token, and char counts per steering direction.">
+      <p class="alt-text">Kernel density estimates with median lines. Terse clusters tightly around 48 words; baseline and verbose overlap substantially, confirming asymmetric steering effect.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>2. Elbow + Silhouette</h2></div>
+    <div class="card-body">
+      <img src="eval_output/02_elbow_silhouette.png" alt="Elbow curve and silhouette score across k=2..8.">
+      <p class="alt-text">Elbow at k=3 but silhouette peaks at k=2 (0.725), reflecting baseline/verbose merger into one cluster. Core tension of C-28.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>3. PCA Scatter</h2></div>
+    <div class="card-body">
+      <img src="eval_output/03_pca_scatter.png" alt="PCA projection with ground truth vs k-means labels and 2-sigma ellipses.">
+      <p class="alt-text">PC1 captures 99.8% variance. Terse well-separated; baseline/verbose ellipses overlap. ARI=0.395.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>4. Confusion Matrix</h2></div>
+    <div class="card-body">
+      <img src="eval_output/04_confusion_matrix.png" alt="Raw and normalised confusion matrices.">
+      <p class="alt-text">Terse 80% recall, verbose 90%, baseline only 40%. Burke's prediction: terse/baseline bleed, verbose clean.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>5. Effect Size Heatmap</h2></div>
+    <div class="card-body">
+      <img src="eval_output/05_effect_size_heatmap.png" alt="Rank-biserial r with Bonferroni stars.">
+      <p class="alt-text">Terse vs others: r=0.96-1.00 (p&lt;.01). Baseline vs verbose: r=0.40-0.46 (n.s.). Terse screen is the strong signal.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>6. Per-Class Detail</h2></div>
+    <div class="card-body">
+      <img src="eval_output/per_class_detail.png" alt="Per-class k-means accuracy scatter.">
+      <p class="alt-text">Green=correct, red=misclassified. Terse 8/10, verbose 9/10, baseline 4/10. Most baseline errors land in verbose cluster.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h3 class="section-title" id="viz-plots">Visualizations: Steering Analysis</h3>
+
+<div class="viz-grid">
+  <div class="card">
+    <div class="card-header"><h2>Residual Stream Landscape</h2></div>
+    <div class="card-body">
+      <img src="viz/output/residual_landscape.png" alt="2D PCA of style basins in activation space.">
+      <p class="alt-text">Five style basins around unsteered baseline. Terse and cult-of-jason visibly overlap due to superposition at d_model=1024.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>Layer Anatomy</h2></div>
+    <div class="card-body">
+      <img src="viz/output/layer_anatomy.png" alt="Residual norms and SNR across 28 layers.">
+      <p class="alt-text">Residual norms peak at ~488 (layer 15). Unit vec alpha=0.20: 0.04% SNR (zero effect). Raw vec alpha=2.0: 8% SNR (effective).</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>Alpha Phase Diagram</h2></div>
+    <div class="card-body">
+      <img src="viz/output/alpha_phase_diagram.png" alt="Word count vs alpha showing dead zone, effective, and collapse regimes.">
+      <p class="alt-text">Three regimes: dead zone below alpha=0.5, effective steering at 1.5-2.5, coherence collapse above 3.0. Raw vs unit vector comparison on log scale.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>Lens Contamination Radar</h2></div>
+    <div class="card-body">
+      <img src="viz/output/lens_contamination_radar.png" alt="12-lens radar chart measuring conceptual drift.">
+      <p class="alt-text">Four scenarios: superposition leak, clean steering, overlay comparison, and coherence collapse. 12 terministic screen lenses (Burke 1966).</p>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <p>Qwen3-0.6B Activation Steering &mdash; <a href="https://github.com/aygp-dr/qwen3-steering">github.com/aygp-dr/qwen3-steering</a></p>
+  <p>Images: x/flux2-klein:4b (seed=42) &bull; Visualizations: matplotlib + seaborn &bull; Interactive: p5.js</p>
+</footer>
+
+<!-- ═══════════════ Hero image cards (generated from data) ═══════════ -->
+<script>
+const heroImages = [
+  { id: "01", slug: "activation-steering", title: "Activation Steering",
+    alt: "A luminous vector arrow piercing through floating data points, redirecting particles from blue to amber clusters. Translucent neural network layers in background.",
+    prompt: "A luminous vector arrow piercing through a dense cloud of floating data points in high-dimensional space, scientific visualization style." },
+  { id: "02", slug: "residual-stream", title: "Residual Stream",
+    alt: "A wide river of light flowing through 28 translucent gates. At gate 12, a glowing arrow deflects the stream sideways. Color shifts from white to gold.",
+    prompt: "A wide river of light flowing through 28 translucent gates arranged in perspective, each gate slightly larger than the last." },
+  { id: "03", slug: "layer-anatomy", title: "Layer Anatomy",
+    alt: "Cross-section of 28 stacked luminous rings, blue at bottom to red at top. Bright injection point at ring 12 emits radial light.",
+    prompt: "Cross-section diagram of a neural network as a vertical tower of 28 stacked luminous rings." },
+  { id: "04", slug: "superposition-entanglement", title: "Superposition Entanglement",
+    alt: "Two intertwined helical strands — terse-blue and gold-amber — in a narrow cylinder. White interference where they overlap. Mathematical notation floats.",
+    prompt: "Two intertwined helical strands of light in a constrained cylindrical space, one strand colored terse-blue and one colored gold-amber for worldview." },
+  { id: "05", slug: "phase-diagram", title: "Phase Diagram",
+    alt: "Landscape with three terrain zones: frozen plain (dead zone), green valley (sweet spot), volcanic wasteland (collapse). A luminous path threads through the valley.",
+    prompt: "A dramatic landscape showing three distinct terrain zones: frozen plain, lush valley, chaotic volcanic wasteland." },
+  { id: "06", slug: "lens-contamination", title: "Lens Contamination",
+    alt: "Crystal lens in space — clean side passes bread and birds unchanged, contaminated amber side wraps them in code brackets and math notation.",
+    prompt: "A pristine crystal lens floating in space, but one sector tinted with amber contamination that distorts whatever passes through." },
+  { id: "07", slug: "trains-person", title: "Trains Person (Deformation Professionnelle)",
+    alt: "Person at desk sees bread, but radiating vision lines transform it into an engineering blueprint with invariants and proof annotations. Glasses glow with data.",
+    prompt: "A person sitting at a desk looking at bread, but their vision transforms it into engineering blueprints with specifications and proofs." },
+  { id: "08", slug: "style-basins", title: "Style Basins",
+    alt: "Topographic map from above with four colored basins: terse (ice blue), formal (purple), socratic (green), dry-wit (amber). Gold fifth basin overlaps terse.",
+    prompt: "Topographic map showing four distinct basins in a high-dimensional landscape, each a different color." },
+  { id: "09", slug: "ouroboros-eval", title: "Ouroboros Eval",
+    alt: "Ouroboros serpent of data streams and code, encircling a radar chart. Body transitions from input text through layers to output feeding back. Gold and deep blue.",
+    prompt: "A luminous ouroboros formed from data streams and code characters, encircling a central evaluation metric display." },
+  { id: "10", slug: "qwen-steering-hero", title: "Qwen Steering Hero",
+    alt: "Small crystalline structure floating in dark space. Colored laser beams converge on facets, redirecting light into a spectrum. Text patterns in refracted light.",
+    prompt: "A small precise crystalline structure floating in vast dark space, with colored laser beams converging on specific facets." },
+];
+
+const container = document.getElementById("hero-cards");
+heroImages.forEach(img => {
+  const src = `images/output/${img.id}-${img.slug}_x_flux2-klein_4b_s42.png`;
+  const card = document.createElement("div");
+  card.className = "card";
+  card.id = `hero-${img.id}`;
+  card.innerHTML = `
+    <div class="card-header">
+      <h2>${img.id}. ${img.title}</h2>
+      <span class="tag">x/flux2-klein:4b</span>
+      <span class="tag">seed=42</span>
+    </div>
+    <div class="card-body">
+      <img src="${src}" alt="${img.alt}" loading="lazy">
+      <p class="alt-text">${img.alt}</p>
+      <div class="prompt"><strong>Prompt:</strong> ${img.prompt}</div>
+    </div>`;
+  container.appendChild(card);
+});
+</script>
+
+<!-- ═══════════════ p5.js Superposition Sketch ═══════════════════════ -->
+<script>
+const sketch = (p) => {
+  let rotX = -0.3, rotY = 0;
+  let dragging = false;
+  let pmx, pmy;
+  let t = 0;
+
+  // Controls
+  let alpha = 2.0;
+  let dmodel = 1024;
+  let interference = 0.3;
+
+  const W = 700, H = 500;
+
+  p.setup = () => {
+    const canvas = p.createCanvas(W, H, p.WEBGL);
+    canvas.parent("p5-container");
+    p.textFont("monospace");
+
+    // Wire up sliders
+    const wire = (id, valId, setter) => {
+      const el = document.getElementById(id);
+      const vl = document.getElementById(valId);
+      el.addEventListener("input", () => { setter(parseFloat(el.value)); vl.textContent = el.value; });
+    };
+    wire("ctrl-alpha", "val-alpha", v => alpha = v);
+    wire("ctrl-dmodel", "val-dmodel", v => dmodel = v);
+    wire("ctrl-interference", "val-interference", v => { interference = v; document.getElementById("val-interference").textContent = v.toFixed(2); });
+  };
+
+  p.draw = () => {
+    p.background(13, 17, 23);
+    t += 0.008;
+
+    p.rotateX(rotX);
+    p.rotateY(rotY + t * 0.15);
+
+    // Cylinder radius proportional to sqrt(d_model)
+    const cylR = p.map(Math.sqrt(dmodel), Math.sqrt(128), Math.sqrt(2048), 40, 140);
+    const cylH = 300;
+
+    // Draw cylinder wireframe
+    p.push();
+    p.noFill();
+    p.stroke(48, 54, 61, 120);
+    p.strokeWeight(0.5);
+    for (let i = 0; i <= 8; i++) {
+      const y = p.map(i, 0, 8, -cylH/2, cylH/2);
+      p.push();
+      p.translate(0, y, 0);
+      p.rotateX(p.HALF_PI);
+      p.circle(0, 0, cylR * 2);
+      p.pop();
+    }
+    // Vertical lines
+    for (let a = 0; a < p.TWO_PI; a += p.PI/4) {
+      const x = cylR * Math.cos(a);
+      const z = cylR * Math.sin(a);
+      p.line(x, -cylH/2, z, x, cylH/2, z);
+    }
+    p.pop();
+
+    // Helix parameters
+    const helixR = cylR * 0.55;
+    const turns = 4;
+    const steps = 200;
+    const perturbation = p.map(alpha, 0, 5, 0, helixR * 0.6);
+
+    // Draw two intertwined helices
+    const drawHelix = (phase, r, g, b, offsetAngle) => {
+      p.noFill();
+      p.strokeWeight(2.5);
+      p.beginShape();
+      for (let i = 0; i < steps; i++) {
+        const frac = i / steps;
+        const angle = frac * turns * p.TWO_PI + offsetAngle;
+        const y = p.map(frac, 0, 1, -cylH/2, cylH/2);
+        const baseR = helixR + Math.sin(frac * p.PI * 3 + t * 2) * 5;
+        const x = (baseR + perturbation * Math.sin(angle * 2 + t)) * Math.cos(angle);
+        const z = (baseR + perturbation * Math.sin(angle * 2 + t)) * Math.sin(angle);
+
+        // Interference glow: where helices are close
+        const otherAngle = angle + p.PI; // other helix is PI offset
+        const dist = Math.abs(Math.sin((angle - otherAngle) / 2));
+        const interf = interference * (1 - dist);
+        const cr = p.lerp(r, 255, interf);
+        const cg = p.lerp(g, 255, interf);
+        const cb = p.lerp(b, 255, interf);
+        const ca = p.map(Math.abs(y), 0, cylH/2, 220, 80);
+
+        p.stroke(cr, cg, cb, ca);
+        p.vertex(x, y, z);
+      }
+      p.endShape();
+    };
+
+    // Terse helix (blue)
+    drawHelix(0, 88, 166, 255, 0);
+    // Worldview helix (amber)
+    drawHelix(p.PI, 240, 136, 62, p.PI);
+
+    // Interference spots — bright white where helices cross
+    p.noStroke();
+    for (let i = 0; i < steps; i += 4) {
+      const frac = i / steps;
+      const angle = frac * turns * p.TWO_PI;
+      const y = p.map(frac, 0, 1, -cylH/2, cylH/2);
+      const crossPhase = Math.sin(angle);
+      if (Math.abs(crossPhase) < 0.15) {
+        const glow = p.map(interference, 0, 1, 0, 200);
+        const sz = p.map(interference, 0, 1, 2, 10);
+        const x = helixR * Math.cos(angle);
+        const z = helixR * Math.sin(angle);
+        p.push();
+        p.translate(x, y, z);
+        p.fill(255, 255, 255, glow);
+        p.sphere(sz);
+        p.pop();
+      }
+    }
+
+    // Floating labels
+    p.push();
+    p.rotateY(-rotY - t * 0.15);
+    p.rotateX(-rotX);
+    p.fill(200, 209, 217, 160);
+    p.textSize(11);
+    p.textAlign(p.CENTER);
+    p.text(`d_model=${dmodel}  |  alpha=${alpha.toFixed(1)}  |  interference=${interference.toFixed(2)}`, 0, -cylH/2 - 30);
+
+    // Phase labels
+    if (alpha < 0.5) {
+      p.fill(139, 148, 158);
+      p.text("DEAD ZONE — no visible effect", 0, cylH/2 + 30);
+    } else if (alpha <= 2.5) {
+      p.fill(88, 166, 255);
+      p.text("EFFECTIVE STEERING", 0, cylH/2 + 30);
+    } else {
+      p.fill(248, 81, 73);
+      p.text("COHERENCE COLLAPSE", 0, cylH/2 + 30);
+    }
+    p.pop();
+  };
+
+  p.mousePressed = () => {
+    const cx = W/2, cy = H/2;
+    if (Math.abs(p.mouseX - cx) < W/2 && Math.abs(p.mouseY - cy) < H/2) {
+      dragging = true;
+      pmx = p.mouseX;
+      pmy = p.mouseY;
+    }
+  };
+  p.mouseDragged = () => {
+    if (dragging) {
+      rotY += (p.mouseX - pmx) * 0.01;
+      rotX += (p.mouseY - pmy) * 0.01;
+      pmx = p.mouseX;
+      pmy = p.mouseY;
+    }
+  };
+  p.mouseReleased = () => { dragging = false; };
+};
+
+new p5(sketch);
+</script>
+
+</body>
+</html>
