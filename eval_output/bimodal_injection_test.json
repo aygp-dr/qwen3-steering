@@ -1,0 +1,492 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "alpha": 2.0,
+  "vec_norm": 17.36,
+  "timestamp": "2026-03-06T20:27:19-0500",
+  "questions": [
+    "Why does ice float on water?",
+    "How does a vaccine work?",
+    "Why do we dream?",
+    "What causes inflation?",
+    "How does a compass work?",
+    "Why do leaves change color in autumn?",
+    "What is a black hole?",
+    "How does bread rise?",
+    "Why do humans need sleep?",
+    "What causes thunder?"
+  ],
+  "results": [
+    {
+      "question": "Why does ice float on water?",
+      "q_idx": 0,
+      "baseline": {
+        "text": "Ice floats on water because of the **density difference** between ice and water. Here's why:\n\n1. **Ice is less dense than water**:  \n   When water freezes, it becomes less dense than its liquid form. This is because the molecules in ice are arranged in a **hexagonal lattice** structure, which is more open and less compact than the molecules in liquid water. This allows ice to float on top of water.\n\n2. **This is a physical property of water**:  \n   The density of water is approximately **0.998 g/cm\u00b3** at 4\u00b0C. Ice has a density of **0.92 g/cm\u00b3**, which is less dense. This is why ice floats.\n\n3. **This is a natural phenomenon**:  \n   The process of ice forming on the surface of water is a result of the **phase change** from liquid to solid, and it is a **common natural occurrence**.\n\nSo, in summary, ice floats on water because it is less dense than liquid water.",
+        "word_count": 152,
+        "sentence_count": 14,
+        "words_per_sentence": 10.9,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "Ice floats on water because it is less dense than liquid water.",
+        "word_count": 12,
+        "sentence_count": 1,
+        "words_per_sentence": 12.0,
+        "topic_cosine": 0.715
+      },
+      "prompt_verbose": {
+        "text": "Ice floats on water because of the **physical properties of water**. When water freezes, it becomes less dense than liquid water. This means that the solid form of water (ice) takes up more space than liquid water, allowing it to float on top of the liquid. This is why ice can float on water, even though it is colder than liquid water.",
+        "word_count": 62,
+        "sentence_count": 4,
+        "words_per_sentence": 15.5,
+        "topic_cosine": 0.774
+      },
+      "inject_terse": {
+        "text": "The answer is **\"Ice floats on water.\"**",
+        "word_count": 7,
+        "sentence_count": 2,
+        "words_per_sentence": 3.5,
+        "topic_cosine": 0.632
+      },
+      "inject_verbose": {
+        "text": "Ice floats on water because of the **different densities** of ice and water. Here's a breakdown:\n\n### 1. **Why Ice Floats on Water**\n- **Ice forms on the surface**.\n- **Ice is a common natural phenomenon**, especially in the context of **icebergs**.\n- **Ice is a solid object, so it is a good time to explain why it works.\n\n---\n\n### 2. **Why Ice Floats on Water**\n\n#### \ud83e\udde0 **Basic Explanation**\nIce is a common object, so it makes sense. let's go through the process step by step.\n\n---\n\n### \ud83e\udde0 **Why Ice Floats on Water**\n\n#### \ud83e\udde0 **Ice Formation**\n- **Ice is a common natural phenomenon**, so it makes sense.\n\n---\n\n### \ud83e\udde0 **Ice in the Context of the Solar System**\n\n#### \ud83e\udde0 **Ice in the Solar System**\n- **Ice is a common natural phenomenon**, so it makes sense.\n\n---\n\n### \ud83e\udde0 **Why Ice is a good time to explain**\n\n#### \ud83e\udde0 **Ice in the Solar System**\n\n- **Ice is a common natural phenomenon**, so it makes sense.\n\n---\n\n### \ud83e\udde0 **Ice in the Solar System**\n\n#### \ud83e\udde0 **Ice in the Solar System**\n\n- **Ice is a common natural phenomenon**, so it makes sense.\n\n---\n\n### \ud83e\udde0 **Why Ice is a Good Time to Explain**\n\n#### \ud83e\udde0 **Ice in the Solar",
+        "word_count": 212,
+        "sentence_count": 13,
+        "words_per_sentence": 16.3,
+        "topic_cosine": 0.686
+      }
+    },
+    {
+      "question": "How does a vaccine work?",
+      "q_idx": 1,
+      "baseline": {
+        "text": "A vaccine works by introducing a harmless piece of a pathogen (either a virus or a bacterial infection) into the body. This piece is designed to stimulate the immune system to recognize and fight off the pathogen. Here's a simplified breakdown of how it works:\n\n1. **Introduction of the Pathogen**: The vaccine contains either a weakened or inactivated form of the virus or a piece of the virus that is not infectious. This is done to trigger an immune response.\n\n2. **Immune System Response**: The immune system recognizes the pathogen and starts producing antibodies. These antibodies are proteins that can neutralize the pathogen or mark it for destruction by other immune cells.\n\n3. **Long-Term Protection**: Over time, the body develops immunity to the pathogen. This means that future encounters with the same pathogen will not cause illness.\n\n4. **No Harmful Pathogen**: The vaccine does not contain the actual pathogen. It is designed to be safe and effective.\n\nIn summary, vaccines work by training the immune system to recognize and fight off a specific pathogen, providing long-term protection against future infections.",
+        "word_count": 180,
+        "sentence_count": 15,
+        "words_per_sentence": 12.0,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "A vaccine works by introducing a harmless version of a pathogen (like a virus) into the body, which triggers the immune system to recognize and fight off the actual disease. This process helps the body build immunity, preparing it to fight future infections.",
+        "word_count": 43,
+        "sentence_count": 2,
+        "words_per_sentence": 21.5,
+        "topic_cosine": 0.743
+      },
+      "prompt_verbose": {
+        "text": "A vaccine works by introducing a harmless piece of a pathogen (like a virus or bacteria) into the body. This piece is designed to trigger the body\u2019s immune system to recognize and fight off the pathogen. The immune system then produces antibodies, which are proteins that help protect the body from future infections. In doing so, the vaccine helps the body build immunity, making it less likely to get sick if the pathogen is present.",
+        "word_count": 75,
+        "sentence_count": 4,
+        "words_per_sentence": 18.8,
+        "topic_cosine": 0.834
+      },
+      "inject_terse": {
+        "text": "The vaccine is a tool that is used to prevent disease.",
+        "word_count": 11,
+        "sentence_count": 1,
+        "words_per_sentence": 11.0,
+        "topic_cosine": 0.445
+      },
+      "inject_verbose": {
+        "text": "Okay, let's break this down. I'm going to walk through the basic process of how a vaccine works. I think I remember that vaccines work by using a combination of different types of disease. So, first, I need to explain what a vaccine is. I think I've heard about the basics of how vaccines work. But I'm not sure how exactly. Let me try to explain it step by step.\n\nFirst, I need to explain what a vaccine is. I know that vaccines are not just for one disease. So, I need to explain how vaccines are made. I think I remember that vaccines are made up of different types of information. I need to explain the process in detail. But since I don't have the exact information, I'll try to cover the basic steps in a simple way.\n\nI think the user might be interested in how a vaccine is made. so I'll start by explaining what a vaccine is. I'll start with the basics. But since I don't have the exact information, I'll try to explain the process in a simple way. Maybe I can outline the steps in a way that makes sense. Let me try to recall how vaccines work.\n\nOkay, so the user might be a beginner. So I need to explain the process in a simple way. Let me think. I'll start with the basics. So, first, I need to explain what a vaccine is. I'll start with the basics. But since I don't have the",
+        "word_count": 252,
+        "sentence_count": 26,
+        "words_per_sentence": 9.7,
+        "topic_cosine": 0.447
+      }
+    },
+    {
+      "question": "Why do we dream?",
+      "q_idx": 2,
+      "baseline": {
+        "text": "Dreaming is a complex and fascinating phenomenon that has intrigued scientists and philosophers for centuries. Here's a structured explanation of why we dream:\n\n### 1. **Biological Basis**\n   - **Neurological Mechanism**: The brain's sleep-wake cycle involves different brain regions (e.g., the hippocampus, prefrontal cortex, and amygdala) working together. During sleep, these areas are active, and the brain processes memories, emotions, and experiences.\n   - **Neurotransmitters**: The brain uses neurotransmitters like **GABA** and **serotonin** to regulate sleep and dreaming. These chemicals help maintain the brain's balance and promote REM (Rapid Eye Movement) sleep, which is associated with dreaming.\n\n### 2. **Function of Dreams**\n   - **Memory Consolidation**: Dreams help consolidate memories by replaying experiences and integrating them into long-term memory.\n   - **Emotional Processing**: Dreams allow the brain to explore and process emotions, which can lead to emotional resolution or growth.\n   - **Cognitive Development**: Dreams may support cognitive development by stimulating creativity and problem-solving skills.\n\n### 3. **Why We Dream**\n   - **Neuroplasticity**: Dreams encourage brain plasticity, which is essential for learning and adapting.\n   - **Cognitive Flexibility**: Dreaming enhances cognitive flexibility, allowing the brain to think differently and solve problems.\n   - **Psychological Health**: Dreams can help with stress relief and emotional well",
+        "word_count": 196,
+        "sentence_count": 16,
+        "words_per_sentence": 12.2,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "Dreams are a natural part of the human brain's process of processing experiences and emotions.",
+        "word_count": 15,
+        "sentence_count": 1,
+        "words_per_sentence": 15.0,
+        "topic_cosine": 0.485
+      },
+      "prompt_verbose": {
+        "text": "Why do we dream? It's a question that has intrigued humans for centuries. The act of dreaming is a complex process that involves a combination of biological and psychological factors. From a biological perspective, the brain produces a wave of electrical impulses that create the sensation of dreaming. Psychologically, dreams are often seen as a way to process emotions, explore thoughts, and even create new experiences. So, in summary, the answer is that we dream because it's a natural and essential part of our brain's functioning.",
+        "word_count": 86,
+        "sentence_count": 6,
+        "words_per_sentence": 14.3,
+        "topic_cosine": 0.496
+      },
+      "inject_terse": {
+        "text": "The answer is:",
+        "word_count": 3,
+        "sentence_count": 1,
+        "words_per_sentence": 3.0,
+        "topic_cosine": 0.233
+      },
+      "inject_verbose": {
+        "text": "Dreaming is a complex process that involves many different stages and scenarios. Here's a breakdown of why we dream:\n\n### 1. **Why Do We Dream?**\n   - **Why do we dream?**\n     - Dreams are a natural part of the human brain's development.\n     - They are a result of brain activity and the development of the brain's structure.\n   - **Why do we dream?**\n     - Dreams are a result of brain development.\n     - They are a natural process that happens in our brain.\n\n### 2. **Why Do We Dream?**\n   - **Why do we dream?**\n     - Dreams are a natural part of the human brain's development.\n      - They are a result of brain activity and the development of the brain's structure.\n\n### 3. **Why Do We Dream?**\n   - **Why do we dream?**\n      - This is a natural process that happens in our brain.\n      - It is a result of brain development.\n\n### 4. **Why Do We Dream?**\n   - **Why do we dream?**\n      - This is a natural process that happens in our brain.\n      - It is a result of brain development.\n\n### 5. **Why Do We Dream?**\n   - **Why do we dream?**\n      - This is a natural process that happens in our brain.\n      - It is a result of brain development.\n\n### 6.... (Continuing the explanation)\n  ",
+        "word_count": 212,
+        "sentence_count": 31,
+        "words_per_sentence": 6.8,
+        "topic_cosine": 0.435
+      }
+    },
+    {
+      "question": "What causes inflation?",
+      "q_idx": 3,
+      "baseline": {
+        "text": "Inflation is primarily caused by a decrease in the purchasing power of money, which occurs when the supply of goods and services exceeds the demand for them. This can be due to several factors:\n\n1. **Increased Demand**: When more people want to buy goods and services, the demand for them rises, leading to higher prices.\n\n2. **Increased Supply**: If the supply of goods and services increases, the prices will fall, which can lead to a decrease in the purchasing power of money.\n\n3. **Inflationary Policies**: Central banks and governments may implement policies to increase the money supply, which can lead to higher prices and inflation.\n\n4. **Global Economic Factors**: Events such as wars, trade wars, or other global economic issues can lead to increased prices and inflation.\n\n5. **Natural Factors**: Inflation can also be caused by natural factors such as changes in the economy, technological advancements, or other economic conditions.\n\nIn summary, inflation is a result of a combination of increased demand, increased supply, and other economic factors that lead to higher prices for goods and services.",
+        "word_count": 177,
+        "sentence_count": 12,
+        "words_per_sentence": 14.8,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "Inflation is caused by factors like increased demand for goods and services, which can lead to higher prices.",
+        "word_count": 18,
+        "sentence_count": 1,
+        "words_per_sentence": 18.0,
+        "topic_cosine": 0.662
+      },
+      "prompt_verbose": {
+        "text": "Inflation is when the general price level of goods and services in an economy rises over time. This means that, for example, a loaf of bread costs more than before, or a cup of coffee becomes more expensive. The reason for this increase in prices is that the supply of goods and services can't keep up with demand. When people want more of something, they spend more, which increases the demand for that good or service. As a result, the supply of that good or service can't keep up with the demand, leading to higher prices. This is called **inflation**.",
+        "word_count": 100,
+        "sentence_count": 6,
+        "words_per_sentence": 16.7,
+        "topic_cosine": 0.624
+      },
+      "inject_terse": {
+        "text": "The answer is:",
+        "word_count": 3,
+        "sentence_count": 1,
+        "words_per_sentence": 3.0,
+        "topic_cosine": 0.248
+      },
+      "inject_verbose": {
+        "text": "Inflation can be caused by a variety of factors, including:\n\n1. **Economic Factors**:\n   - **Inflation**: The most common reason is the **inflation of the economy**.\n   - **Inflation**: The **inflation of the economy** is a process that is ongoing. Here are some common causes:\n     - **Economic Growth**:\n       - **Inflation** is a process that is ongoing.\n       - **Inflation** is a process that is ongoing.\n       - **Inflation** is a process that is ongoing.\n       - **Inflation** is a process that is ongoing.\n       - **Inflation** is a process that is ongoing.\n       - **Inflation** is a process that is ongoing.\n       - **Inflation** is a process that is ongoing.\n       - **Inflation** is a process that is ongoing.\n\n2. **Economic Factors**:\n   - **Inflation** is a process that is ongoing.\n   - **Inflation** is a process that is ongoing.\n   - **Inflation** is a process that is ongoing.\n   - **Inflation** is a process that is ongoing.\n   - **Inflation** is a process that is ongoing.\n   - **Inflation** is a process that is ongoing.\n   - **Inflation** is a process that is ongoing.\n   - **Inflation** is a process that is ongoing.\n\n3. **Economic Factors**:\n",
+        "word_count": 180,
+        "sentence_count": 22,
+        "words_per_sentence": 8.2,
+        "topic_cosine": 0.272
+      }
+    },
+    {
+      "question": "How does a compass work?",
+      "q_idx": 4,
+      "baseline": {
+        "text": "A compass works by using a magnetized needle that points to the Earth's magnetic field. Here's a simplified explanation:\n\n1. **Magnetized Needle**: The compass has a small magnet inside, which is usually made of a thin, flexible iron bar. This magnet is aligned with the Earth's magnetic field.\n\n2. **Solenoid or Compass Core**: The needle is a thin, flexible iron bar that is magnetized. When the needle is placed in the Earth's magnetic field, it aligns itself with the field.\n\n3. **Direction of the Field**: The needle points in the direction of the Earth's magnetic field. This direction is what the compass is used to guide.\n\n4. **Reading the Direction**: The needle points to the magnetic north, which is the direction of the Earth's magnetic field. This is what the compass is used for navigation.\n\nIn summary, a compass works by aligning its magnetized needle with the Earth's magnetic field, allowing it to indicate the direction of magnetic north.",
+        "word_count": 159,
+        "sentence_count": 14,
+        "words_per_sentence": 11.4,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "A compass works by using a magnetized needle that aligns with the Earth's magnetic field, pointing towards the magnetic north.",
+        "word_count": 20,
+        "sentence_count": 1,
+        "words_per_sentence": 20.0,
+        "topic_cosine": 0.716
+      },
+      "prompt_verbose": {
+        "text": "A compass works by using a magnetized needle that points to the Earth's magnetic field. The needle is a small magnet that aligns itself with the Earth's magnetic field, and its position indicates the direction of the magnetic field. This allows the compass to show the cardinal directions, such as north, south, east, and west.",
+        "word_count": 55,
+        "sentence_count": 3,
+        "words_per_sentence": 18.3,
+        "topic_cosine": 0.86
+      },
+      "inject_terse": {
+        "text": "A compass is a device that measures the magnetic field strength. It is designed to detect the magnetic field, and it is used to measure the magnetic field.",
+        "word_count": 28,
+        "sentence_count": 2,
+        "words_per_sentence": 14.0,
+        "topic_cosine": 0.702
+      },
+      "inject_verbose": {
+        "text": "A compass works by using a **magnetic field** to determine its location. Here's a simple breakdown of how it works:\n\n---\n\n### \ud83e\udde0 How a Compass Works\n\n#### 1. **Basic Principle of a Magnetic Field\n- **Compass**: A compass is a device that uses the Earth's magnetic field to guide navigation.\n- **Magnetic Field**\n- **Compass Orientation**\n- **Compass Compass** is a **magnetic field, so it is a great help in navigation.\n\n---\n\n### \ud83e\udde0 How a Compass Works\n\n#### \ud83e\udde0 How a Compass Works\n\n1. **Basic Explanation**\n   - A **compass** is a **magnetic compass, so it is a great help in navigation**.\n\n2. **Compass Components**\n   - A **magnetic compass** is a **magnetic field, so it is a great help in navigation**.\n\n---\n\n### \ud83e\udde0 How a Compass Works\n\n#### \ud83e\udde0 How a Compass Works\n\nLet\u2019s break it down in a few simple ways:\n\n1. **Compass Orientation**\n   - A **magnetic compass** is a **great help in navigation**.\n\n2. **Compass Components**\n   - A **magnetic compass is a great help in navigation**.\n\n---\n\n### \ud83e\udde0 How a Compass Works\n\n#### \ud83e\udde0 How a Compass Works\n\n1. **Compass Components**\n   - A **magnetic compass is a great help in navigation**.\n\n",
+        "word_count": 196,
+        "sentence_count": 14,
+        "words_per_sentence": 14.0,
+        "topic_cosine": 0.486
+      }
+    },
+    {
+      "question": "Why do leaves change color in autumn?",
+      "q_idx": 5,
+      "baseline": {
+        "text": "Leaves change color in autumn due to a process called **photoperiodism**, which is influenced by the length of daylight and temperature. Here's a simplified explanation:\n\n1. **Light and Day Length**:  \n   - As the days get shorter in autumn, the plant's circadian rhythm (internal clock) begins to slow down. This causes the plant to start preparing for dormancy.\n\n2. **Chemical Changes**:  \n   - The plant's **chlorophyll** (which absorbs light) breaks down, and chlorophyll is replaced by a green pigment called **carotenoids** and **beta-carotene**. This change is triggered by the decrease in sunlight.\n\n3. **Temperature**:  \n   - Cooler temperatures in autumn can also affect the rate of chlorophyll breakdown. Some plants may start to lose chlorophyll even before the day length decreases.\n\n4. **Seasonal Shift**:  \n   - The color change is a natural part of the seasonal cycle. It helps the plant conserve energy and prepare for the upcoming winter.\n\nIn short, the leaves change color in autumn because the plant is shedding its chlorophyll to make way for new growth, and this process is influenced by light, temperature, and the season.",
+        "word_count": 177,
+        "sentence_count": 14,
+        "words_per_sentence": 12.6,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "Leaves change color in autumn because of the drop in daylight and cooler temperatures, which causes chlorophyll to break down.",
+        "word_count": 20,
+        "sentence_count": 1,
+        "words_per_sentence": 20.0,
+        "topic_cosine": 0.571
+      },
+      "prompt_verbose": {
+        "text": "Leaves change color in autumn because of a process called **abscission**. This is a natural biological process where leaves lose their leaves and then fall back to the ground. The color change is due to the **chemical reaction** of chlorophyll, which is the pigment responsible for the green color of leaves. As chlorophyll breaks down, the leaves turn into other pigments like red, orange, and yellow, which give them their autumnal appearance.",
+        "word_count": 72,
+        "sentence_count": 4,
+        "words_per_sentence": 18.0,
+        "topic_cosine": 0.693
+      },
+      "inject_terse": {
+        "text": "The reason for the change in color in autumn is a result of the process of **concentration**.",
+        "word_count": 17,
+        "sentence_count": 1,
+        "words_per_sentence": 17.0,
+        "topic_cosine": 0.665
+      },
+      "inject_verbose": {
+        "text": "Okay, let's break this down. I know that plants change colors in autumn. I think it's because of the changing seasons. But why? I need to explain it in a way that makes sense. Let me think. I remember that plants change colors in autumn because of the changing seasons. But I need to explain it in a way that makes sense. Maybe I should start with the different reasons why plants change colors. But I need to make sure I cover the different reasons. Let me think. I think it's because of the changing seasons. But I need to explain it in a way that makes sense. Maybe I should start with the different reasons why plants change colors. But I need to make sure I cover the different reasons. Alright, let's start with the different reasons. But I need to make sure I cover the different reasons. Let me think. I think it's because of the changing seasons. But I need to make sure I cover the different reasons. Maybe I should start with the different reasons. Alright, I'll try to outline the different reasons. But I need to make sure I cover the different reasons. Let me think. I think it's because of the changing seasons. But I need to make sure I cover the different reasons. Alright, I'll try to outline the different reasons. But I need to make sure I cover the different reasons. Let me think. I think it's because of the changing seasons. But I need to make sure I",
+        "word_count": 257,
+        "sentence_count": 31,
+        "words_per_sentence": 8.3,
+        "topic_cosine": 0.358
+      }
+    },
+    {
+      "question": "What is a black hole?",
+      "q_idx": 6,
+      "baseline": {
+        "text": "A black hole is a region in space where gravity is so strong that nothing, not even light, can escape its pull. This extreme gravitational pull is what causes the event horizon \u2014 the boundary of the black hole \u2014 to be the point at which nothing can escape. The formation of a black hole occurs when a massive star exhausts its nuclear fuel and collapses under its own gravity, causing the core to collapse into a singularity \u2014 a point where all physical laws are undefined. The event horizon marks the point at which the star's mass is so concentrated that it cannot support the star's own mass, leading to the formation of a black hole.",
+        "word_count": 117,
+        "sentence_count": 4,
+        "words_per_sentence": 29.2,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "A black hole is a region in space where gravity is so strong that nothing, not even light, can escape its pull.",
+        "word_count": 22,
+        "sentence_count": 1,
+        "words_per_sentence": 22.0,
+        "topic_cosine": 0.574
+      },
+      "prompt_verbose": {
+        "text": "A black hole is a region in space where gravity is so strong that nothing, not even light, can escape its pull. Imagine it like a super dense object so massive that it tears through the fabric of the universe. It's so dense that even the light from nearby stars and galaxies can't escape its gravitational pull. Black holes are one of the most mysterious and fascinating phenomena in the universe.",
+        "word_count": 71,
+        "sentence_count": 4,
+        "words_per_sentence": 17.8,
+        "topic_cosine": 0.691
+      },
+      "inject_terse": {
+        "text": "A black hole is a term used in physics to describe a region of spacetime where gravity is intense. It is a concept in physics that describes the properties of spacetime.",
+        "word_count": 31,
+        "sentence_count": 2,
+        "words_per_sentence": 15.5,
+        "topic_cosine": 0.54
+      },
+      "inject_verbose": {
+        "text": "A black hole is a massive celestial object that is formed from the collapse of a massive star, which is a star that has been burning for billions of years. The process of how a black hole forms is explained by the theory of **General Relativity**, which is a well-known theory in physics. Let me explain it in a simple way:\n\n### 1. **What is a black hole?**\nA black hole is a massive object that has a **gravitational pull**. It is formed from the **collapse of a massive star**, and it is located in the **Milky Way galaxy**. The process of how a black hole forms is explained by the **theory of General Relativity**, which is a very large and complex topic.\n\n### 2. **How does a black hole form?**\nA black hole is a massive object that has a **gravitational pull**. it is formed from the **collapse of a massive star**, and it is located in the **Milky Way galaxy**. The process of how a black hole forms is explained by the **theory of General Relativity**, which is a very large and complex topic.\n\n### 3. **What is a black hole?**\nA black hole is a massive object that has a **gravitational pull**. It is formed from the **collapse of a massive star**, and it is located in the **Milky Way galaxy**. The process of how a black hole forms is explained by the **theory of",
+        "word_count": 238,
+        "sentence_count": 17,
+        "words_per_sentence": 14.0,
+        "topic_cosine": 0.689
+      }
+    },
+    {
+      "question": "How does bread rise?",
+      "q_idx": 7,
+      "baseline": {
+        "text": "Bread rises due to the process of **baking**, which involves several key steps:\n\n1. **Fermentation**:  \n   Bread is initially made with water, flour, and yeast. The yeast consumes sugar and produces carbon dioxide gas, which causes the dough to expand and rise. This process is called **fermentation**.\n\n2. **Mixing and kneading**:  \n   The dough is mixed and kneaded to develop its structure. Kneading helps the gluten (a protein in flour) form, making the dough stronger and more elastic.\n\n3. **Baking**:  \n   Once the dough is shaped, it is baked in a oven. The heat causes the dough to expand further, and the rising is complete. The final product is a loaf of bread.\n\nThis process ensures that the bread is light, airy, and has a good texture.",
+        "word_count": 124,
+        "sentence_count": 12,
+        "words_per_sentence": 10.3,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "Bread rises because the air inside the dough is trapped and expands as it cooks.",
+        "word_count": 15,
+        "sentence_count": 1,
+        "words_per_sentence": 15.0,
+        "topic_cosine": 0.582
+      },
+      "prompt_verbose": {
+        "text": "Bread rises because of the process of **baking**, where heat causes the gluten in the dough to expand and the proteins in the flour to coagulate. This expansion and coagulation make the dough firm and rise, allowing it to be baked into a loaf of bread. The rising is a natural and essential part of the baking process.",
+        "word_count": 58,
+        "sentence_count": 3,
+        "words_per_sentence": 19.3,
+        "topic_cosine": 0.798
+      },
+      "inject_terse": {
+        "text": "The word \"rise\" is used in the context of the word.",
+        "word_count": 11,
+        "sentence_count": 1,
+        "words_per_sentence": 11.0,
+        "topic_cosine": 0.529
+      },
+      "inject_verbose": {
+        "text": "Bread rises because of the process of **baking**. Here's a step-by-step breakdown of how it works:\n\n---\n\n### \ud83e\udde0 How Bread Rises\n\n1. **Understanding the Process**  \n   Bread rises because of the **mechanism of gas production**. This is a natural process that happens in the dough.  \n   - **Why does bread rise?**  \n     - It\u2019s a physical process, so I can explain it in detail.  \n     - The process is part of how bread is made.  \n\n2. **Why Does Bread Rise?**  \n   - It\u2019s a natural process.  \n   - The process involves the **mechanism of gas production**.  \n   - The process is explained in detail in the **baking process**.  \n\n3. **Why This Happens**  \n   - It\u2019s a natural process that happens in the dough.  \n   - The process is explained in detail in the **baking process**.  \n\n4. **Why This Happens**  \n   - It\u2019s a natural process that happens in the dough.  \n   - The process is explained in detail in the **baking process**.  \n\n5. **Why This Happens**  \n   - It\u2019s a natural process that happens in the dough.  \n   - The process is explained in detail in the **baking process**.  \n\n---\n\n### \ud83d\udccc Summary of How Bread Rises\n\n- **What is the process",
+        "word_count": 190,
+        "sentence_count": 22,
+        "words_per_sentence": 8.6,
+        "topic_cosine": 0.619
+      }
+    },
+    {
+      "question": "Why do humans need sleep?",
+      "q_idx": 8,
+      "baseline": {
+        "text": "Humans need sleep for several key reasons, which are essential for maintaining health and cognitive function:\n\n1. **Physical Restoration**: Sleep helps the body repair muscles, rebuild tissues, and remove toxins from the body. This is crucial for physical recovery and overall health.\n\n2. **Cognitive Function**: During sleep, the brain processes and consolidates memories, improves problem-solving skills, and enhances decision-making. This is vital for learning and adapting to new information.\n\n3. **Emotional Regulation**: Sleep plays a role in managing emotions, reducing stress, and improving mood. It helps regulate the brain's stress response, which can affect mental health.\n\n4. **Brain Development**: Children and adolescents need sleep to develop their brains, especially during critical periods like sleep cycles. This is important for cognitive development and learning.\n\n5. **Immune System Support**: Sleep supports the immune system by reducing inflammation and helping the body fight off infections and diseases.\n\n6. **Metabolic Health**: Sleep affects metabolism, helping the body regulate energy levels and manage weight.\n\n7. **Long-Term Health**: Consistent sleep patterns are linked to better long-term health outcomes, including reduced risk of chronic diseases.\n\nIn summary, sleep is a fundamental biological process that supports physical, mental, and emotional well-being.",
+        "word_count": 193,
+        "sentence_count": 19,
+        "words_per_sentence": 10.2,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "Humans need sleep to restore and repair bodily functions, maintain cognitive performance, and support emotional well-being.",
+        "word_count": 16,
+        "sentence_count": 1,
+        "words_per_sentence": 16.0,
+        "topic_cosine": 0.464
+      },
+      "prompt_verbose": {
+        "text": "Humans need sleep because it is essential for maintaining physical and mental health, supporting cognitive functions, and helping the body recover from daily activities. Sleep allows the brain to process information, consolidate memories, and regulate emotions. Without sufficient sleep, individuals may experience impaired concentration, weakened immune responses, and increased risk of chronic diseases. Therefore, sleep is a fundamental biological necessity for optimal well-being.",
+        "word_count": 63,
+        "sentence_count": 4,
+        "words_per_sentence": 15.8,
+        "topic_cosine": 0.72
+      },
+      "inject_terse": {
+        "text": "The answer is:",
+        "word_count": 3,
+        "sentence_count": 1,
+        "words_per_sentence": 3.0,
+        "topic_cosine": 0.252
+      },
+      "inject_verbose": {
+        "text": "Okay, so I know why we need sleep. Let me think. I remember that sleep is important for our health. But why exactly? I think it's because of how the body processes information. But wait, why would that matter? Maybe I should break it down into different parts. Let me try to explain it in a way that makes sense. I think I've heard about sleep in different stages. But I need to figure out why it's important. Maybe I should start with the basics. So, why do we need sleep at all? Let me try to outline the different stages of sleep. But I need to make sure I remember the different stages. But how? Well, maybe I should explain it in a structured way. Let me think. So, the user is asking why we need sleep. But how? Well, maybe I should start with the basics. like the different stages of sleep. but how? Let me think. I think I remember that sleep is divided into different stages, including sleep cycles. But how? Let me try to explain it in a way that makes sense. So, why would that matter? Well, maybe I should explain it in a simple way. like the different stages of sleep. so, why would that matter? Well, maybe I should explain it in a structured way. like the different stages of sleep. so, why would that be important. and then how? let me think. So, why would that matter? Well,",
+        "word_count": 247,
+        "sentence_count": 37,
+        "words_per_sentence": 6.7,
+        "topic_cosine": 0.301
+      }
+    },
+    {
+      "question": "What causes thunder?",
+      "q_idx": 9,
+      "baseline": {
+        "text": "Thunder is caused by the **release of static electricity** in the atmosphere. Here's a simplified explanation:\n\n1. **Static Electricity**: When two objects with different charges come into contact, they develop a static charge. This charge can cause a **short circuit** in the air, leading to a **spark**.\n\n2. **Thunderstorm Conditions**: When the static charge accumulates, it becomes **too large** to stay in the air. This causes the **air to ionize** (gain or lose electrons), creating a **conductive path**.\n\n3. **Sound Propagation**: The spark travels through the air, and the **sound waves** travel at the speed of sound (around 343 m/s) to reach your ears, creating the **thunder**.\n\n4. **No Direct Cause**: There is no direct cause-effect relationship between thunder and static electricity. It's a **result** of the interaction between static and atmospheric conditions.\n\nIn summary, thunder is a **result** of static electricity and lightning, which are both caused by the buildup and discharge of static in the atmosphere.",
+        "word_count": 158,
+        "sentence_count": 13,
+        "words_per_sentence": 12.2,
+        "topic_cosine": 1.0
+      },
+      "prompt_terse": {
+        "text": "Thunder is caused by the rapid expansion of heat released when lightning strikes the atmosphere.",
+        "word_count": 15,
+        "sentence_count": 1,
+        "words_per_sentence": 15.0,
+        "topic_cosine": 0.483
+      },
+      "prompt_verbose": {
+        "text": "Thunder is caused by the **release of static electricity** in the atmosphere. When lightning strikes a cloud, it creates a **high voltage** between the cloud and the ground. This high voltage causes **electric current** to flow through the air, which then heats up the air and causes **focal points** (like lightning) to form. These focal points are where thunder is heard.",
+        "word_count": 61,
+        "sentence_count": 4,
+        "words_per_sentence": 15.2,
+        "topic_cosine": 0.684
+      },
+      "inject_terse": {
+        "text": "The answer is:",
+        "word_count": 3,
+        "sentence_count": 1,
+        "words_per_sentence": 3.0,
+        "topic_cosine": 0.399
+      },
+      "inject_verbose": {
+        "text": "Thunderstorms are caused by the interaction of lightning and thunder. Here's a basic overview:\n\n### 1. **What causes thunder?**\n- **Formation of lightning**  \n  - **Electricity** is a natural process, so we'll go through this in detail.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **How does it happen?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **Electricity is a natural process**.  \n  - **What causes thunder?**  \n    - **",
+        "word_count": 153,
+        "sentence_count": 28,
+        "words_per_sentence": 5.5,
+        "topic_cosine": 0.336
+      }
+    }
+  ],
+  "summary": {
+    "alpha": 2.0,
+    "layer": 12,
+    "n_questions": 10,
+    "conditions": {
+      "baseline": {
+        "mean_words": 163.3,
+        "min_words": 117,
+        "max_words": 196,
+        "std_words": 25.4,
+        "mean_topic_cosine": 1.0,
+        "all_under_30": false,
+        "all_over_100": true
+      },
+      "prompt_terse": {
+        "mean_words": 19.6,
+        "min_words": 12,
+        "max_words": 43,
+        "std_words": 8.3,
+        "mean_topic_cosine": 0.6,
+        "all_under_30": false,
+        "all_over_100": false
+      },
+      "prompt_verbose": {
+        "mean_words": 70.3,
+        "min_words": 55,
+        "max_words": 100,
+        "std_words": 13.2,
+        "mean_topic_cosine": 0.717,
+        "all_under_30": false,
+        "all_over_100": false
+      },
+      "inject_terse": {
+        "mean_words": 11.7,
+        "min_words": 3,
+        "max_words": 31,
+        "std_words": 10.0,
+        "mean_topic_cosine": 0.465,
+        "all_under_30": false,
+        "all_over_100": false
+      },
+      "inject_verbose": {
+        "mean_words": 213.7,
+        "min_words": 153,
+        "max_words": 257,
+        "std_words": 32.8,
+        "mean_topic_cosine": 0.463,
+        "all_under_30": false,
+        "all_over_100": true
+      }
+    },
+    "hypotheses": {
+      "H1_inject_terse_under_30": {
+        "claim": "All 10 inject_terse outputs < 30 words",
+        "result": false,
+        "detail": "min=3, max=31, mean=11.7"
+      },
+      "H2_inject_verbose_over_100": {
+        "claim": "All 10 inject_verbose outputs > 100 words",
+        "result": true,
+        "detail": "min=153, max=257, mean=213.7"
+      },
+      "H3_inject_within_20pct_of_prompt": {
+        "claim": "Inject word count within 20% of prompt-level word count",
+        "terse_ratio": 0.6,
+        "verbose_ratio": 3.04,
+        "result": false
+      },
+      "H4_topic_preserved": {
+        "claim": "Topic cosine > 0.6 for all injection conditions",
+        "inject_terse_topic": 0.465,
+        "inject_verbose_topic": 0.463,
+        "result": false
+      },
+      "H5_baseline_between": {
+        "claim": "inject_terse < baseline < inject_verbose (word count)",
+        "result": true
+      }
+    },
+    "vec_norm": 17.36
+  }
+}

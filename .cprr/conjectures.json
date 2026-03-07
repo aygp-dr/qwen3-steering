@@ -134,9 +134,27 @@
       ],
       "created_at": "2026-03-06T20:05:18.014318-05:00",
       "updated_at": "2026-03-06T20:07:17.611337-05:00"
+    },
+    {
+      "id": 9,
+      "title": "Injection at L12 matches prompt-level terse/verbose control on bimodal questions",
+      "hypothesis": "ActAdd injection at layer 12 with alpha=2.0 produces word count within 20% of prompt-level 'tersely/verbosely' instruction across 10 bimodal questions. Terse \u003c30w for all, verbose \u003e100w for all, topic cosine \u003e0.6 for both.",
+      "evidence": [
+        "H1 inject_terse \u003c30w: FAIL. mean=11.7w, min=3w, max=31w. [confidence: empirical, source: this-project-sweep]",
+        "H2 inject_verbose \u003e100w: PASS. mean=213.7w, min=153w, max=257w. H3 within 20% of prompt: FAIL (terse ratio=0.6, verbose ratio=3.04). H4 topic\u003e0.6: FAIL (terse=0.465, verbose=0.463). [confidence: empirical, source: this-project-sweep]",
+        "CORRECTION: 3/5 hypotheses FAILED. Injection is MORE aggressive than prompt-level control, not matched to it. Inject terse: mean=12w (prompt=20w, 0.6x ratio). Inject verbose: mean=214w (prompt=70w, 3.0x ratio). Topic cosine=0.46 (below 0.6 threshold). Injection overshoots prompt-level in both directions. Alpha=2.0 too high for parity; lower alpha needed. [confidence: empirical, source: this-project-sweep]"
+      ],
+      "status": "refuted",
+      "tags": [
+        "injection",
+        "bimodal",
+        "experiment"
+      ],
+      "created_at": "2026-03-06T20:27:19.647067-05:00",
+      "updated_at": "2026-03-06T20:27:36.841707-05:00"
     }
   ],
-  "next_id": 9,
+  "next_id": 10,
   "config": {
     "local": true
   }
