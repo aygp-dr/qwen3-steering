@@ -1,0 +1,48 @@
+#+TITLE: Experiment 05: Multi-Layer vs Single-Layer Steering
+#+DATE: 2026-03-06
+#+STATUS: pending
+
+* Goal
+
+Test CPRR-6: does distributing the same total steering pressure across
+multiple layers produce a better terseness-to-coherence ratio than
+concentrating it at one layer?
+
+* Method
+
+5 configurations at equal total pressure (2.0):
+
+| Config | Layers          | Alpha each | Total |
+|--------+-----------------+------------+-------|
+| A      | L12             |        2.0 |   2.0 |
+| B      | L12 + L16       |        1.0 |   2.0 |
+| C      | L10 + L14 + L18 |       0.67 |   2.0 |
+| D      | L12 + L15       |        1.0 |   2.0 |
+| E      | L12 (control)   |        1.0 |   1.0 |
+
+8 questions x 6 configs (including baseline) = 48 generations.
+Composite score: (1/words) x topic x (1/ppl) x 1000.
+
+* Predictions
+
+- Multi-layer (B or C) outperforms single (A) on composite score
+- Adjacent layers (D) may interfere, worse than spaced layers (B)
+
+* CPRR Conjectures
+
+| ID | Claim                              | Status  |
+|----+------------------------------------+---------|
+|  6 | Multi-layer outperforms single     | testing |
+
+* Run
+
+#+begin_src bash
+python experiments/05-multilayer-vs-single/run.py --cprr
+#+end_src
+
+* Artifacts (after run)
+
+| File                               | Description            |
+|------------------------------------+------------------------|
+| output/multilayer_vs_single.json   | Full comparison data   |
+| output/multilayer_vs_single.png    | Bar chart visualization |

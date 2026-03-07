@@ -1,0 +1,108 @@
+#+TITLE: Experiment 06: WordNet Relational Geometry
+#+DATE: 2026-03-06
+#+STATUS: pending
+
+* Goal
+
+Test whether the residual stream encodes WordNet relationships as stable,
+distinct directions. Ground truth from an external graph — no prompt
+engineering, no topic drift, verifiable precision/recall.
+
+* Why This Is Better Than Verbosity
+
+| Property               | Verbosity experiment   | WordNet experiment        |
+|------------------------+------------------------+---------------------------|
+| Ground truth           | None (subjective)      | WordNet graph (117K syns) |
+| Relationship clarity   | Continuous spectrum     | Discrete, categorical     |
+| Drift detection        | Hard to measure        | If "dog->animal" also     |
+|                        |                        | activates "dog->pet food" |
+|                        |                        | you know the direction    |
+|                        |                        | is noisy                  |
+| Linguistic necessity   | Style is optional      | Hypernyms are required    |
+|                        |                        | for generalization        |
+
+* Three Relationships Tested
+
+| Relation | Example       | Direction meaning      | WordNet edge |
+|----------+---------------+------------------------+--------------|
+| hypernym | dog -> animal | generalization         | is-a         |
+| antonym  | hot -> cold   | negation/opposition    | antonym      |
+| meronym  | wheel -> car  | part-to-whole          | part-of      |
+
+15 curated pairs per relation (45 total). Words chosen to be likely
+single-token in Qwen3's 151K vocabulary.
+
+* Layer Predictions
+
+#+begin_example
+L0-7:   token identity, no relational structure
+L8-11:  word sense disambiguation — hypernyms start here
+L12-16: relational encoding — hypernym/hyponym direction stable
+L18+:   output preparation, relations used but not encoded cleanly
+#+end_example
+
+* Key Question
+
+Are hypernym and antonym *orthogonal* directions at L14?
+
+- If orthogonal (cos < 0.3): model has structured relational geometry
+- If entangled (cos > 0.5): model is pattern-matching, not encoding structure
+- If antonym == hypernym direction: surprising, publishable
+
+* Method
+
+1. For each word, capture residual stream at all 28 layers using
+   "The word is: {word}" prompt
+2. Compute relation vector: delta = act(target) - act(source)
+3. Measure direction stability (cross-pair cosine) per relation per layer
+4. Compute inter-relation angles at each layer
+5. Report orthogonality in deep_semantics (L12-17)
+
+* Dependencies
+
+Pairs are hardcoded so nltk is not required to run. To regenerate or
+expand the pair corpus from WordNet directly:
+
+#+begin_src bash
+uv add nltk
+python -c "import nltk; nltk.download('wordnet')"
+#+end_src
+
+* Run
+
+#+begin_src bash
+# Full run (3 relations, 15 pairs each)
+python experiments/06-wordnet-relational-geometry/run.py
+
+# Just hypernym + antonym
+python experiments/06-wordnet-relational-geometry/run.py --relations hypernym antonym
+
+# With CPRR submission
+python experiments/06-wordnet-relational-geometry/run.py --cprr
+#+end_src
+
+* Artifacts (after run)
+
+| File                                    | Description                      |
+|-----------------------------------------+----------------------------------|
+| output/wordnet_relational_geometry.json | Per-layer stability + angles     |
+| output/wordnet_relational_geometry.png  | 3-panel: stability, norms, ortho |
+
+* CPRR Conjectures (to register)
+
+| ID | Claim                                                  | Status |
+|----+--------------------------------------------------------+--------|
+| 11 | Hypernym direction is stable (cos>0.5) at L12-16       | open   |
+| 12 | Hypernym and antonym are orthogonal (cos<0.3) at L14   | open   |
+| 13 | Meronym is a third independent direction               | open   |
+| 14 | No relational structure at L0-7 (stability < 0.3)      | open   |
+
+* The 0.6B Size Constraint
+
+A 751M parameter model *must* encode hypernym relationships to function —
+they're how generalization works. Antonyms are how negation works. The
+question is where and how cleanly. Superposition at this scale means
+relationships likely share dimensions, which is itself a finding.
+
+If hypernym direction isn't stable at ANY layer, the model encodes
+semantics differently than we think — surprising and publishable.

@@ -1,0 +1,404 @@
+#+TITLE: Experimental Methodology: Activation Steering on Qwen3-0.6B
+#+AUTHOR: jwalsh / aygp-dr
+#+DATE: 2026-03-06
+#+STARTUP: overview
+#+OPTIONS: toc:3
+
+* Approach
+
+This project uses a *Conjecture-Proof-Refutation-Refinement* (CPRR) loop
+to build empirically-grounded understanding of activation steering in
+Qwen3-0.6B. Every claim passes through a lifecycle:
+
+#+begin_example
+open → testing (needs hypothesis + test) → confirmed (2+ evidence) / refuted (1+ counter-evidence)
+#+end_example
+
+Claims carry metadata:
+- =confidence=: =prior= (literature-based), =empirical= (measured once), =confirmed= (replicated)
+- =source=: paper citation or =this-project-sweep=
+
+The CPRR board lives in =.cprr/conjectures.json=, managed by the =cprr= CLI.
+Each experiment lives in a numbered directory under =experiments/= with its
+own =run.py=, =README.org=, and =output/= directory for artifacts.
+Results are submitted to the CPRR board programmatically.
+
+#+begin_src mermaid :file methodology-loop.png :exports results
+flowchart LR
+    C["Conjecture<br/>(prior confidence)"] --> T["Test Design<br/>(experiment script)"]
+    T --> R["Run<br/>(generate data)"]
+    R --> E["Evaluate<br/>(metrics + thresholds)"]
+    E -->|"passes"| P["Confirmed<br/>(2+ evidence)"]
+    E -->|"fails"| F["Refuted<br/>(counter-evidence)"]
+    P --> N["Next conjecture<br/>or refinement"]
+    F --> N
+    N --> C
+
+    style C fill:#2d3748,color:#e2e8f0
+    style P fill:#2d4a2d,color:#e2e8f0
+    style F fill:#4a2d2d,color:#e2e8f0
+#+end_src
+
+* Model Under Test
+
+Qwen3-0.6B: 28 layers, d_model=1024, ~751M params, distilled from Qwen3-32B.
+Small enough to run experiments on consumer hardware, large enough that
+superposition and layer specialization are real.
+
+See =steering-mechanism.org= for the injection mechanism and =README.org=
+for architecture details.
+
+* Phase 1: Layer Role Mapping
+
+** Goal
+
+Classify all 28 layers into functional regions with empirical support.
+
+** Method
+
+1. Start from literature priors (Geva 2021, Meng 2022, Rimsky 2024) to
+   propose six regions: tokenization (0-2), syntax (3-7), early semantics
+   (8-11), deep semantics (12-17), output preparation (18-22), logit
+   projection (23-27).
+
+2. Run =experiments/01-layer-scorecard/run.py=: 14-layer sweep measuring residual norms,
+   raw vector norms, word counts, topic cosine, markdown density,
+   perplexity ratio at alpha=2.0 with the terse steering vector.
+
+3. Submit results as CPRR evidence. Confirm or refute each region hypothesis.
+
+** Key Results
+
+| Region              | Layers | Confirmed? | Evidence                                           |
+|---------------------+--------+------------+----------------------------------------------------|
+| Syntax disruption   |    0-7 | Yes (C-1)  | avg topic_cosine=0.26, language-switching at L3,L5  |
+| Semantic sweet spot | 12-17  | Yes (C-2)  | 72% word reduction, topic_cosine=0.61               |
+| Formatting only     | 18-22  | Yes (C-3)  | 11% word change, 14x markdown density increase      |
+| Vocabulary distort  | 23-27  | Yes (C-4)  | perplexity_ratio=1.29, near-baseline word count      |
+| Monotonic norms     |  0-27  | No (C-5)   | L27 norm=620 < L24=809 (drops at final layers)      |
+
+** Directory
+
+=experiments/01-layer-scorecard/= — see =README.org= for details.
+
+* Phase 2: Verbosity Direction Analysis
+
+** Goal
+
+Validate layer role claims using a different methodology: contrastive pair
+activation analysis. Measure where the terse/verbose direction is
+*extractable* (high norm), *stable* (consistent across probe pairs),
+and *steerable* (injection produces clean style shift, not collapse).
+
+** Method
+
+1. Five probe pairs: "Why is the sky blue? Answer as tersely/verbosely as
+   possible." Capture residual stream activations at all 28 layers.
+
+2. Compute delta[layer] = act_verbose - act_terse at last token position.
+
+3. Measure delta norms (where is the signal largest?) and cross-pair
+   cosine similarity (where is the direction consistent?).
+
+4. Test injection at the peak-norm layer vs peak-stability layer.
+
+** Key Discovery
+
+Steerability is NOT predicted by delta norm alone.
+
+#+begin_example
+||delta|| peaks at L27 (211.4)  — but injection there → 3 words of garbage
+stability peaks at L12 (0.962)  — injection there → clean 11w terse output
+#+end_example
+
+The usable steering window is where *both* conditions hold:
+- direction stability > 0.95 (cross-pair cosine)
+- SNR in 3-6% range (vector norm / residual norm)
+
+This is layers 12-17. Registered as CPRR-8 (confirmed).
+
+** Antiparallel Analysis
+
+Raw activations for terse and verbose prompts are *parallel*, not
+antiparallel (cos ~ +0.79 to +0.99). Style is approximately 5% of the
+total activation signal. The remaining 95% is shared semantic content.
+The subtraction operation (act_pos - act_neg) isolates this thin style
+subspace. The resulting steering vector is antiparallel to the verbose
+direction by construction.
+
+** Directory
+
+=experiments/02-verbosity-direction/= — see =README.org= for details.
+
+* Phase 3: Injection Validation
+
+** Goal
+
+Test whether ActAdd injection at L12 produces output comparable to
+prompt-level control ("answer tersely/verbosely") across diverse questions.
+
+** Method: Bimodal Injection Test
+
+10 questions with bimodal answer lengths (some naturally short, some long).
+5 conditions per question:
+
+| Condition       | Method                                          |
+|-----------------+-------------------------------------------------|
+| baseline        | Raw question, no steering                       |
+| prompt_terse    | Question + "Answer as tersely as possible."     |
+| prompt_verbose  | Question + "Answer as verbosely as possible."   |
+| inject_terse    | Raw question + terse vector at L12, alpha=2.0   |
+| inject_verbose  | Raw question + verbose vector at L12, alpha=2.0 |
+
+5 hypotheses tested:
+
+| ID | Hypothesis                              | Result  |
+|----+-----------------------------------------+---------|
+| H1 | inject_terse < 30 words for all         | FAIL    |
+| H2 | inject_verbose > 100 words for all      | PASS    |
+| H3 | injection within 20% of prompt control  | FAIL    |
+| H4 | topic cosine > 0.6 for both directions  | FAIL    |
+| H5 | terse < baseline < verbose ordering     | PASS    |
+
+** Key Finding: Alpha Overshoot
+
+Alpha=2.0 is too aggressive for prompt-level parity:
+- Terse injection: 12w mean (prompt terse: 20w) — 0.6x ratio
+- Verbose injection: 214w mean (prompt verbose: 70w) — 3.0x ratio
+
+Injection *overshoots* prompt-level control in both directions.
+CPRR-9 refuted. This motivated the alpha parity sweep (Phase 4).
+
+** Directory
+
+=experiments/03-bimodal-injection/= — see =README.org= for details.
+
+* Phase 4: Alpha Calibration (Pending)
+
+** Goal
+
+Find the alpha value where injection word count matches prompt-level
+control. Test whether terse and verbose require different alphas
+(asymmetry hypothesis).
+
+** Method
+
+Sweep alpha from 0.1 to 3.0 in 10 steps. For each alpha, generate
+terse (+alpha) and verbose (-alpha) outputs for 5 questions. Compare
+mean word count to prompt-level targets established in Phase 3.
+
+** Predictions
+
+- Terse parity alpha will be lower than verbose parity alpha (the
+  terse direction is near a collapse boundary and needs less pressure)
+- Topic cosine will drop below 0.6 before word count reaches parity
+  for terse, but not for verbose (asymmetric coherence floor)
+
+** Directory
+
+=experiments/04-alpha-parity-sweep/= — see =README.org= for details.
+
+* Phase 5: Multi-Layer vs Single-Layer (Pending)
+
+** Goal
+
+Test CPRR-6: does distributing the same total steering pressure across
+multiple layers produce better terseness-to-coherence ratio than
+concentrating it at one layer?
+
+** Method
+
+5 configurations at equal total pressure (2.0):
+
+| Config | Layers           | Alpha each | Total pressure |
+|--------+------------------+------------+----------------|
+| A      | L12              |        2.0 |            2.0 |
+| B      | L12 + L16        |        1.0 |            2.0 |
+| C      | L10 + L14 + L18  |       0.67 |            2.0 |
+| D      | L12 + L15        |        1.0 |            2.0 |
+| E      | L12 (control)    |        1.0 |            1.0 |
+
+Metrics: word count, topic cosine, perplexity ratio, words-per-sentence.
+Composite score: (1/words) * topic * (1/ppl) * 1000.
+
+8 questions, all 5 configs = 40 generations.
+
+** Predictions
+
+- Multi-layer (B or C) will outperform single-layer (A) on composite score
+- Adjacent layers (D: L12+L15) may interfere, producing worse results
+  than spaced layers (B: L12+L16)
+
+** Directory
+
+=experiments/05-multilayer-vs-single/= — see =README.org= for details.
+
+* Phase 6: WordNet Relational Geometry (Pending)
+
+** Goal
+
+Test whether the residual stream encodes WordNet relationships (hypernym,
+antonym, meronym) as stable, distinct, orthogonal directions. Ground truth
+from Princeton WordNet's 117K synsets — no prompt engineering, no topic
+drift, verifiable precision/recall.
+
+** Why This Is Better Than Style Steering
+
+Style steering (terse/verbose) has no external ground truth — "correct"
+is subjective. WordNet provides a structured semantic graph where
+relationships are categorical and verifiable. If "dog -> animal" also
+activates "dog -> pet food", the direction is noisy and you can measure it.
+
+** Method
+
+1. 15 curated pairs per relation (45 total), single-token-friendly words
+2. Capture residual stream at all 28 layers for each word
+3. Compute relation vector: delta = act(target) - act(source)
+4. Measure direction stability (cross-pair cosine) per relation per layer
+5. Compute inter-relation angles — are hypernym and antonym orthogonal?
+
+** Key Question
+
+Are hypernym and antonym orthogonal (cos < 0.3) at L12-16? If yes,
+the model has structured relational geometry. If entangled, it's
+pattern-matching not structure.
+
+** Directory
+
+=experiments/06-wordnet-relational-geometry/= — see =README.org= for details.
+
+* Metrics
+
+All experiments use a common metric set:
+
+| Metric             | What it measures                        | Threshold             |
+|--------------------+-----------------------------------------+-----------------------|
+| word_count         | Output length                           | Context-dependent     |
+| words_per_sentence | Sentence density                        | Lower = more terse    |
+| topic_cosine       | TF-IDF cosine vs baseline (on-topic?)   | > 0.6 = acceptable    |
+| perplexity_ratio   | Cross-entropy steered / baseline        | < 1.5 = coherent      |
+| direction_stability| Cross-pair cosine of delta vectors       | > 0.95 = generalizable|
+| SNR                | steering_vec_norm / residual_norm       | 3-6% = usable range   |
+
+=tfidf_cosine= uses bag-of-words TF weighting — deliberately simple.
+A more sophisticated embedding-based metric would be warranted for
+production use but this suffices for relative comparisons.
+
+* CPRR Board Summary
+
+As of 2026-03-06:
+
+| ID | Title                                    | Status    |
+|----+------------------------------------------+-----------|
+|  1 | Layers 0-7: topic drift, not style       | confirmed |
+|  2 | Layers 12-17: semantic sweet spot        | confirmed |
+|  3 | Layers 18-22: formatting, not style      | confirmed |
+|  4 | Layers 23-27: vocabulary distortion      | confirmed |
+|  5 | Norms grow monotonically                 | refuted   |
+|  6 | Multi-layer outperforms single           | testing   |
+|  7 | Verbosity peaks at L12-17                | refuted   |
+|  8 | Steerability = stability + SNR, not norm | confirmed |
+|  9 | L12 injection matches prompt control     | refuted   |
+
+4 confirmed, 3 refuted, 1 testing, 0 open.
+
+Refutations are informative: C-5 revealed non-monotonic norm behavior
+at final layers. C-7 showed delta norm is not the right proxy for
+steerability. C-9 established that alpha=2.0 overshoots prompt-level
+control, motivating the alpha calibration experiment.
+
+* Experiment Dependency Graph
+
+#+begin_src mermaid :file methodology-deps.png :exports results
+flowchart TB
+    LS["01: Layer Scorecard"]
+    VD["02: Verbosity Direction"]
+    BI["03: Bimodal Injection"]
+    AP["04: Alpha Parity Sweep"]
+    ML["05: Multi-Layer vs Single"]
+    WN["06: WordNet Geometry"]
+
+    LS -->|"confirms L12-17<br/>sweet spot"| VD
+    LS -->|"provides norms,<br/>SNR data"| VD
+    VD -->|"validates injection<br/>site (L12)"| BI
+    BI -->|"alpha=2.0<br/>overshoots"| AP
+    LS -->|"layer vectors"| ML
+    VD -->|"stability data"| ML
+    VD -->|"stability method<br/>reused"| WN
+
+    LS -.->|"C-1,2,3,4,5"| CPRR["CPRR Board"]
+    VD -.->|"C-7,8"| CPRR
+    BI -.->|"C-9"| CPRR
+    AP -.->|"C-10?"| CPRR
+    ML -.->|"C-6"| CPRR
+    WN -.->|"C-11,12,13,14"| CPRR
+
+    style LS fill:#2d4a2d,color:#e2e8f0
+    style VD fill:#2d4a2d,color:#e2e8f0
+    style BI fill:#2d4a2d,color:#e2e8f0
+    style AP fill:#4a4a2d,color:#e2e8f0
+    style ML fill:#4a4a2d,color:#e2e8f0
+    style WN fill:#4a4a2d,color:#e2e8f0
+    style CPRR fill:#2d3a4a,color:#e2e8f0
+#+end_src
+
+Green = completed. Yellow = pending.
+
+* Verification Layers
+
+Five layers of verification, from fast to formal (see =contracts.org=):
+
+1. *Property-based tests* — vector invariants via Hypothesis + pytest
+2. *Behavioral contracts* — measurable style metrics on steered outputs
+3. *Formal specs* — Lean4 geometric invariants
+4. *API schema tests* — Ollama endpoint validation via Schemathesis
+5. *CPRR integration* — sweep results piped into conjecture lifecycle
+
+* Secondary Experiments
+
+=meta-lens-cprr.org= defines a second-order experiment: instead of
+terse/verbose as the contrastive axis, use *philosophical meta-frames*
+(Meadows, Wittgenstein, Foucault, Freud) to test whether different
+cognitive operations occupy different directions at the same layer
+depth. 11 additional conjectures, all at =prior= confidence, pending
+completion of primary experiments.
+
+* Reproducibility
+
+- All experiments use greedy decoding (no sampling randomness)
+- Model: =Qwen/Qwen3-0.6B= from HuggingFace, float16
+- Steering vectors computed fresh per experiment (not cached across runs)
+- Each experiment stores JSON results in its own =output/= directory
+- CPRR evidence includes source attribution for all claims
+- Scripts are self-contained: each experiment can be run independently
+  with =python experiments/NN-name/run.py=
+
+* Experiment Directory Structure
+
+#+begin_example
+experiments/
+├── 01-layer-scorecard/          # Phase 1: layer characterization
+│   ├── README.org
+│   ├── run.py
+│   └── output/
+├── 02-verbosity-direction/      # Phase 2: contrastive pair analysis
+│   ├── README.org
+│   ├── run.py
+│   └── output/
+├── 03-bimodal-injection/        # Phase 3: injection validation
+│   ├── README.org
+│   ├── run.py
+│   └── output/
+├── 04-alpha-parity-sweep/       # Phase 4: alpha calibration
+│   ├── README.org
+│   ├── run.py
+│   └── output/
+├── 05-multilayer-vs-single/     # Phase 5: multi-layer steering
+│   ├── README.org
+│   ├── run.py
+│   └── output/
+└── 06-wordnet-relational-geometry/  # Phase 6: semantic structure
+    ├── README.org
+    ├── run.py
+    └── output/
+#+end_example

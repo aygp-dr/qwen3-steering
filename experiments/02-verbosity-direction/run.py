@@ -10,18 +10,23 @@ Three questions:
   3. Does injecting it work? (steering validation loop)
 
 Usage:
-    python verbosity_direction.py                # full experiment
-    python verbosity_direction.py --inject       # also test injection
-    python verbosity_direction.py --visualize    # generate all plots
+    python experiments/02-verbosity-direction/run.py                # full experiment
+    python experiments/02-verbosity-direction/run.py --inject       # also test injection
+    python experiments/02-verbosity-direction/run.py --visualize    # generate all plots
 """
 import argparse
 import json
 import subprocess
+import sys
 import time
+from pathlib import Path
+
 import torch
 import torch.nn.functional as F
 import numpy as np
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from actadd import MODEL_ID, generate_steered
 
 NUM_LAYERS = 28
@@ -190,7 +195,7 @@ def test_injection(model, tokenizer, all_deltas, all_norms):
     }
 
 
-def plot_results(all_norms, stability, injection_results=None, output_dir="eval_output"):
+def plot_results(all_norms, stability, injection_results=None, output_dir=str(Path(__file__).resolve().parent / "output")):
     """Generate three visualization plots."""
     import matplotlib
     matplotlib.use("Agg")
@@ -426,7 +431,7 @@ def main():
                         help="Generate visualization plots")
     parser.add_argument("--cprr", action="store_true",
                         help="Submit results to CPRR")
-    parser.add_argument("--output", default="verbosity-direction.json")
+    parser.add_argument("--output", default=str(Path(__file__).resolve().parent / "output" / "verbosity-direction.json"))
     args = parser.parse_args()
 
     print(f"Loading {MODEL_ID}...")

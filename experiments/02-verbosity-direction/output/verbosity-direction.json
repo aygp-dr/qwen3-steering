@@ -1,0 +1,240 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "probe_pairs": [
+    [
+      "Why is the sky blue? Answer as tersely as possible.",
+      "Why is the sky blue? Answer as verbosely as possible."
+    ],
+    [
+      "What causes rain? Answer as tersely as possible.",
+      "What causes rain? Answer as verbosely as possible."
+    ],
+    [
+      "How does yeast work? Answer as tersely as possible.",
+      "How does yeast work? Answer as verbosely as possible."
+    ],
+    [
+      "What is gravity? Answer as tersely as possible.",
+      "What is gravity? Answer as verbosely as possible."
+    ],
+    [
+      "Why do leaves change color? Answer as tersely as possible.",
+      "Why do leaves change color? Answer as verbosely as possible."
+    ]
+  ],
+  "timestamp": "2026-03-06T20:04:57-0500",
+  "norms": {
+    "0": 0.1275,
+    "1": 0.1602,
+    "2": 0.4432,
+    "3": 0.977,
+    "4": 0.8282,
+    "5": 0.9854,
+    "6": 2.2277,
+    "7": 2.459,
+    "8": 2.6145,
+    "9": 7.5164,
+    "10": 8.8844,
+    "11": 16.9859,
+    "12": 23.2062,
+    "13": 22.9781,
+    "14": 22.875,
+    "15": 31.7,
+    "16": 40.825,
+    "17": 53.0812,
+    "18": 71.225,
+    "19": 81.525,
+    "20": 89.9625,
+    "21": 101.775,
+    "22": 115.575,
+    "23": 130.725,
+    "24": 144.4375,
+    "25": 162.0,
+    "26": 167.7,
+    "27": 211.425
+  },
+  "stability": {
+    "0": {
+      "mean_cosine": 0.958,
+      "std_cosine": 0.0194,
+      "min_cosine": 0.9297,
+      "max_cosine": 0.9932
+    },
+    "1": {
+      "mean_cosine": 0.909,
+      "std_cosine": 0.0399,
+      "min_cosine": 0.8599,
+      "max_cosine": 0.9829
+    },
+    "2": {
+      "mean_cosine": 0.9688,
+      "std_cosine": 0.0106,
+      "min_cosine": 0.9546,
+      "max_cosine": 0.9897
+    },
+    "3": {
+      "mean_cosine": 0.9123,
+      "std_cosine": 0.0242,
+      "min_cosine": 0.8677,
+      "max_cosine": 0.9526
+    },
+    "4": {
+      "mean_cosine": 0.9079,
+      "std_cosine": 0.03,
+      "min_cosine": 0.855,
+      "max_cosine": 0.9517
+    },
+    "5": {
+      "mean_cosine": 0.909,
+      "std_cosine": 0.034,
+      "min_cosine": 0.8491,
+      "max_cosine": 0.9541
+    },
+    "6": {
+      "mean_cosine": 0.9493,
+      "std_cosine": 0.0231,
+      "min_cosine": 0.9072,
+      "max_cosine": 0.978
+    },
+    "7": {
+      "mean_cosine": 0.9489,
+      "std_cosine": 0.0235,
+      "min_cosine": 0.9038,
+      "max_cosine": 0.9756
+    },
+    "8": {
+      "mean_cosine": 0.9279,
+      "std_cosine": 0.0319,
+      "min_cosine": 0.8657,
+      "max_cosine": 0.9663
+    },
+    "9": {
+      "mean_cosine": 0.8964,
+      "std_cosine": 0.0355,
+      "min_cosine": 0.8354,
+      "max_cosine": 0.9438
+    },
+    "10": {
+      "mean_cosine": 0.9089,
+      "std_cosine": 0.0321,
+      "min_cosine": 0.855,
+      "max_cosine": 0.9492
+    },
+    "11": {
+      "mean_cosine": 0.9528,
+      "std_cosine": 0.0145,
+      "min_cosine": 0.9258,
+      "max_cosine": 0.9712
+    },
+    "12": {
+      "mean_cosine": 0.9622,
+      "std_cosine": 0.0092,
+      "min_cosine": 0.9473,
+      "max_cosine": 0.9775
+    },
+    "13": {
+      "mean_cosine": 0.9582,
+      "std_cosine": 0.0097,
+      "min_cosine": 0.9429,
+      "max_cosine": 0.9746
+    },
+    "14": {
+      "mean_cosine": 0.9508,
+      "std_cosine": 0.0106,
+      "min_cosine": 0.9346,
+      "max_cosine": 0.9673
+    },
+    "15": {
+      "mean_cosine": 0.9519,
+      "std_cosine": 0.0098,
+      "min_cosine": 0.937,
+      "max_cosine": 0.9688
+    },
+    "16": {
+      "mean_cosine": 0.9472,
+      "std_cosine": 0.0115,
+      "min_cosine": 0.9336,
+      "max_cosine": 0.9692
+    },
+    "17": {
+      "mean_cosine": 0.9191,
+      "std_cosine": 0.0169,
+      "min_cosine": 0.8926,
+      "max_cosine": 0.9448
+    },
+    "18": {
+      "mean_cosine": 0.8975,
+      "std_cosine": 0.0193,
+      "min_cosine": 0.8677,
+      "max_cosine": 0.9243
+    },
+    "19": {
+      "mean_cosine": 0.8686,
+      "std_cosine": 0.0245,
+      "min_cosine": 0.8267,
+      "max_cosine": 0.9023
+    },
+    "20": {
+      "mean_cosine": 0.8338,
+      "std_cosine": 0.0282,
+      "min_cosine": 0.7793,
+      "max_cosine": 0.877
+    },
+    "21": {
+      "mean_cosine": 0.8037,
+      "std_cosine": 0.0356,
+      "min_cosine": 0.7368,
+      "max_cosine": 0.8545
+    },
+    "22": {
+      "mean_cosine": 0.7867,
+      "std_cosine": 0.0319,
+      "min_cosine": 0.7358,
+      "max_cosine": 0.8438
+    },
+    "23": {
+      "mean_cosine": 0.7681,
+      "std_cosine": 0.0275,
+      "min_cosine": 0.7183,
+      "max_cosine": 0.8076
+    },
+    "24": {
+      "mean_cosine": 0.741,
+      "std_cosine": 0.0396,
+      "min_cosine": 0.6787,
+      "max_cosine": 0.8022
+    },
+    "25": {
+      "mean_cosine": 0.7043,
+      "std_cosine": 0.0408,
+      "min_cosine": 0.6323,
+      "max_cosine": 0.7559
+    },
+    "26": {
+      "mean_cosine": 0.6929,
+      "std_cosine": 0.0408,
+      "min_cosine": 0.6152,
+      "max_cosine": 0.7515
+    },
+    "27": {
+      "mean_cosine": 0.725,
+      "std_cosine": 0.0462,
+      "min_cosine": 0.6592,
+      "max_cosine": 0.8042
+    }
+  },
+  "peak_layer": 27,
+  "peak_norm": 211.425,
+  "injection": {
+    "peak_layer": 27,
+    "mean_delta_norm": 187.12,
+    "baseline_words": 142,
+    "verbose_words": 3,
+    "terse_words": 185,
+    "verbose_increase_pct": -97.9,
+    "terse_decrease_pct": -30.3,
+    "baseline_preview": "A **compiler** is a program that translates high-level, abstract code (such as machine language or assembly language) in",
+    "verbose_preview": "**A compiler** **\"****\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"**\"*",
+    "terse_preview": "A compiler is a program designed primarily for code compilation, which processes a program (either a source code file, a"
+  }
+}

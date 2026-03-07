@@ -1,0 +1,38 @@
+#+TITLE: Experiment 04: Alpha Parity Sweep
+#+DATE: 2026-03-06
+#+STATUS: pending
+
+* Goal
+
+Find the alpha value where injection word count matches prompt-level
+control. Test whether terse and verbose require different alphas
+(asymmetry hypothesis).
+
+* Method
+
+- Sweep alpha: [0.1, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]
+- 5 questions, generate terse (+alpha) and verbose (-alpha) for each
+- Compare mean word count to prompt-level targets from experiment 03
+
+* Predictions
+
+- Terse parity alpha < verbose parity alpha (terse is near collapse boundary)
+- Topic cosine drops below 0.6 before parity for terse but not verbose
+
+* CPRR Conjectures
+
+Motivating conjecture: C-9 (refuted) showed alpha=2.0 overshoots by 3x.
+This experiment will register new conjectures for the parity finding.
+
+* Run
+
+#+begin_src bash
+python experiments/04-alpha-parity-sweep/run.py --cprr
+#+end_src
+
+* Artifacts (after run)
+
+| File                         | Description                |
+|------------------------------+----------------------------|
+| output/alpha_parity_sweep.json | Sweep data per alpha       |
+| output/alpha_parity_sweep.png  | Word count + topic vs alpha |

@@ -18,10 +18,10 @@ Hypothesis (CPRR):
   10 questions; the verbose condition produces >100 words for all 10.
 
 Usage:
-    python experiments/bimodal_injection_test.py
-    python experiments/bimodal_injection_test.py --alpha 3.0
-    python experiments/bimodal_injection_test.py --visualize
-    python experiments/bimodal_injection_test.py --cprr
+    python experiments/03-bimodal-injection/run.py
+    python experiments/03-bimodal-injection/run.py --alpha 3.0
+    python experiments/03-bimodal-injection/run.py --visualize
+    python experiments/03-bimodal-injection/run.py --cprr
 """
 import argparse
 import json
@@ -38,7 +38,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # Add parent to path for imports
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from actadd import (
     MODEL_ID, STYLE_PAIRS, compute_steering_vector, generate_steered,
 )
@@ -470,7 +470,7 @@ def main():
                         help="Generate visualization")
     parser.add_argument("--cprr", action="store_true",
                         help="Submit results to CPRR")
-    parser.add_argument("--output-dir", default="eval_output",
+    parser.add_argument("--output-dir", default=str(Path(__file__).resolve().parent / "output"),
                         help="Output directory")
     args = parser.parse_args()
 

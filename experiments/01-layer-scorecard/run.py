@@ -13,20 +13,24 @@ Probes:
   6. Vocabulary distortion (perplexity ratio vs baseline)
 
 Usage:
-    python layer_scorecard.py                    # full sweep (all 28 layers)
-    python layer_scorecard.py --layers 10 12 14  # targeted layers
-    python layer_scorecard.py --fast             # 14-layer subset, 1 alpha
+    python experiments/01-layer-scorecard/run.py                    # full sweep
+    python experiments/01-layer-scorecard/run.py --layers 10 12 14  # targeted
+    python experiments/01-layer-scorecard/run.py --fast             # 14-layer subset
 """
 import argparse
 import json
 import math
 import re
+import sys
 import time
+from pathlib import Path
+
 import torch
 import torch.nn.functional as F
 from collections import Counter
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from actadd import (
     MODEL_ID, STYLE_PAIRS, get_layer_activations,
     compute_steering_vector, generate_steered,
@@ -162,7 +166,7 @@ def main():
                         help="Specific layers to test (default: all 28)")
     parser.add_argument("--fast", action="store_true",
                         help="14-layer subset, single alpha=2.0, 2 prompts")
-    parser.add_argument("--output", default="layer-scorecard.json")
+    parser.add_argument("--output", default=str(Path(__file__).resolve().parent / "output" / "layer-scorecard.json"))
     args = parser.parse_args()
 
     if args.layers:

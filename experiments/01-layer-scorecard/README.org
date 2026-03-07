@@ -1,0 +1,37 @@
+#+TITLE: Experiment 01: Layer Scorecard
+#+DATE: 2026-03-06
+
+* Goal
+
+Characterize what each of Qwen3-0.6B's 28 layers encodes by sweeping
+terse steering across all layers and measuring six probes.
+
+* Method
+
+- 14-layer subset (fast mode) or full 28-layer sweep
+- At each layer: inject terse steering vector at alpha=2.0
+- Measure: residual norm, raw vec norm, word count, topic cosine,
+  markdown density, perplexity ratio
+
+* CPRR Conjectures
+
+| ID | Claim                                   | Result    |
+|----+-----------------------------------------+-----------|
+|  1 | Layers 0-7: topic drift, not style      | confirmed |
+|  2 | Layers 12-17: semantic sweet spot        | confirmed |
+|  3 | Layers 18-22: formatting, not style      | confirmed |
+|  4 | Layers 23-27: vocabulary distortion      | confirmed |
+|  5 | Norms grow monotonically                 | refuted   |
+
+* Run
+
+#+begin_src bash
+python experiments/01-layer-scorecard/run.py --fast
+#+end_src
+
+* Artifacts
+
+| File                        | Description                    |
+|-----------------------------+--------------------------------|
+| output/layer-scorecard.json | Raw sweep results              |
+| output/layer-roles.json     | Structured layer classification |

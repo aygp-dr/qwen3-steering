@@ -1,0 +1,45 @@
+#+TITLE: Experiment 03: Bimodal Injection Test
+#+DATE: 2026-03-06
+
+* Goal
+
+Validate that ActAdd injection at L12 produces output comparable to
+prompt-level "Answer tersely/verbosely" across 10 bimodal questions.
+
+* Method
+
+- 10 questions that admit both short and long answers
+- 5 conditions: baseline, prompt_terse, prompt_verbose, inject_terse, inject_verbose
+- 5 hypotheses with explicit pass/fail criteria
+
+* Results
+
+| ID | Hypothesis                          | Result |
+|----+-------------------------------------+--------|
+| H1 | inject_terse < 30w for all          | FAIL   |
+| H2 | inject_verbose > 100w for all       | PASS   |
+| H3 | within 20% of prompt-level control  | FAIL   |
+| H4 | topic cosine > 0.6                  | FAIL   |
+| H5 | terse < baseline < verbose ordering | PASS   |
+
+Alpha=2.0 overshoots prompt-level control by 3x. Terse: 12w (target 20w).
+Verbose: 214w (target 70w). Motivated experiment 04 (alpha calibration).
+
+* CPRR Conjectures
+
+| ID | Claim                                      | Result  |
+|----+--------------------------------------------+---------|
+|  9 | L12 injection matches prompt-level control | refuted |
+
+* Run
+
+#+begin_src bash
+python experiments/03-bimodal-injection/run.py --visualize --cprr
+#+end_src
+
+* Artifacts
+
+| File                               | Description             |
+|------------------------------------+-------------------------|
+| output/bimodal_injection_test.json | Raw 10-question results |
+| output/bimodal_injection_test.png  | Comparison visualization |

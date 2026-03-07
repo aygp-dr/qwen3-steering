@@ -1,0 +1,45 @@
+#+TITLE: Experiment 02: Verbosity Direction Analysis
+#+DATE: 2026-03-06
+
+* Goal
+
+Find where the terse/verbose direction is extractable, stable, and
+steerable using contrastive pair activation analysis across all 28 layers.
+
+* Method
+
+- 5 probe pairs: same question with "Answer as tersely/verbosely as possible"
+- Capture residual stream at all 28 layers, compute delta = act_verbose - act_terse
+- Measure delta norms (signal strength) and cross-pair cosine (direction stability)
+- Test injection at peak-norm layer vs peak-stability layer
+
+* Key Finding
+
+Steerability != delta norm. Peak norm is L27 (211.4) but injection there
+collapses to 3 words of garbage. Peak stability is L12 (cos=0.962) where
+injection cleanly reduces output from 142w to 11w.
+
+The usable window: stability > 0.95 AND SNR 3-6% = layers 12-17.
+
+* CPRR Conjectures
+
+| ID | Claim                                         | Result    |
+|----+-----------------------------------------------+-----------|
+|  7 | Verbosity peaks in deep_semantics (L12-17)    | refuted   |
+|  8 | Steerability = stability + SNR, not norm alone | confirmed |
+
+* Run
+
+#+begin_src bash
+python experiments/02-verbosity-direction/run.py --inject --visualize
+#+end_src
+
+* Artifacts
+
+| File                                 | Description                     |
+|--------------------------------------+---------------------------------|
+| output/verbosity-direction.json      | Per-layer norms and stability   |
+| output/verbosity_norm_trajectory.png | Delta norm across layers        |
+| output/verbosity_stability.png       | Cross-pair cosine similarity    |
+| output/verbosity_dashboard.png       | Combined dashboard              |
+| output/antiparallel_analysis.png     | Raw activation cosine analysis  |
