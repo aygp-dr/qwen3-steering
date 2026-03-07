@@ -1,0 +1,137 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "targets": {
+    "baseline": 172.8,
+    "prompt_terse": 21.6,
+    "prompt_verbose": 75.6
+  },
+  "sweep": {
+    "0.1": {
+      "terse_mean": 156.8,
+      "terse_min": 121,
+      "terse_max": 207,
+      "verbose_mean": 182.0,
+      "verbose_min": 134,
+      "verbose_max": 217,
+      "terse_topic": 0.858,
+      "verbose_topic": 0.876,
+      "terse_ratio": 7.26,
+      "verbose_ratio": 2.41
+    },
+    "0.25": {
+      "terse_mean": 115.8,
+      "terse_min": 51,
+      "terse_max": 189,
+      "verbose_mean": 179.2,
+      "verbose_min": 138,
+      "verbose_max": 211,
+      "terse_topic": 0.806,
+      "verbose_topic": 0.862,
+      "terse_ratio": 5.36,
+      "verbose_ratio": 2.37
+    },
+    "0.5": {
+      "terse_mean": 69.0,
+      "terse_min": 53,
+      "terse_max": 82,
+      "verbose_mean": 193.8,
+      "verbose_min": 149,
+      "verbose_max": 220,
+      "terse_topic": 0.763,
+      "verbose_topic": 0.824,
+      "terse_ratio": 3.19,
+      "verbose_ratio": 2.56
+    },
+    "0.75": {
+      "terse_mean": 58.4,
+      "terse_min": 37,
+      "terse_max": 98,
+      "verbose_mean": 184.2,
+      "verbose_min": 112,
+      "verbose_max": 224,
+      "terse_topic": 0.729,
+      "verbose_topic": 0.811,
+      "terse_ratio": 2.7,
+      "verbose_ratio": 2.44
+    },
+    "1.0": {
+      "terse_mean": 51.8,
+      "terse_min": 44,
+      "terse_max": 64,
+      "verbose_mean": 204.2,
+      "verbose_min": 163,
+      "verbose_max": 224,
+      "terse_topic": 0.684,
+      "verbose_topic": 0.733,
+      "terse_ratio": 2.4,
+      "verbose_ratio": 2.7
+    },
+    "1.25": {
+      "terse_mean": 52.4,
+      "terse_min": 45,
+      "terse_max": 68,
+      "verbose_mean": 192.0,
+      "verbose_min": 159,
+      "verbose_max": 217,
+      "terse_topic": 0.664,
+      "verbose_topic": 0.658,
+      "terse_ratio": 2.43,
+      "verbose_ratio": 2.54
+    },
+    "1.5": {
+      "terse_mean": 43.2,
+      "terse_min": 16,
+      "terse_max": 53,
+      "verbose_mean": 186.8,
+      "verbose_min": 167,
+      "verbose_max": 213,
+      "terse_topic": 0.608,
+      "verbose_topic": 0.619,
+      "terse_ratio": 2.0,
+      "verbose_ratio": 2.47
+    },
+    "2.0": {
+      "terse_mean": 10.4,
+      "terse_min": 3,
+      "terse_max": 28,
+      "verbose_mean": 210.4,
+      "verbose_min": 180,
+      "verbose_max": 252,
+      "terse_topic": 0.452,
+      "verbose_topic": 0.465,
+      "terse_ratio": 0.48,
+      "verbose_ratio": 2.78
+    },
+    "2.5": {
+      "terse_mean": 0.0,
+      "terse_min": 0,
+      "terse_max": 0,
+      "verbose_mean": 254.8,
+      "verbose_min": 245,
+      "verbose_max": 266,
+      "terse_topic": 0.0,
+      "verbose_topic": 0.341,
+      "terse_ratio": 0.0,
+      "verbose_ratio": 3.37
+    },
+    "3.0": {
+      "terse_mean": 0.0,
+      "terse_min": 0,
+      "terse_max": 0,
+      "verbose_mean": 253.8,
+      "verbose_min": 233,
+      "verbose_max": 267,
+      "terse_topic": 0.0,
+      "verbose_topic": 0.302,
+      "terse_ratio": 0.0,
+      "verbose_ratio": 3.36
+    }
+  },
+  "parity": {
+    "terse_alpha": 2.0,
+    "verbose_alpha": 0.25,
+    "asymmetric": true
+  },
+  "timestamp": "2026-03-06T21:17:20-0500"
+}

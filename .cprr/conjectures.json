@@ -90,14 +90,19 @@
       "id": 6,
       "title": "Multi-layer distributed steering outperforms single-layer",
       "hypothesis": "Two layers at alpha=1.0 each (L12+L16) produce better terseness-to-coherence ratio than single layer at alpha=2.0 (L12)",
-      "status": "testing",
+      "evidence": [
+        "Winner: A_single_L12_a2 (score=10.91). Single L12 α=2.0: 13.9w, topic=0.499. Multi-layer wins=False. [confidence: empirical, source: this-project-sweep]",
+        "All configs: A_single_L12_a2=13.9w/topic=0.499/ppl=3.298, B_dual_L12_L16=50.0w/topic=0.615/ppl=2.026, C_triple_L10_L14_L18=53.5w/topic=0.643/ppl=1.961, D_adjacent_L12_L15=48.5w/topic=0.624/ppl=1.928, E_single_L12_a1=56.6w/topic=0.696/ppl=1.641 [confidence: empirical, source: this-project-sweep]",
+        "CORRECTION: Single-layer wins. A_single_L12_a2 score=10.91 vs best multi B_dual=6.07, C_triple=6.13, D_adjacent=6.67. multi_wins=False. Concentrated pressure at L12 beats distribution. [confidence: empirical, source: this-project-sweep]"
+      ],
+      "status": "refuted",
       "tags": [
         "layer-roles",
         "multi-layer",
         "prior"
       ],
       "created_at": "2026-03-06T19:57:17.146865-05:00",
-      "updated_at": "2026-03-06T19:57:25.956029-05:00"
+      "updated_at": "2026-03-06T21:13:03.670752-05:00"
     },
     {
       "id": 7,
@@ -157,56 +162,89 @@
       "id": 10,
       "title": "Hypernym direction is stable (cos\u003e0.5) at L12-16",
       "hypothesis": "The hypernym direction (dog-\u003eanimal) has cross-pair cosine stability \u003e0.5 at layers 12-16, confirming relational encoding in deep_semantics.",
-      "status": "open",
+      "evidence": [
+        "Peak hypernym stability=0.1179 at L12, antonym=0.0676, meronym=0.0659. All far below 0.5 threshold at every layer. Qwen3-0.6B does not encode hypernym as a stable direction. [confidence: empirical, source: this-project-sweep]",
+        "Sweep [0.1, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]: terse parity at α=2.0 (10.4w vs target 22w), verbose parity at α=0.25 (179.2w vs target 76w). Topic at parity: terse=0.452, verbose=0.862. [confidence: empirical, source: this-project-sweep]",
+        "Full curve: terse goes 156.8w→0.0w, verbose goes 182.0w→253.8w across α=0.1-3.0. [confidence: empirical, source: this-project-sweep]"
+      ],
+      "status": "refuted",
       "tags": [
         "wordnet",
         "hypernym",
         "relational"
       ],
       "created_at": "2026-03-06T20:54:45.393093-05:00",
-      "updated_at": "2026-03-06T20:54:45.393093-05:00"
+      "updated_at": "2026-03-06T21:17:21.172709-05:00"
     },
     {
       "id": 11,
       "title": "Hypernym and antonym are orthogonal (cos\u003c0.3) at L14",
       "hypothesis": "Mean direction vectors for hypernym and antonym have cosine similarity \u003c0.3 at L12-16, indicating structured relational geometry rather than pattern-matching.",
-      "status": "open",
+      "evidence": [
+        "hypernym: peak stability at L9 (cos=0.1206). Norm at peak: 22.08. [confidence: empirical, source: this-project-sweep]",
+        "antonym: peak stability at L10 (cos=0.0746). Norm at peak: 22.12. [confidence: empirical, source: this-project-sweep]",
+        "meronym: peak stability at L9 (cos=0.0703). Norm at peak: 23.51. [confidence: empirical, source: this-project-sweep]",
+        "Orthogonality is vacuously satisfied (cos~0.002 at L14) because directions are noise, not structure. All stability values \u003c0.13 — directions are not meaningful enough for orthogonality to be informative. [confidence: empirical, source: this-project-sweep]"
+      ],
+      "status": "refuted",
       "tags": [
         "wordnet",
         "orthogonality",
         "relational"
       ],
       "created_at": "2026-03-06T20:54:50.814965-05:00",
-      "updated_at": "2026-03-06T20:54:50.814965-05:00"
+      "updated_at": "2026-03-06T21:13:33.899055-05:00"
     },
     {
       "id": 12,
       "title": "Meronym is a third independent direction from hypernym and antonym",
       "hypothesis": "Meronym direction (wheel-\u003ecar) has cos\u003c0.3 with both hypernym and antonym at L12-16, forming a 3D relational subspace.",
-      "status": "open",
+      "evidence": [
+        "hypernym_vs_antonym: mean cos=-0.0045 in L12-17. Orthogonal. [confidence: empirical, source: this-project-sweep]",
+        "hypernym_vs_meronym: mean cos=-0.0223 in L12-17. Orthogonal. [confidence: empirical, source: this-project-sweep]",
+        "antonym_vs_meronym: mean cos=-0.0088 in L12-17. Orthogonal. [confidence: empirical, source: this-project-sweep]",
+        "Inter-relation cosines near zero at L12-17 (hyp-ant=-0.005, hyp-mer=-0.022, ant-mer=-0.009) but stability too low (\u003c0.12) for directions to be meaningful. Orthogonality of noise, not structured geometry. [confidence: empirical, source: this-project-sweep]"
+      ],
+      "status": "refuted",
       "tags": [
         "wordnet",
         "meronym",
         "relational"
       ],
       "created_at": "2026-03-06T20:54:56.491455-05:00",
-      "updated_at": "2026-03-06T20:54:56.491455-05:00"
+      "updated_at": "2026-03-06T21:13:33.910177-05:00"
     },
     {
       "id": 13,
       "title": "No relational structure at L0-7 (stability \u003c 0.3)",
       "hypothesis": "Direction stability for all three relations is below 0.3 at layers 0-7, confirming these layers encode token identity not semantic relationships.",
-      "status": "open",
+      "evidence": [
+        "All relations at L0-7: hypernym max=0.106, antonym max=0.057, meronym max=0.065. All below 0.3. But note: stability is below 0.3 at ALL layers (max anywhere=0.12), so this is trivially true. [confidence: empirical, source: this-project-sweep]"
+      ],
+      "status": "confirmed",
       "tags": [
         "wordnet",
         "syntax",
         "relational"
       ],
       "created_at": "2026-03-06T20:55:02.769044-05:00",
-      "updated_at": "2026-03-06T20:55:02.769044-05:00"
+      "updated_at": "2026-03-06T21:13:33.921005-05:00"
+    },
+    {
+      "id": 14,
+      "title": "Alpha parity point is asymmetric: terse and verbose need different alphas",
+      "hypothesis": "Terse parity alpha=2.0, verbose parity alpha=0.25. Asymmetric=True. Topic cosine \u003e0.6 at parity alphas.",
+      "status": "open",
+      "tags": [
+        "alpha",
+        "parity",
+        "experiment"
+      ],
+      "created_at": "2026-03-06T21:17:21.114636-05:00",
+      "updated_at": "2026-03-06T21:17:21.114637-05:00"
     }
   ],
-  "next_id": 14,
+  "next_id": 15,
   "config": {
     "local": true
   }

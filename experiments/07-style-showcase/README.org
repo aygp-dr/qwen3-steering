@@ -1,0 +1,48 @@
+#+TITLE: Experiment 07: Four-Style Showcase
+#+DATE: 2026-03-06
+#+STATUS: pending
+
+* Goal
+
+Run all four style axes from the README (terse, formal, socratic, dry-wit)
+at the confirmed sweet spot (L12, α=2.0) across diverse prompts. No hard
+pass/fail — this is a qualitative showcase with quantitative metrics captured
+for comparison.
+
+* Styles
+
+| Style    | Positive prompt                                              | Negative prompt                                              |
+|----------+--------------------------------------------------------------+--------------------------------------------------------------|
+| terse    | Be extremely concise and technical. No filler words.         | Please explain thoroughly with lots of context and examples. |
+| formal   | Respond in precise, formal academic prose.                   | Just chat with me casually.                                  |
+| socratic | Respond only with targeted clarifying questions.             | Give me the answer directly.                                 |
+| dry-wit  | Respond with dry understatement and laconic precision.       | Be enthusiastic, warm, and encouraging.                      |
+
+* Method
+
+1. 5 prompts, each tested under 5 conditions: baseline + 4 styles
+2. All injections at L12, α=2.0 (confirmed sweet spot from C-2, C-8)
+3. Metrics captured per output: word_count, words_per_sentence, topic_cosine,
+   perplexity_ratio, markdown_density
+4. No hypothesis testing — exploratory/showcase
+
+* Prompts
+
+1. "Explain what a mutex is."
+2. "What is the difference between a stack and a heap?"
+3. "Why do programming languages have types?"
+4. "How does garbage collection work?"
+5. "What is the CAP theorem?"
+
+* Run
+
+#+begin_src bash
+python experiments/07-style-showcase/run.py
+#+end_src
+
+* Artifacts
+
+| File                          | Description                        |
+|-------------------------------+------------------------------------|
+| output/style_showcase.json    | All outputs + metrics              |
+| output/style_showcase.png     | Style comparison radar/bar chart   |

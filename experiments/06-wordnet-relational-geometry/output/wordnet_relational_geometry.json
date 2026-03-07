@@ -1,0 +1,440 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "relations": [
+    "hypernym",
+    "antonym",
+    "meronym"
+  ],
+  "pairs_per_relation": {
+    "hypernym": 15,
+    "antonym": 15,
+    "meronym": 15
+  },
+  "stability": {
+    "0": {
+      "hypernym": 0.078,
+      "antonym": 0.0415,
+      "meronym": 0.042
+    },
+    "1": {
+      "hypernym": 0.0708,
+      "antonym": 0.0389,
+      "meronym": 0.0428
+    },
+    "2": {
+      "hypernym": 0.0788,
+      "antonym": 0.0395,
+      "meronym": 0.0451
+    },
+    "3": {
+      "hypernym": 0.0892,
+      "antonym": 0.0375,
+      "meronym": 0.0536
+    },
+    "4": {
+      "hypernym": 0.1036,
+      "antonym": 0.0557,
+      "meronym": 0.0558
+    },
+    "5": {
+      "hypernym": 0.1013,
+      "antonym": 0.0561,
+      "meronym": 0.0652
+    },
+    "6": {
+      "hypernym": 0.1024,
+      "antonym": 0.0548,
+      "meronym": 0.0635
+    },
+    "7": {
+      "hypernym": 0.1063,
+      "antonym": 0.057,
+      "meronym": 0.0621
+    },
+    "8": {
+      "hypernym": 0.1163,
+      "antonym": 0.067,
+      "meronym": 0.0663
+    },
+    "9": {
+      "hypernym": 0.1206,
+      "antonym": 0.0732,
+      "meronym": 0.0703
+    },
+    "10": {
+      "hypernym": 0.1131,
+      "antonym": 0.0746,
+      "meronym": 0.0683
+    },
+    "11": {
+      "hypernym": 0.115,
+      "antonym": 0.0668,
+      "meronym": 0.0647
+    },
+    "12": {
+      "hypernym": 0.1179,
+      "antonym": 0.0676,
+      "meronym": 0.0659
+    },
+    "13": {
+      "hypernym": 0.1168,
+      "antonym": 0.0738,
+      "meronym": 0.0663
+    },
+    "14": {
+      "hypernym": 0.1166,
+      "antonym": 0.0695,
+      "meronym": 0.0668
+    },
+    "15": {
+      "hypernym": 0.1194,
+      "antonym": 0.072,
+      "meronym": 0.0668
+    },
+    "16": {
+      "hypernym": 0.1112,
+      "antonym": 0.0615,
+      "meronym": 0.0668
+    },
+    "17": {
+      "hypernym": 0.1119,
+      "antonym": 0.0641,
+      "meronym": 0.0635
+    },
+    "18": {
+      "hypernym": 0.1061,
+      "antonym": 0.062,
+      "meronym": 0.0654
+    },
+    "19": {
+      "hypernym": 0.0969,
+      "antonym": 0.0551,
+      "meronym": 0.065
+    },
+    "20": {
+      "hypernym": 0.0859,
+      "antonym": 0.0651,
+      "meronym": 0.066
+    },
+    "21": {
+      "hypernym": 0.0801,
+      "antonym": 0.066,
+      "meronym": 0.0599
+    },
+    "22": {
+      "hypernym": 0.0764,
+      "antonym": 0.0605,
+      "meronym": 0.0593
+    },
+    "23": {
+      "hypernym": 0.0751,
+      "antonym": 0.0511,
+      "meronym": 0.0563
+    },
+    "24": {
+      "hypernym": 0.0723,
+      "antonym": 0.0527,
+      "meronym": 0.054
+    },
+    "25": {
+      "hypernym": 0.0663,
+      "antonym": 0.0472,
+      "meronym": 0.0556
+    },
+    "26": {
+      "hypernym": 0.0709,
+      "antonym": 0.0424,
+      "meronym": 0.0628
+    },
+    "27": {
+      "hypernym": 0.0665,
+      "antonym": 0.0402,
+      "meronym": 0.0587
+    }
+  },
+  "norms": {
+    "0": {
+      "hypernym": 9.16,
+      "antonym": 8.0,
+      "meronym": 9.18
+    },
+    "1": {
+      "hypernym": 10.61,
+      "antonym": 9.22,
+      "meronym": 10.78
+    },
+    "2": {
+      "hypernym": 12.1,
+      "antonym": 10.99,
+      "meronym": 12.44
+    },
+    "3": {
+      "hypernym": 13.77,
+      "antonym": 12.21,
+      "meronym": 14.32
+    },
+    "4": {
+      "hypernym": 14.46,
+      "antonym": 13.0,
+      "meronym": 15.15
+    },
+    "5": {
+      "hypernym": 18.48,
+      "antonym": 16.33,
+      "meronym": 20.08
+    },
+    "6": {
+      "hypernym": 19.15,
+      "antonym": 16.75,
+      "meronym": 20.79
+    },
+    "7": {
+      "hypernym": 19.57,
+      "antonym": 17.13,
+      "meronym": 20.95
+    },
+    "8": {
+      "hypernym": 20.19,
+      "antonym": 17.73,
+      "meronym": 21.52
+    },
+    "9": {
+      "hypernym": 22.08,
+      "antonym": 19.98,
+      "meronym": 23.51
+    },
+    "10": {
+      "hypernym": 24.35,
+      "antonym": 22.12,
+      "meronym": 25.99
+    },
+    "11": {
+      "hypernym": 33.24,
+      "antonym": 29.53,
+      "meronym": 34.84
+    },
+    "12": {
+      "hypernym": 33.38,
+      "antonym": 29.62,
+      "meronym": 35.02
+    },
+    "13": {
+      "hypernym": 33.74,
+      "antonym": 30.41,
+      "meronym": 35.55
+    },
+    "14": {
+      "hypernym": 34.45,
+      "antonym": 30.9,
+      "meronym": 36.31
+    },
+    "15": {
+      "hypernym": 35.39,
+      "antonym": 31.71,
+      "meronym": 37.5
+    },
+    "16": {
+      "hypernym": 59.24,
+      "antonym": 52.7,
+      "meronym": 61.34
+    },
+    "17": {
+      "hypernym": 65.05,
+      "antonym": 57.82,
+      "meronym": 67.31
+    },
+    "18": {
+      "hypernym": 77.47,
+      "antonym": 70.45,
+      "meronym": 80.26
+    },
+    "19": {
+      "hypernym": 106.29,
+      "antonym": 94.95,
+      "meronym": 112.42
+    },
+    "20": {
+      "hypernym": 141.13,
+      "antonym": 126.37,
+      "meronym": 149.12
+    },
+    "21": {
+      "hypernym": 165.18,
+      "antonym": 151.78,
+      "meronym": 179.39
+    },
+    "22": {
+      "hypernym": 197.24,
+      "antonym": 177.93,
+      "meronym": 222.63
+    },
+    "23": {
+      "hypernym": 212.86,
+      "antonym": 196.61,
+      "meronym": 241.12
+    },
+    "24": {
+      "hypernym": 228.96,
+      "antonym": 209.1,
+      "meronym": 259.31
+    },
+    "25": {
+      "hypernym": 246.39,
+      "antonym": 229.02,
+      "meronym": 278.46
+    },
+    "26": {
+      "hypernym": 236.2,
+      "antonym": 218.02,
+      "meronym": 271.83
+    },
+    "27": {
+      "hypernym": 257.16,
+      "antonym": 233.39,
+      "meronym": 294.43
+    }
+  },
+  "orthogonality": {
+    "0": {
+      "hypernym_vs_antonym": -0.0011,
+      "hypernym_vs_meronym": 0.0614,
+      "antonym_vs_meronym": 0.0168
+    },
+    "1": {
+      "hypernym_vs_antonym": -0.0149,
+      "hypernym_vs_meronym": 0.0319,
+      "antonym_vs_meronym": 0.0295
+    },
+    "2": {
+      "hypernym_vs_antonym": -0.002,
+      "hypernym_vs_meronym": 0.0331,
+      "antonym_vs_meronym": 0.0014
+    },
+    "3": {
+      "hypernym_vs_antonym": -0.0217,
+      "hypernym_vs_meronym": 0.0168,
+      "antonym_vs_meronym": -0.0146
+    },
+    "4": {
+      "hypernym_vs_antonym": -0.0364,
+      "hypernym_vs_meronym": -0.0229,
+      "antonym_vs_meronym": -0.0094
+    },
+    "5": {
+      "hypernym_vs_antonym": -0.0221,
+      "hypernym_vs_meronym": 0.0059,
+      "antonym_vs_meronym": 0.0307
+    },
+    "6": {
+      "hypernym_vs_antonym": -0.0105,
+      "hypernym_vs_meronym": -0.0039,
+      "antonym_vs_meronym": 0.0284
+    },
+    "7": {
+      "hypernym_vs_antonym": -0.0258,
+      "hypernym_vs_meronym": -0.0128,
+      "antonym_vs_meronym": 0.045
+    },
+    "8": {
+      "hypernym_vs_antonym": -0.0285,
+      "hypernym_vs_meronym": -0.0087,
+      "antonym_vs_meronym": 0.0463
+    },
+    "9": {
+      "hypernym_vs_antonym": -0.0224,
+      "hypernym_vs_meronym": -0.0239,
+      "antonym_vs_meronym": -0.0162
+    },
+    "10": {
+      "hypernym_vs_antonym": -0.0146,
+      "hypernym_vs_meronym": -0.023,
+      "antonym_vs_meronym": -0.0431
+    },
+    "11": {
+      "hypernym_vs_antonym": -0.0106,
+      "hypernym_vs_meronym": -0.0308,
+      "antonym_vs_meronym": 0.0224
+    },
+    "12": {
+      "hypernym_vs_antonym": 0.0028,
+      "hypernym_vs_meronym": -0.0311,
+      "antonym_vs_meronym": 0.0048
+    },
+    "13": {
+      "hypernym_vs_antonym": 0.0001,
+      "hypernym_vs_meronym": -0.0335,
+      "antonym_vs_meronym": -0.0039
+    },
+    "14": {
+      "hypernym_vs_antonym": 0.0017,
+      "hypernym_vs_meronym": -0.0271,
+      "antonym_vs_meronym": -0.0098
+    },
+    "15": {
+      "hypernym_vs_antonym": 0.0094,
+      "hypernym_vs_meronym": -0.0413,
+      "antonym_vs_meronym": -0.0194
+    },
+    "16": {
+      "hypernym_vs_antonym": -0.028,
+      "hypernym_vs_meronym": 0.015,
+      "antonym_vs_meronym": -0.0103
+    },
+    "17": {
+      "hypernym_vs_antonym": -0.0128,
+      "hypernym_vs_meronym": -0.0161,
+      "antonym_vs_meronym": -0.0141
+    },
+    "18": {
+      "hypernym_vs_antonym": -0.0154,
+      "hypernym_vs_meronym": -0.0164,
+      "antonym_vs_meronym": -0.0058
+    },
+    "19": {
+      "hypernym_vs_antonym": -0.0011,
+      "hypernym_vs_meronym": -0.0704,
+      "antonym_vs_meronym": 0.035
+    },
+    "20": {
+      "hypernym_vs_antonym": -0.0099,
+      "hypernym_vs_meronym": -0.0278,
+      "antonym_vs_meronym": 0.036
+    },
+    "21": {
+      "hypernym_vs_antonym": 0.0229,
+      "hypernym_vs_meronym": -0.0283,
+      "antonym_vs_meronym": 0.0484
+    },
+    "22": {
+      "hypernym_vs_antonym": 0.0563,
+      "hypernym_vs_meronym": -0.05,
+      "antonym_vs_meronym": 0.0255
+    },
+    "23": {
+      "hypernym_vs_antonym": 0.0465,
+      "hypernym_vs_meronym": -0.0449,
+      "antonym_vs_meronym": 0.006
+    },
+    "24": {
+      "hypernym_vs_antonym": 0.0551,
+      "hypernym_vs_meronym": -0.049,
+      "antonym_vs_meronym": -0.0041
+    },
+    "25": {
+      "hypernym_vs_antonym": 0.0643,
+      "hypernym_vs_meronym": -0.0649,
+      "antonym_vs_meronym": -0.0209
+    },
+    "26": {
+      "hypernym_vs_antonym": 0.0401,
+      "hypernym_vs_meronym": -0.0577,
+      "antonym_vs_meronym": -0.0371
+    },
+    "27": {
+      "hypernym_vs_antonym": 0.0155,
+      "hypernym_vs_meronym": -0.0645,
+      "antonym_vs_meronym": -0.0234
+    }
+  },
+  "timestamp": "2026-03-06T21:07:55-0500"
+}

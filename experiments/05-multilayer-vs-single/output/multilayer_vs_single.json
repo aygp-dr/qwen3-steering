@@ -1,0 +1,493 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "configs": {
+    "baseline": {
+      "layers": [
+        [
+          12,
+          0.0
+        ]
+      ],
+      "type": "single"
+    },
+    "A_single_L12_a2": {
+      "layers": [
+        [
+          12,
+          2.0
+        ]
+      ],
+      "type": "single"
+    },
+    "B_dual_L12_L16": {
+      "layers": [
+        [
+          12,
+          1.0
+        ],
+        [
+          16,
+          1.0
+        ]
+      ],
+      "type": "multi"
+    },
+    "C_triple_L10_L14_L18": {
+      "layers": [
+        [
+          10,
+          0.67
+        ],
+        [
+          14,
+          0.67
+        ],
+        [
+          18,
+          0.67
+        ]
+      ],
+      "type": "multi"
+    },
+    "D_adjacent_L12_L15": {
+      "layers": [
+        [
+          12,
+          1.0
+        ],
+        [
+          15,
+          1.0
+        ]
+      ],
+      "type": "multi"
+    },
+    "E_single_L12_a1": {
+      "layers": [
+        [
+          12,
+          1.0
+        ]
+      ],
+      "type": "single"
+    }
+  },
+  "results": [
+    {
+      "question": "Why does ice float on water?",
+      "q_idx": 0,
+      "baseline": {
+        "word_count": 152,
+        "words_per_sentence": 10.9,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "text_preview": "Ice floats on water because of the **density difference** between ice and water. Here's why:\n\n1. **I"
+      },
+      "A_single_L12_a2": {
+        "word_count": 7,
+        "words_per_sentence": 3.5,
+        "topic_cosine": 0.632,
+        "perplexity_ratio": 3.944,
+        "text_preview": "The answer is **\"Ice floats on water.\"**"
+      },
+      "B_dual_L12_L16": {
+        "word_count": 48,
+        "words_per_sentence": 16.0,
+        "topic_cosine": 0.732,
+        "perplexity_ratio": 2.415,
+        "text_preview": "Ice floats on water because it is less dense than water. The molecules in ice are arranged more tigh"
+      },
+      "C_triple_L10_L14_L18": {
+        "word_count": 34,
+        "words_per_sentence": 17.0,
+        "topic_cosine": 0.622,
+        "perplexity_ratio": 2.51,
+        "text_preview": "Ice floats on water because the molecules in water are more tightly packed than those in ice. This a"
+      },
+      "D_adjacent_L12_L15": {
+        "word_count": 32,
+        "words_per_sentence": 16.0,
+        "topic_cosine": 0.576,
+        "perplexity_ratio": 2.483,
+        "text_preview": "Ice floats on water because the molecules in water are more tightly packed than the molecules in ice"
+      },
+      "E_single_L12_a1": {
+        "word_count": 44,
+        "words_per_sentence": 22.0,
+        "topic_cosine": 0.685,
+        "perplexity_ratio": 1.945,
+        "text_preview": "Ice floats on water because the molecules in water are more tightly packed than those in ice, allowi"
+      }
+    },
+    {
+      "question": "How does a vaccine work?",
+      "q_idx": 1,
+      "baseline": {
+        "word_count": 180,
+        "words_per_sentence": 12.0,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "text_preview": "A vaccine works by introducing a harmless piece of a pathogen (either a virus or a bacterial infecti"
+      },
+      "A_single_L12_a2": {
+        "word_count": 11,
+        "words_per_sentence": 11.0,
+        "topic_cosine": 0.445,
+        "perplexity_ratio": 3.512,
+        "text_preview": "The vaccine is a tool that is used to prevent disease."
+      },
+      "B_dual_L12_L16": {
+        "word_count": 35,
+        "words_per_sentence": 11.7,
+        "topic_cosine": 0.644,
+        "perplexity_ratio": 2.072,
+        "text_preview": "A vaccine is a substance that triggers an immune response, which prevents disease. It is designed to"
+      },
+      "C_triple_L10_L14_L18": {
+        "word_count": 107,
+        "words_per_sentence": 15.3,
+        "topic_cosine": 0.704,
+        "perplexity_ratio": 1.77,
+        "text_preview": "A vaccine is designed to stimulate the immune system to produce a temporary antigenic response, whic"
+      },
+      "D_adjacent_L12_L15": {
+        "word_count": 73,
+        "words_per_sentence": 10.4,
+        "topic_cosine": 0.661,
+        "perplexity_ratio": 1.798,
+        "text_preview": "A vaccine is designed to stimulate the immune system to produce a response, preventing disease. It c"
+      },
+      "E_single_L12_a1": {
+        "word_count": 51,
+        "words_per_sentence": 17.0,
+        "topic_cosine": 0.782,
+        "perplexity_ratio": 1.484,
+        "text_preview": "A vaccine works by introducing a small, harmless piece of a pathogen (like a virus) into the body, w"
+      }
+    },
+    {
+      "question": "Why do we dream?",
+      "q_idx": 2,
+      "baseline": {
+        "word_count": 196,
+        "words_per_sentence": 12.2,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "text_preview": "Dreaming is a complex and fascinating phenomenon that has intrigued scientists and philosophers for "
+      },
+      "A_single_L12_a2": {
+        "word_count": 3,
+        "words_per_sentence": 3.0,
+        "topic_cosine": 0.233,
+        "perplexity_ratio": 4.634,
+        "text_preview": "The answer is:"
+      },
+      "B_dual_L12_L16": {
+        "word_count": 86,
+        "words_per_sentence": 17.2,
+        "topic_cosine": 0.432,
+        "perplexity_ratio": 2.122,
+        "text_preview": "The question \"Why do we dream?\" is a philosophical or scientific question that reflects the pursuit "
+      },
+      "C_triple_L10_L14_L18": {
+        "word_count": 54,
+        "words_per_sentence": 13.5,
+        "topic_cosine": 0.489,
+        "perplexity_ratio": 2.748,
+        "text_preview": "The question \"Why do we dream?\" is a philosophical or scientific inquiry that seeks to understand th"
+      },
+      "D_adjacent_L12_L15": {
+        "word_count": 88,
+        "words_per_sentence": 8.0,
+        "topic_cosine": 0.438,
+        "perplexity_ratio": 1.779,
+        "text_preview": "The question \"Why do we dream?\" is a philosophical or scientific question, but it is often used to d"
+      },
+      "E_single_L12_a1": {
+        "word_count": 64,
+        "words_per_sentence": 21.3,
+        "topic_cosine": 0.42,
+        "perplexity_ratio": 2.249,
+        "text_preview": "Dreaming is a natural phenomenon that occurs in the brain, but the exact reason for dreaming is stil"
+      }
+    },
+    {
+      "question": "What causes inflation?",
+      "q_idx": 3,
+      "baseline": {
+        "word_count": 177,
+        "words_per_sentence": 14.8,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "text_preview": "Inflation is primarily caused by a decrease in the purchasing power of money, which occurs when the "
+      },
+      "A_single_L12_a2": {
+        "word_count": 3,
+        "words_per_sentence": 3.0,
+        "topic_cosine": 0.248,
+        "perplexity_ratio": 4.466,
+        "text_preview": "The answer is:"
+      },
+      "B_dual_L12_L16": {
+        "word_count": 37,
+        "words_per_sentence": 18.5,
+        "topic_cosine": 0.419,
+        "perplexity_ratio": 2.386,
+        "text_preview": "Inflation is a measure of the rate of increase in prices, typically expressed as a percentage. It is"
+      },
+      "C_triple_L10_L14_L18": {
+        "word_count": 32,
+        "words_per_sentence": 16.0,
+        "topic_cosine": 0.478,
+        "perplexity_ratio": 2.376,
+        "text_preview": "Inflation is a decrease in the value of money, typically measured by the percentage change in the GD"
+      },
+      "D_adjacent_L12_L15": {
+        "word_count": 31,
+        "words_per_sentence": 15.5,
+        "topic_cosine": 0.546,
+        "perplexity_ratio": 2.387,
+        "text_preview": "Inflation is a measure of the rate of increase in prices, typically expressed as a percentage. It is"
+      },
+      "E_single_L12_a1": {
+        "word_count": 53,
+        "words_per_sentence": 17.7,
+        "topic_cosine": 0.707,
+        "perplexity_ratio": 1.743,
+        "text_preview": "Inflation is a general economic phenomenon characterized by a sustained increase in the prices of go"
+      }
+    },
+    {
+      "question": "How does a compass work?",
+      "q_idx": 4,
+      "baseline": {
+        "word_count": 159,
+        "words_per_sentence": 11.4,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "text_preview": "A compass works by using a magnetized needle that points to the Earth's magnetic field. Here's a sim"
+      },
+      "A_single_L12_a2": {
+        "word_count": 28,
+        "words_per_sentence": 14.0,
+        "topic_cosine": 0.702,
+        "perplexity_ratio": 2.014,
+        "text_preview": "A compass is a device that measures the magnetic field strength. It is designed to detect the magnet"
+      },
+      "B_dual_L12_L16": {
+        "word_count": 44,
+        "words_per_sentence": 14.7,
+        "topic_cosine": 0.551,
+        "perplexity_ratio": 1.961,
+        "text_preview": "A compass is a device that measures magnetic field strength, typically used to detect magnetic field"
+      },
+      "C_triple_L10_L14_L18": {
+        "word_count": 51,
+        "words_per_sentence": 17.0,
+        "topic_cosine": 0.775,
+        "perplexity_ratio": 1.733,
+        "text_preview": "A compass works by detecting magnetic fields and aligning with the magnetic field. It uses a magnet "
+      },
+      "D_adjacent_L12_L15": {
+        "word_count": 47,
+        "words_per_sentence": 15.7,
+        "topic_cosine": 0.686,
+        "perplexity_ratio": 1.719,
+        "text_preview": "A compass is a device used to detect magnetic fields, typically designed to measure the magnetic fie"
+      },
+      "E_single_L12_a1": {
+        "word_count": 47,
+        "words_per_sentence": 15.7,
+        "topic_cosine": 0.827,
+        "perplexity_ratio": 1.728,
+        "text_preview": "A compass works by using a magnetized needle that points to the magnetic field. The needle aligns wi"
+      }
+    },
+    {
+      "question": "Why do leaves change color in autumn?",
+      "q_idx": 5,
+      "baseline": {
+        "word_count": 177,
+        "words_per_sentence": 12.6,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "text_preview": "Leaves change color in autumn due to a process called **photoperiodism**, which is influenced by the"
+      },
+      "A_single_L12_a2": {
+        "word_count": 17,
+        "words_per_sentence": 17.0,
+        "topic_cosine": 0.665,
+        "perplexity_ratio": 2.921,
+        "text_preview": "The reason for the change in color in autumn is a result of the process of **concentration**."
+      },
+      "B_dual_L12_L16": {
+        "word_count": 59,
+        "words_per_sentence": 19.7,
+        "topic_cosine": 0.788,
+        "perplexity_ratio": 1.81,
+        "text_preview": "The reason for the change in color in autumn is primarily due to the loss of chlorophyll, which is r"
+      },
+      "C_triple_L10_L14_L18": {
+        "word_count": 63,
+        "words_per_sentence": 7.9,
+        "topic_cosine": 0.697,
+        "perplexity_ratio": 1.7,
+        "text_preview": "Leaves change color in autumn due to a physiological process called **dehydration**. The pigment res"
+      },
+      "D_adjacent_L12_L15": {
+        "word_count": 60,
+        "words_per_sentence": 20.0,
+        "topic_cosine": 0.736,
+        "perplexity_ratio": 1.561,
+        "text_preview": "The reason for the change in color in autumn is primarily due to the loss of pigment in the plant, w"
+      },
+      "E_single_L12_a1": {
+        "word_count": 68,
+        "words_per_sentence": 17.0,
+        "topic_cosine": 0.765,
+        "perplexity_ratio": 1.425,
+        "text_preview": "Leaves change color in autumn due to a process called **photobleaching**. This occurs when chlorophy"
+      }
+    },
+    {
+      "question": "What is a black hole?",
+      "q_idx": 6,
+      "baseline": {
+        "word_count": 117,
+        "words_per_sentence": 29.2,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "text_preview": "A black hole is a region in space where gravity is so strong that nothing, not even light, can escap"
+      },
+      "A_single_L12_a2": {
+        "word_count": 31,
+        "words_per_sentence": 15.5,
+        "topic_cosine": 0.54,
+        "perplexity_ratio": 2.22,
+        "text_preview": "A black hole is a term used in physics to describe a region of spacetime where gravity is intense. I"
+      },
+      "B_dual_L12_L16": {
+        "word_count": 52,
+        "words_per_sentence": 26.0,
+        "topic_cosine": 0.678,
+        "perplexity_ratio": 1.62,
+        "text_preview": "A black hole is a region of spacetime with no mass or energy, and it is defined by the property of t"
+      },
+      "C_triple_L10_L14_L18": {
+        "word_count": 40,
+        "words_per_sentence": 20.0,
+        "topic_cosine": 0.678,
+        "perplexity_ratio": 1.141,
+        "text_preview": "A black hole is a region in space where the gravitational pull is so strong that nothing, including "
+      },
+      "D_adjacent_L12_L15": {
+        "word_count": 26,
+        "words_per_sentence": 26.0,
+        "topic_cosine": 0.662,
+        "perplexity_ratio": 1.73,
+        "text_preview": "A black hole is a region in spacetime where the gravitational pull is so strong that nothing can esc"
+      },
+      "E_single_L12_a1": {
+        "word_count": 42,
+        "words_per_sentence": 21.0,
+        "topic_cosine": 0.607,
+        "perplexity_ratio": 1.068,
+        "text_preview": "A black hole is a region in space where gravity is so strong that nothing, not even light, can escap"
+      }
+    },
+    {
+      "question": "How does bread rise?",
+      "q_idx": 7,
+      "baseline": {
+        "word_count": 124,
+        "words_per_sentence": 10.3,
+        "topic_cosine": 1.0,
+        "perplexity_ratio": 1.0,
+        "text_preview": "Bread rises due to the process of **baking**, which involves several key steps:\n\n1. **Fermentation**"
+      },
+      "A_single_L12_a2": {
+        "word_count": 11,
+        "words_per_sentence": 11.0,
+        "topic_cosine": 0.529,
+        "perplexity_ratio": 2.676,
+        "text_preview": "The word \"rise\" is used in the context of the word."
+      },
+      "B_dual_L12_L16": {
+        "word_count": 39,
+        "words_per_sentence": 19.5,
+        "topic_cosine": 0.674,
+        "perplexity_ratio": 1.821,
+        "text_preview": "Bread is typically made with flour, water, and salt, and it is baked to create a light, fluffy textu"
+      },
+      "C_triple_L10_L14_L18": {
+        "word_count": 47,
+        "words_per_sentence": 11.8,
+        "topic_cosine": 0.702,
+        "perplexity_ratio": 1.713,
+        "text_preview": "Bread rises due to the presence of air in the dough, which is released during baking. The air is tra"
+      },
+      "D_adjacent_L12_L15": {
+        "word_count": 31,
+        "words_per_sentence": 15.5,
+        "topic_cosine": 0.685,
+        "perplexity_ratio": 1.967,
+        "text_preview": "Bread is typically made with flour, water, and salt, and it is baked to create a crisp texture. The "
+      },
+      "E_single_L12_a1": {
+        "word_count": 84,
+        "words_per_sentence": 28.0,
+        "topic_cosine": 0.778,
+        "perplexity_ratio": 1.49,
+        "text_preview": "Bread rises due to the action of yeast, which consumes sugars in the dough to produce carbon dioxide"
+      }
+    }
+  ],
+  "aggregate": {
+    "baseline": {
+      "mean_words": 160.2,
+      "mean_topic": 1.0,
+      "mean_ppl": 1.0,
+      "mean_wps": 14.2,
+      "score": 0
+    },
+    "A_single_L12_a2": {
+      "mean_words": 13.9,
+      "mean_topic": 0.499,
+      "mean_ppl": 3.298,
+      "mean_wps": 9.8,
+      "score": 10.91
+    },
+    "B_dual_L12_L16": {
+      "mean_words": 50.0,
+      "mean_topic": 0.615,
+      "mean_ppl": 2.026,
+      "mean_wps": 17.9,
+      "score": 6.07
+    },
+    "C_triple_L10_L14_L18": {
+      "mean_words": 53.5,
+      "mean_topic": 0.643,
+      "mean_ppl": 1.961,
+      "mean_wps": 14.8,
+      "score": 6.13
+    },
+    "D_adjacent_L12_L15": {
+      "mean_words": 48.5,
+      "mean_topic": 0.624,
+      "mean_ppl": 1.928,
+      "mean_wps": 15.9,
+      "score": 6.67
+    },
+    "E_single_L12_a1": {
+      "mean_words": 56.6,
+      "mean_topic": 0.696,
+      "mean_ppl": 1.641,
+      "mean_wps": 20.0,
+      "score": 7.49
+    }
+  },
+  "winner": "A_single_L12_a2",
+  "multi_wins": false,
+  "timestamp": "2026-03-06T21:09:57-0500"
+}
