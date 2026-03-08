@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPRR Conjecture Lifecycle: 14 Claims Across 7 Experiments</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    text-align: center;
+    padding: 24px 16px 8px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #e6edf3;
+    letter-spacing: 0.02em;
+  }
+
+  h1 span.subtitle {
+    display: block;
+    font-size: 0.75rem;
+    color: #8b949e;
+    font-weight: 400;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #484f58;
+    padding: 8px 32px 4px;
+    border-top: 1px solid #21262d;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 8px 16px 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: #8b949e;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .legend-dot.confirmed { background: #3fb950; }
+  .legend-dot.refuted   { background: #f85149; }
+  .legend-dot.open      { background: #d29922; }
+
+  /* Timeline container */
+  #timeline-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 0 16px;
+  }
+
+  /* Plotly chart */
+  #plotly-timeline {
+    width: 100%;
+    height: 360px;
+  }
+
+  /* DAG section */
+  #dag-section {
+    padding: 0 16px 24px;
+  }
+
+  #dag-svg {
+    width: 100%;
+    height: 220px;
+  }
+
+  /* Detail panel */
+  #detail-panel {
+    position: fixed;
+    bottom: -400px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(640px, calc(100vw - 32px));
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px 12px 0 0;
+    padding: 20px 24px;
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+  }
+
+  #detail-panel.visible {
+    bottom: 0;
+  }
+
+  #detail-panel .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #8b949e;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  #detail-panel .close-btn:hover {
+    background: #21262d;
+    color: #e6edf3;
+  }
+
+  #detail-panel h3 {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: #e6edf3;
+  }
+
+  #detail-panel .status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .status-badge.confirmed { background: rgba(63,185,80,0.15); color: #3fb950; border: 1px solid rgba(63,185,80,0.3); }
+  .status-badge.refuted   { background: rgba(248,81,73,0.15); color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
+  .status-badge.open      { background: rgba(210,153,34,0.15); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
+
+  #detail-panel .hypothesis {
+    font-size: 0.78rem;
+    color: #8b949e;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+
+  #detail-panel .evidence-list {
+    list-style: none;
+    padding: 0;
+  }
+  #detail-panel .evidence-list li {
+    font-size: 0.72rem;
+    color: #7d8590;
+    padding: 4px 0 4px 14px;
+    position: relative;
+    line-height: 1.45;
+  }
+  #detail-panel .evidence-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #30363d;
+  }
+
+  #detail-panel .tags {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  #detail-panel .tag {
+    font-size: 0.62rem;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: #21262d;
+    color: #7d8590;
+    border: 1px solid #30363d;
+  }
+
+  /* Overlay */
+  #overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 99;
+  }
+  #overlay.visible { display: block; }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 4px 16px 12px;
+    font-size: 0.72rem;
+    color: #484f58;
+  }
+  .stats-bar .stat-val {
+    font-weight: 600;
+    color: #e6edf3;
+  }
+</style>
+</head>
+<body>
+
+<h1>
+  CPRR Conjecture Lifecycle
+  <span class="subtitle">14 Claims Across 7 Experiments -- Qwen3-0.6B Activation Steering</span>
+</h1>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot confirmed"></div>Confirmed (5)</div>
+  <div class="legend-item"><div class="legend-dot refuted"></div>Refuted (8)</div>
+  <div class="legend-item"><div class="legend-dot open"></div>Open (1)</div>
+</div>
+
+<div class="stats-bar">
+  <div>Confirmation rate: <span class="stat-val">36%</span></div>
+  <div>Refutation rate: <span class="stat-val">57%</span></div>
+  <div>Open: <span class="stat-val">7%</span></div>
+</div>
+
+<div class="section-label">Experiment Timeline + Conjecture Assignments</div>
+<div id="timeline-container">
+  <div id="plotly-timeline"></div>
+</div>
+
+<div class="section-label">Experiment Dependency DAG</div>
+<div id="dag-section">
+  <svg id="dag-svg" viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+
+<!-- Detail panel -->
+<div id="overlay" onclick="closePanel()"></div>
+<div id="detail-panel">
+  <button class="close-btn" onclick="closePanel()" title="Close">&times;</button>
+  <div id="detail-content"></div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────
+
+const conjectures = [
+  {id:1,  title:"Layers 0-7 produce topic drift not style shift", status:"confirmed",
+   hypothesis:"Steering at layers 0-7 disrupts semantics (topic drift, language-switching) without producing intended style change. TF-IDF cosine similarity with baseline < 0.5",
+   evidence:["Layers [0, 3, 5]: avg topic_cosine=0.259, avg words=56 at alpha=2.0","Prior: Geva 2021 (FFN as KV memories) + Meng 2022 (ROME causal tracing)"],
+   tags:["layer-roles","syntax","prior"]},
+  {id:2,  title:"Layers 12-17 are the semantic sweet spot for style steering", status:"confirmed",
+   hypothesis:"Terse steering at layers 12-17 produces >50% word count reduction with topic cosine >0.5, outperforming all other layer ranges",
+   evidence:["Layers [12, 14, 15, 16]: avg words=42 (72% reduction), avg topic_cosine=0.605 at alpha=2.0","Prior: Rimsky 2024 CAA layer sweep + Turner 2023 ActAdd identify 50-70% depth as optimal"],
+   tags:["layer-roles","deep-semantics","prior"]},
+  {id:3,  title:"Layers 18-22 affect formatting more than style", status:"confirmed",
+   hypothesis:"Steering at layers 18-22 produces <20% word count change but >2x markdown density increase vs baseline",
+   evidence:["Layers [18, 20, 22]: avg words=165 (change=11%), avg markdown_density=14.37 at alpha=2.0","L18=169w, L20=174w (near baseline 149w) -- minimal word count change"],
+   tags:["layer-roles","output-preparation","prior"]},
+  {id:4,  title:"Layers 23-27 cause vocabulary distortion not style modulation", status:"confirmed",
+   hypothesis:"Steering at layers 23-27 produces perplexity ratio >1.5 (vocabulary distortion) with minimal word count change (<15%)",
+   evidence:["Layers [24, 27]: avg perplexity_ratio=1.290, avg words=171 at alpha=2.0","RAW_VEC_NORM L24=70.8, residual_norm=810, SNR=8.7% -- extreme perturbation territory"],
+   tags:["layer-roles","logit-projection","prior"]},
+  {id:5,  title:"Residual stream norm grows monotonically through layers", status:"refuted",
+   hypothesis:"Residual L2 norm at layer L+1 >= norm at layer L for all L in [0,27], with >40% growth from L0 to L27",
+   evidence:["Norms: L0=10, L3=450, L5=456 ... L24=809, L27=620","L27 residual_norm=620 < L24=809. Norms NOT monotonic -- drops at final layers (post-norm effect?)"],
+   tags:["layer-roles","norms","prior"]},
+  {id:6,  title:"Multi-layer distributed steering outperforms single-layer", status:"refuted",
+   hypothesis:"Two layers at alpha=1.0 each (L12+L16) produce better terseness-to-coherence ratio than single layer at alpha=2.0 (L12)",
+   evidence:["Winner: A_single_L12_a2 (score=10.91). Single L12 alpha=2.0: 13.9w, topic=0.499","Concentrated pressure at L12 beats distribution. multi_wins=False"],
+   tags:["layer-roles","multi-layer","prior"]},
+  {id:7,  title:"Verbosity peaks in deep_semantics region (L12-17)", status:"refuted",
+   hypothesis:"The norm of the verbosity delta peaks at layers 12-17, confirming deep_semantics as the primary region encoding style register",
+   evidence:["Peak at L27 (||delta||=211.42). Sweet(12-17) mean=32.45, Late(23-27) mean=163.26","Direction stability peaks at L2 (cos=0.969), not in sweet spot"],
+   tags:["layer-roles","verbosity","empirical"]},
+  {id:8,  title:"Steerability = stability + SNR, not norm", status:"confirmed",
+   hypothesis:"Only layers where direction stability >0.95 AND norm is in 3-6% SNR range produce clean style steering (L12-17). Injection at peak-norm layers (23-27) causes collapse",
+   evidence:["||delta|| grows monotonically but injection at L27 causes collapse (3 words of garbage)","Direction stability peaks at L12 (cos=0.962), sweet spot L12-17 has stability >0.95 and SNR 3.6-5.5%","ActAdd: L12 terse=11w(-92%), L14=22w(-85%). Clean bidirectional control at sweet spot"],
+   tags:["layer-roles","verbosity","empirical"]},
+  {id:9,  title:"L12 injection matches prompt-level control", status:"refuted",
+   hypothesis:"ActAdd injection at L12 with alpha=2.0 produces word count within 20% of prompt-level 'tersely/verbosely' instruction across 10 bimodal questions",
+   evidence:["Inject terse: mean=12w (prompt=20w, 0.6x ratio). Inject verbose: mean=214w (prompt=70w, 3.0x ratio)","3/5 hypotheses FAILED. Injection overshoots prompt-level in both directions. Alpha=2.0 too high for parity"],
+   tags:["injection","bimodal","experiment"]},
+  {id:10, title:"Hypernym direction is stable (cos>0.5) at L12-16", status:"refuted",
+   hypothesis:"The hypernym direction (dog->animal) has cross-pair cosine stability >0.5 at layers 12-16",
+   evidence:["Peak hypernym stability=0.1179 at L12. All far below 0.5 threshold at every layer","Qwen3-0.6B does not encode hypernym as a stable direction"],
+   tags:["wordnet","hypernym","relational"]},
+  {id:11, title:"Hypernym and antonym are orthogonal (cos<0.3) at L14", status:"refuted",
+   hypothesis:"Mean direction vectors for hypernym and antonym have cosine similarity <0.3 at L12-16",
+   evidence:["Orthogonality is vacuously satisfied (cos~0.002 at L14) because directions are noise, not structure","All stability values <0.13 -- directions are not meaningful enough for orthogonality to be informative"],
+   tags:["wordnet","orthogonality","relational"]},
+  {id:12, title:"Meronym is a third independent direction", status:"refuted",
+   hypothesis:"Meronym direction (wheel->car) has cos<0.3 with both hypernym and antonym at L12-16, forming a 3D relational subspace",
+   evidence:["Inter-relation cosines near zero at L12-17 but stability too low (<0.12)","Orthogonality of noise, not structured geometry"],
+   tags:["wordnet","meronym","relational"]},
+  {id:13, title:"No relational structure at L0-7 (stability < 0.3)", status:"confirmed",
+   hypothesis:"Direction stability for all three relations is below 0.3 at layers 0-7, confirming these layers encode token identity not semantic relationships",
+   evidence:["All relations at L0-7: hypernym max=0.106, antonym max=0.057, meronym max=0.065","Stability is below 0.3 at ALL layers (max anywhere=0.12), so this is trivially true"],
+   tags:["wordnet","syntax","relational"]},
+  {id:14, title:"Alpha parity point is asymmetric", status:"open",
+   hypothesis:"Terse parity alpha=2.0, verbose parity alpha=0.25. Asymmetric=True. Topic cosine >0.6 at parity alphas",
+   evidence:[],
+   tags:["alpha","parity","experiment"]}
+];
+
+const experiments = [
+  {id:"01", name:"layer-scorecard",       conjectures:[1,2,3,4,5], x:0},
+  {id:"02", name:"verbosity-direction",    conjectures:[7,8],       x:1},
+  {id:"03", name:"bimodal-injection",      conjectures:[9],         x:2},
+  {id:"04", name:"alpha-parity-sweep",     conjectures:[14],        x:3},
+  {id:"05", name:"multilayer-vs-single",   conjectures:[6],         x:4},
+  {id:"06", name:"wordnet-relational-geo", conjectures:[10,11,12,13], x:5},
+  {id:"07", name:"style-showcase",         conjectures:[],          x:6}
+];
+
+// Dependency edges: from -> to
+const dependencies = [
+  {from:"01", to:"02", label:"layer roles inform verbosity probing"},
+  {from:"01", to:"04", label:"C-5 refuted, need alpha parity data"},
+  {from:"01", to:"05", label:"C-2 confirmed, test multi-layer vs single"},
+  {from:"02", to:"03", label:"C-8 confirmed, test injection vs prompt"},
+  {from:"03", to:"04", label:"C-9 refuted: injection overshoots, need alpha sweep"},
+  {from:"01", to:"06", label:"layer roles inform WordNet geometry search"}
+];
+
+const statusColor = {confirmed:"#3fb950", refuted:"#f85149", open:"#d29922"};
+const statusBg    = {confirmed:"rgba(63,185,80,0.12)", refuted:"rgba(248,81,73,0.12)", open:"rgba(210,153,34,0.12)"};
+
+// ── Plotly Timeline ──────────────────────────────────────────────
+
+function buildTimeline() {
+  const traces = [];
+
+  // Experiment bar (background)
+  traces.push({
+    x: experiments.map(e => e.x),
+    y: experiments.map(() => 0),
+    mode: 'markers+text',
+    type: 'scatter',
+    marker: {
+      size: 36,
+      color: '#21262d',
+      line: {color: '#30363d', width: 2},
+      symbol: 'square'
+    },
+    text: experiments.map(e => e.id),
+    textposition: 'middle center',
+    textfont: {color: '#c9d1d9', size: 12, family: 'monospace'},
+    hoverinfo: 'text',
+    hovertext: experiments.map(e => `<b>${e.id}-${e.name}</b><br>${e.conjectures.length} conjectures`),
+    showlegend: false
+  });
+
+  // Experiment labels below
+  traces.push({
+    x: experiments.map(e => e.x),
+    y: experiments.map(() => -1.2),
+    mode: 'text',
+    type: 'scatter',
+    text: experiments.map(e => e.name),
+    textposition: 'middle center',
+    textfont: {color: '#484f58', size: 9, family: 'monospace'},
+    hoverinfo: 'skip',
+    showlegend: false
+  });
+
+  // Conjecture badges per experiment
+  experiments.forEach(exp => {
+    if (exp.conjectures.length === 0) return;
+    const count = exp.conjectures.length;
+    const startOffset = -(count - 1) / 2;
+
+    exp.conjectures.forEach((cid, i) => {
+      const c = conjectures.find(cc => cc.id === cid);
+      const yPos = 1.6 + (startOffset + i) * 0.6;
+
+      traces.push({
+        x: [exp.x],
+        y: [yPos],
+        mode: 'markers+text',
+        type: 'scatter',
+        marker: {
+          size: 22,
+          color: statusBg[c.status],
+          line: {color: statusColor[c.status], width: 1.5},
+          symbol: 'circle'
+        },
+        text: [`C-${c.id}`],
+        textposition: 'middle center',
+        textfont: {color: statusColor[c.status], size: 8, family: 'monospace', weight: 'bold'},
+        hoverinfo: 'text',
+        hovertext: [`<b>C-${c.id}: ${c.title}</b><br>Status: ${c.status}<br><i>Click for details</i>`],
+        showlegend: false,
+        customdata: [c.id]
+      });
+
+      // Connector line from badge to experiment
+      traces.push({
+        x: [exp.x, exp.x],
+        y: [yPos - 0.3, 0.35],
+        mode: 'lines',
+        type: 'scatter',
+        line: {color: '#21262d', width: 1, dash: 'dot'},
+        hoverinfo: 'skip',
+        showlegend: false
+      });
+    });
+  });
+
+  // Arrow connectors between experiments (timeline flow)
+  for (let i = 0; i < experiments.length - 1; i++) {
+    traces.push({
+      x: [experiments[i].x + 0.22, experiments[i+1].x - 0.22],
+      y: [0, 0],
+      mode: 'lines',
+      type: 'scatter',
+      line: {color: '#30363d', width: 1.5},
+      hoverinfo: 'skip',
+      showlegend: false
+    });
+  }
+
+  const layout = {
+    paper_bgcolor: '#0d1117',
+    plot_bgcolor: '#0d1117',
+    margin: {l: 20, r: 20, t: 10, b: 10},
+    xaxis: {
+      showgrid: false, zeroline: false, showticklabels: false,
+      range: [-0.6, 6.6],
+      fixedrange: true
+    },
+    yaxis: {
+      showgrid: false, zeroline: false, showticklabels: false,
+      range: [-2, 4.8],
+      fixedrange: true
+    },
+    hoverlabel: {
+      bgcolor: '#161b22',
+      bordercolor: '#30363d',
+      font: {color: '#c9d1d9', family: 'monospace', size: 11}
+    },
+    dragmode: false
+  };
+
+  Plotly.newPlot('plotly-timeline', traces, layout, {
+    displayModeBar: false,
+    responsive: true,
+    staticPlot: false
+  });
+
+  // Click handler
+  document.getElementById('plotly-timeline').on('plotly_click', function(data) {
+    const pt = data.points[0];
+    if (pt.data.customdata && pt.data.customdata[0]) {
+      showDetail(pt.data.customdata[0]);
+    }
+  });
+}
+
+// ── DAG Visualization ────────────────────────────────────────────
+
+function buildDAG() {
+  const svg = document.getElementById('dag-svg');
+  const nodePositions = {};
+  const nodeSpacing = 140;
+  const startX = 60;
+  const centerY = 100;
+
+  // Position nodes
+  experiments.forEach((exp, i) => {
+    nodePositions[exp.id] = {x: startX + i * nodeSpacing, y: centerY};
+  });
+
+  // Slight vertical offset for readability
+  nodePositions["02"].y = 65;
+  nodePositions["04"].y = 135;
+  nodePositions["05"].y = 65;
+  nodePositions["06"].y = 135;
+  nodePositions["07"].y = 100;
+
+  let svgContent = '';
+
+  // Defs for arrowheads
+  svgContent += `
+    <defs>
+      <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#484f58"/>
+      </marker>
+      <marker id="arrowhead-highlight" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#58a6ff"/>
+      </marker>
+    </defs>
+  `;
+
+  // Draw edges
+  dependencies.forEach((dep, idx) => {
+    const from = nodePositions[dep.from];
+    const to = nodePositions[dep.to];
+
+    // Bezier control points for curved edges
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const cx1 = from.x + dx * 0.4;
+    const cy1 = from.y;
+    const cx2 = from.x + dx * 0.6;
+    const cy2 = to.y;
+
+    svgContent += `
+      <path class="dag-edge" id="edge-${idx}"
+        d="M ${from.x + 22} ${from.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${to.x - 22} ${to.y}"
+        fill="none" stroke="#30363d" stroke-width="1.5"
+        marker-end="url(#arrowhead)"
+        data-label="${dep.label}"
+        style="cursor:pointer"
+        onmouseenter="highlightEdge(this, true)"
+        onmouseleave="highlightEdge(this, false)"/>
+    `;
+  });
+
+  // Draw nodes
+  experiments.forEach(exp => {
+    const pos = nodePositions[exp.id];
+    const hasConjectures = exp.conjectures.length > 0;
+    const confirmed = exp.conjectures.filter(cid => conjectures.find(c => c.id === cid)?.status === 'confirmed').length;
+    const refuted = exp.conjectures.filter(cid => conjectures.find(c => c.id === cid)?.status === 'refuted').length;
+    const open = exp.conjectures.filter(cid => conjectures.find(c => c.id === cid)?.status === 'open').length;
+
+    // Node circle
+    const ringColor = hasConjectures ? '#58a6ff' : '#30363d';
+    svgContent += `
+      <circle cx="${pos.x}" cy="${pos.y}" r="20" fill="#161b22" stroke="${ringColor}" stroke-width="1.5"
+        style="cursor:pointer" class="dag-node"
+        onmouseenter="this.setAttribute('stroke-width','3')"
+        onmouseleave="this.setAttribute('stroke-width','1.5')"/>
+      <text x="${pos.x}" y="${pos.y + 1}" text-anchor="middle" dominant-baseline="middle"
+        fill="#c9d1d9" font-family="monospace" font-size="11" font-weight="600"
+        style="pointer-events:none">${exp.id}</text>
+    `;
+
+    // Name label below
+    svgContent += `
+      <text x="${pos.x}" y="${pos.y + 34}" text-anchor="middle" dominant-baseline="middle"
+        fill="#484f58" font-family="monospace" font-size="8"
+        style="pointer-events:none">${exp.name}</text>
+    `;
+
+    // Mini status bar below node
+    if (hasConjectures) {
+      const total = exp.conjectures.length;
+      const barW = 32;
+      const barH = 4;
+      const bx = pos.x - barW/2;
+      const by = pos.y + 42;
+
+      let cx = bx;
+      if (confirmed > 0) {
+        const w = (confirmed / total) * barW;
+        svgContent += `<rect x="${cx}" y="${by}" width="${w}" height="${barH}" rx="2" fill="#3fb950"/>`;
+        cx += w;
+      }
+      if (refuted > 0) {
+        const w = (refuted / total) * barW;
+        svgContent += `<rect x="${cx}" y="${by}" width="${w}" height="${barH}" rx="0" fill="#f85149"/>`;
+        cx += w;
+      }
+      if (open > 0) {
+        const w = (open / total) * barW;
+        svgContent += `<rect x="${cx}" y="${by}" width="${w}" height="${barH}" rx="0" fill="#d29922"/>`;
+        cx += w;
+      }
+    }
+  });
+
+  // Edge hover tooltip
+  svgContent += `
+    <rect id="dag-tooltip-bg" x="0" y="0" width="0" height="0" rx="4"
+      fill="#161b22" stroke="#30363d" opacity="0" style="pointer-events:none"/>
+    <text id="dag-tooltip-text" x="0" y="0" fill="#8b949e" font-family="monospace" font-size="9"
+      opacity="0" style="pointer-events:none"></text>
+  `;
+
+  svg.innerHTML = svgContent;
+}
+
+function highlightEdge(el, on) {
+  if (on) {
+    el.setAttribute('stroke', '#58a6ff');
+    el.setAttribute('stroke-width', '2.5');
+    el.setAttribute('marker-end', 'url(#arrowhead-highlight)');
+
+    // Show tooltip
+    const label = el.getAttribute('data-label');
+    const bbox = el.getBBox();
+    const tx = bbox.x + bbox.width / 2;
+    const ty = bbox.y - 8;
+    const tt = document.getElementById('dag-tooltip-text');
+    const tb = document.getElementById('dag-tooltip-bg');
+    tt.textContent = label;
+    tt.setAttribute('x', tx);
+    tt.setAttribute('y', ty);
+    tt.setAttribute('text-anchor', 'middle');
+    tt.setAttribute('opacity', '1');
+    const ttbb = tt.getBBox();
+    tb.setAttribute('x', ttbb.x - 6);
+    tb.setAttribute('y', ttbb.y - 3);
+    tb.setAttribute('width', ttbb.width + 12);
+    tb.setAttribute('height', ttbb.height + 6);
+    tb.setAttribute('opacity', '1');
+  } else {
+    el.setAttribute('stroke', '#30363d');
+    el.setAttribute('stroke-width', '1.5');
+    el.setAttribute('marker-end', 'url(#arrowhead)');
+    document.getElementById('dag-tooltip-text').setAttribute('opacity', '0');
+    document.getElementById('dag-tooltip-bg').setAttribute('opacity', '0');
+  }
+}
+
+// ── Detail Panel ─────────────────────────────────────────────────
+
+function showDetail(cid) {
+  const c = conjectures.find(cc => cc.id === cid);
+  if (!c) return;
+
+  const exp = experiments.find(e => e.conjectures.includes(cid));
+  const expLabel = exp ? `${exp.id}-${exp.name}` : 'none';
+
+  let evidenceHTML = '';
+  if (c.evidence && c.evidence.length > 0) {
+    evidenceHTML = '<ul class="evidence-list">' +
+      c.evidence.map(e => `<li>${e}</li>`).join('') +
+      '</ul>';
+  } else {
+    evidenceHTML = '<p style="font-size:0.72rem;color:#484f58;font-style:italic">No evidence collected yet</p>';
+  }
+
+  let tagsHTML = '';
+  if (c.tags && c.tags.length > 0) {
+    tagsHTML = '<div class="tags">' +
+      c.tags.map(t => `<span class="tag">${t}</span>`).join('') +
+      '</div>';
+  }
+
+  document.getElementById('detail-content').innerHTML = `
+    <h3>C-${c.id}: ${c.title}</h3>
+    <span class="status-badge ${c.status}">${c.status}</span>
+    <span style="font-size:0.65rem;color:#484f58;margin-left:8px">Experiment: ${expLabel}</span>
+    <div class="hypothesis">${c.hypothesis}</div>
+    ${evidenceHTML}
+    ${tagsHTML}
+  `;
+
+  document.getElementById('detail-panel').classList.add('visible');
+  document.getElementById('overlay').classList.add('visible');
+}
+
+function closePanel() {
+  document.getElementById('detail-panel').classList.remove('visible');
+  document.getElementById('overlay').classList.remove('visible');
+}
+
+// Escape key closes panel
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closePanel();
+});
+
+// ── Init ─────────────────────────────────────────────────────────
+
+buildTimeline();
+buildDAG();
+</script>
+</body>
+</html>

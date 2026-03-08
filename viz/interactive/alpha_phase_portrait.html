@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Phase Portrait: Dead Zone → Effective → Collapse</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    text-align: center;
+    padding: 20px 20px 8px;
+  }
+  header h1 {
+    font-size: 1.6em;
+    font-weight: 600;
+    color: #f0f0f0;
+    letter-spacing: 0.02em;
+  }
+  header .subtitle {
+    font-size: 0.85em;
+    color: #8888aa;
+    margin-top: 4px;
+  }
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 20px 4px;
+    flex-wrap: wrap;
+  }
+  .controls button {
+    background: #2a2a4a;
+    border: 1px solid #444468;
+    color: #c0c0d8;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.82em;
+    transition: all 0.2s;
+  }
+  .controls button:hover {
+    background: #3a3a5a;
+    border-color: #6666aa;
+  }
+  .controls button.active {
+    background: #4a4a7a;
+    border-color: #8888cc;
+    color: #ffffff;
+  }
+  #plot-container {
+    flex: 1;
+    min-height: 500px;
+    padding: 0 12px 12px;
+  }
+  .legend-bar {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 4px 20px 12px;
+    font-size: 0.78em;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+  footer {
+    text-align: center;
+    padding: 8px;
+    font-size: 0.72em;
+    color: #555577;
+    border-top: 1px solid #2a2a3e;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Alpha Phase Portrait: Dead Zone &rarr; Effective &rarr; Collapse</h1>
+  <div class="subtitle">Qwen3-0.6B &middot; Layer 12 &middot; Verbosity Steering Vector &middot; &alpha; Sweep 0.1&ndash;3.0</div>
+</header>
+
+<div class="controls">
+  <button id="btn-word-count" class="active" onclick="showView('word-count')">Word Count</button>
+  <button id="btn-topic" onclick="showView('topic')">Topic Coherence</button>
+  <button id="btn-ratio" onclick="showView('ratio')">Perplexity Ratio</button>
+  <button id="btn-all" onclick="showView('all')">All Metrics</button>
+</div>
+
+<div class="legend-bar">
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#ff6b6b;"></div>
+    <span>Dead Zone (&alpha; &lt; 1.0)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#51cf66;"></div>
+    <span>Effective Steering (&alpha; 1.0&ndash;3.0)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#ff922b;"></div>
+    <span>Coherence Collapse (&alpha; &gt; 3.0)</span>
+  </div>
+</div>
+
+<div id="plot-container"></div>
+
+<footer>
+  Data: experiments/04-alpha-parity-sweep &middot; 2026-03-06 &middot; aygp-dr/qwen3-steering
+</footer>
+
+<script>
+// ── Embedded Data ──────────────────────────────────────────────────
+const DATA = {
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "targets": {
+    "baseline": 172.8,
+    "prompt_terse": 21.6,
+    "prompt_verbose": 75.6
+  },
+  "sweep": {
+    "0.1":  {"terse_mean":156.8,"terse_min":121,"terse_max":207,"verbose_mean":182.0,"verbose_min":134,"verbose_max":217,"terse_topic":0.858,"verbose_topic":0.876,"terse_ratio":7.26,"verbose_ratio":2.41},
+    "0.25": {"terse_mean":115.8,"terse_min":51,"terse_max":189,"verbose_mean":179.2,"verbose_min":138,"verbose_max":211,"terse_topic":0.806,"verbose_topic":0.862,"terse_ratio":5.36,"verbose_ratio":2.37},
+    "0.5":  {"terse_mean":69.0,"terse_min":53,"terse_max":82,"verbose_mean":193.8,"verbose_min":149,"verbose_max":220,"terse_topic":0.763,"verbose_topic":0.824,"terse_ratio":3.19,"verbose_ratio":2.56},
+    "0.75": {"terse_mean":58.4,"terse_min":37,"terse_max":98,"verbose_mean":184.2,"verbose_min":112,"verbose_max":224,"terse_topic":0.729,"verbose_topic":0.811,"terse_ratio":2.7,"verbose_ratio":2.44},
+    "1.0":  {"terse_mean":51.8,"terse_min":44,"terse_max":64,"verbose_mean":204.2,"verbose_min":163,"verbose_max":224,"terse_topic":0.684,"verbose_topic":0.733,"terse_ratio":2.4,"verbose_ratio":2.7},
+    "1.25": {"terse_mean":52.4,"terse_min":45,"terse_max":68,"verbose_mean":192.0,"verbose_min":159,"verbose_max":217,"terse_topic":0.664,"verbose_topic":0.658,"terse_ratio":2.43,"verbose_ratio":2.54},
+    "1.5":  {"terse_mean":43.2,"terse_min":16,"terse_max":53,"verbose_mean":186.8,"verbose_min":167,"verbose_max":213,"terse_topic":0.608,"verbose_topic":0.619,"terse_ratio":2.0,"verbose_ratio":2.47},
+    "2.0":  {"terse_mean":10.4,"terse_min":3,"terse_max":28,"verbose_mean":210.4,"verbose_min":180,"verbose_max":252,"terse_topic":0.452,"verbose_topic":0.465,"terse_ratio":0.48,"verbose_ratio":2.78},
+    "2.5":  {"terse_mean":0.0,"terse_min":0,"terse_max":0,"verbose_mean":254.8,"verbose_min":245,"verbose_max":266,"terse_topic":0.0,"verbose_topic":0.341,"terse_ratio":0.0,"verbose_ratio":3.37},
+    "3.0":  {"terse_mean":0.0,"terse_min":0,"terse_max":0,"verbose_mean":253.8,"verbose_min":233,"verbose_max":267,"terse_topic":0.0,"verbose_topic":0.302,"terse_ratio":0.0,"verbose_ratio":3.36}
+  },
+  "parity": {
+    "terse_alpha": 2.0,
+    "verbose_alpha": 0.25,
+    "asymmetric": true
+  }
+};
+
+// ── Extract arrays ─────────────────────────────────────────────────
+const alphaKeys = Object.keys(DATA.sweep).sort((a, b) => parseFloat(a) - parseFloat(b));
+const alphaValues = alphaKeys.map(parseFloat);
+const sweep = DATA.sweep;
+
+const terseMean     = alphaKeys.map(k => sweep[k].terse_mean);
+const terseMin      = alphaKeys.map(k => sweep[k].terse_min);
+const terseMax      = alphaKeys.map(k => sweep[k].terse_max);
+const verboseMean   = alphaKeys.map(k => sweep[k].verbose_mean);
+const verboseMin    = alphaKeys.map(k => sweep[k].verbose_min);
+const verboseMax    = alphaKeys.map(k => sweep[k].verbose_max);
+const terseTopic    = alphaKeys.map(k => sweep[k].terse_topic);
+const verboseTopic  = alphaKeys.map(k => sweep[k].verbose_topic);
+const terseRatio    = alphaKeys.map(k => sweep[k].terse_ratio);
+const verboseRatio  = alphaKeys.map(k => sweep[k].verbose_ratio);
+
+// ── Regime background shapes ───────────────────────────────────────
+function regimeShapes(yMax) {
+  return [
+    { type: 'rect', xref: 'x', yref: 'y', x0: 0, x1: 1.0, y0: 0, y1: yMax,
+      fillcolor: 'rgba(255,107,107,0.08)', line: { width: 0 }, layer: 'below' },
+    { type: 'rect', xref: 'x', yref: 'y', x0: 1.0, x1: 3.0, y0: 0, y1: yMax,
+      fillcolor: 'rgba(81,207,102,0.08)', line: { width: 0 }, layer: 'below' },
+    { type: 'rect', xref: 'x', yref: 'y', x0: 3.0, x1: 3.3, y0: 0, y1: yMax,
+      fillcolor: 'rgba(255,146,43,0.08)', line: { width: 0 }, layer: 'below' },
+    // Boundary lines
+    { type: 'line', xref: 'x', yref: 'y', x0: 1.0, x1: 1.0, y0: 0, y1: yMax,
+      line: { color: 'rgba(255,255,255,0.15)', width: 1, dash: 'dash' }, layer: 'below' },
+    { type: 'line', xref: 'x', yref: 'y', x0: 3.0, x1: 3.0, y0: 0, y1: yMax,
+      line: { color: 'rgba(255,255,255,0.15)', width: 1, dash: 'dash' }, layer: 'below' },
+  ];
+}
+
+function regimeAnnotations(yPos) {
+  return [
+    { x: 0.5, y: yPos, text: 'DEAD ZONE', showarrow: false,
+      font: { color: 'rgba(255,107,107,0.4)', size: 11 }, xref: 'x', yref: 'y' },
+    { x: 2.0, y: yPos, text: 'EFFECTIVE', showarrow: false,
+      font: { color: 'rgba(81,207,102,0.4)', size: 11 }, xref: 'x', yref: 'y' },
+    { x: 3.15, y: yPos, text: 'COLLAPSE', showarrow: false,
+      font: { color: 'rgba(255,146,43,0.4)', size: 9 }, xref: 'x', yref: 'y', textangle: -90 },
+  ];
+}
+
+// ── Dark layout base ───────────────────────────────────────────────
+function darkLayout(title, yTitle, yMax, extraAnnotations) {
+  const annotations = regimeAnnotations(yMax * 0.92);
+  if (extraAnnotations) annotations.push(...extraAnnotations);
+  return {
+    paper_bgcolor: '#1a1a2e',
+    plot_bgcolor: '#16213e',
+    font: { color: '#c0c0d8', family: 'Segoe UI, system-ui, sans-serif' },
+    title: { text: title, font: { size: 14, color: '#e0e0e0' }, x: 0.5 },
+    xaxis: {
+      title: { text: 'Steering Strength (α)', font: { size: 12 } },
+      color: '#8888aa',
+      gridcolor: 'rgba(255,255,255,0.06)',
+      range: [-0.05, 3.35],
+      dtick: 0.5,
+      zeroline: false,
+    },
+    yaxis: {
+      title: { text: yTitle, font: { size: 12 } },
+      color: '#8888aa',
+      gridcolor: 'rgba(255,255,255,0.06)',
+      range: [0, yMax],
+      zeroline: false,
+    },
+    shapes: regimeShapes(yMax),
+    annotations: annotations,
+    legend: {
+      bgcolor: 'rgba(22,33,62,0.8)',
+      bordercolor: '#333355',
+      borderwidth: 1,
+      font: { size: 11 },
+    },
+    margin: { l: 60, r: 30, t: 50, b: 60 },
+    hovermode: 'x unified',
+  };
+}
+
+// ── Trace builders ─────────────────────────────────────────────────
+function makeHoverText(prefix, alphas, means, mins, maxes) {
+  return alphas.map((a, i) =>
+    `α=${a}<br>${prefix} mean: ${means[i]}<br>range: [${mins[i]}, ${maxes[i]}]`
+  );
+}
+
+function bandTrace(alphas, upper, lower, color, name) {
+  return [
+    { x: alphas, y: upper, mode: 'lines', line: { width: 0 },
+      showlegend: false, hoverinfo: 'skip', type: 'scatter' },
+    { x: alphas, y: lower, mode: 'lines', line: { width: 0 },
+      fill: 'tonexty', fillcolor: color, showlegend: false,
+      hoverinfo: 'skip', name: name + ' range', type: 'scatter' },
+  ];
+}
+
+// ── View: Word Count ───────────────────────────────────────────────
+function wordCountTraces() {
+  const traces = [];
+
+  // Terse confidence band
+  traces.push(...bandTrace(alphaValues, terseMax, terseMin, 'rgba(116,192,252,0.12)', 'Terse'));
+
+  // Verbose confidence band
+  traces.push(...bandTrace(alphaValues, verboseMax, verboseMin, 'rgba(255,167,38,0.12)', 'Verbose'));
+
+  // Terse mean line
+  traces.push({
+    x: alphaValues, y: terseMean, mode: 'lines+markers', name: 'Terse (−v)',
+    line: { color: '#74c0fc', width: 2.5 },
+    marker: { size: 7, color: '#74c0fc', line: { color: '#1a1a2e', width: 1 } },
+    hovertemplate: 'α=%{x}<br>Terse mean: %{y} words<extra></extra>',
+    type: 'scatter',
+  });
+
+  // Verbose mean line
+  traces.push({
+    x: alphaValues, y: verboseMean, mode: 'lines+markers', name: 'Verbose (+v)',
+    line: { color: '#ffa726', width: 2.5 },
+    marker: { size: 7, color: '#ffa726', line: { color: '#1a1a2e', width: 1 } },
+    hovertemplate: 'α=%{x}<br>Verbose mean: %{y} words<extra></extra>',
+    type: 'scatter',
+  });
+
+  // Baseline reference
+  traces.push({
+    x: [alphaValues[0], alphaValues[alphaValues.length - 1]],
+    y: [DATA.targets.baseline, DATA.targets.baseline],
+    mode: 'lines', name: 'Baseline (no steering)',
+    line: { color: 'rgba(255,255,255,0.3)', width: 1.5, dash: 'dot' },
+    hovertemplate: 'Baseline: %{y} words<extra></extra>',
+    type: 'scatter',
+  });
+
+  return traces;
+}
+
+// ── View: Topic Coherence ──────────────────────────────────────────
+function topicTraces() {
+  return [
+    { x: alphaValues, y: terseTopic, mode: 'lines+markers', name: 'Terse Coherence',
+      line: { color: '#74c0fc', width: 2.5 },
+      marker: { size: 7, color: '#74c0fc', symbol: 'diamond',
+                line: { color: '#1a1a2e', width: 1 } },
+      hovertemplate: 'α=%{x}<br>Terse topic: %{y:.3f}<extra></extra>',
+      type: 'scatter' },
+    { x: alphaValues, y: verboseTopic, mode: 'lines+markers', name: 'Verbose Coherence',
+      line: { color: '#ffa726', width: 2.5 },
+      marker: { size: 7, color: '#ffa726', symbol: 'diamond',
+                line: { color: '#1a1a2e', width: 1 } },
+      hovertemplate: 'α=%{x}<br>Verbose topic: %{y:.3f}<extra></extra>',
+      type: 'scatter' },
+  ];
+}
+
+// ── View: Perplexity Ratio ─────────────────────────────────────────
+function ratioTraces() {
+  return [
+    { x: alphaValues, y: terseRatio, mode: 'lines+markers', name: 'Terse Ratio',
+      line: { color: '#74c0fc', width: 2.5 },
+      marker: { size: 7, color: '#74c0fc', symbol: 'square',
+                line: { color: '#1a1a2e', width: 1 } },
+      hovertemplate: 'α=%{x}<br>Terse ratio: %{y:.2f}<extra></extra>',
+      type: 'scatter' },
+    { x: alphaValues, y: verboseRatio, mode: 'lines+markers', name: 'Verbose Ratio',
+      line: { color: '#ffa726', width: 2.5 },
+      marker: { size: 7, color: '#ffa726', symbol: 'square',
+                line: { color: '#1a1a2e', width: 1 } },
+      hovertemplate: 'α=%{x}<br>Verbose ratio: %{y:.2f}<extra></extra>',
+      type: 'scatter' },
+  ];
+}
+
+// ── View: All Metrics (dual Y axis) ───────────────────────────────
+function allTraces() {
+  const traces = [];
+
+  // Word count on y1
+  traces.push({
+    x: alphaValues, y: terseMean, mode: 'lines+markers', name: 'Terse Words',
+    line: { color: '#74c0fc', width: 2 },
+    marker: { size: 6, color: '#74c0fc' },
+    yaxis: 'y', legendgroup: 'terse',
+    hovertemplate: 'α=%{x}<br>Terse: %{y} words<extra></extra>',
+    type: 'scatter',
+  });
+  traces.push({
+    x: alphaValues, y: verboseMean, mode: 'lines+markers', name: 'Verbose Words',
+    line: { color: '#ffa726', width: 2 },
+    marker: { size: 6, color: '#ffa726' },
+    yaxis: 'y', legendgroup: 'verbose',
+    hovertemplate: 'α=%{x}<br>Verbose: %{y} words<extra></extra>',
+    type: 'scatter',
+  });
+
+  // Topic coherence on y2
+  traces.push({
+    x: alphaValues, y: terseTopic, mode: 'lines+markers', name: 'Terse Coherence',
+    line: { color: '#74c0fc', width: 2, dash: 'dash' },
+    marker: { size: 5, color: '#74c0fc', symbol: 'diamond' },
+    yaxis: 'y2', legendgroup: 'terse',
+    hovertemplate: 'α=%{x}<br>Terse coherence: %{y:.3f}<extra></extra>',
+    type: 'scatter',
+  });
+  traces.push({
+    x: alphaValues, y: verboseTopic, mode: 'lines+markers', name: 'Verbose Coherence',
+    line: { color: '#ffa726', width: 2, dash: 'dash' },
+    marker: { size: 5, color: '#ffa726', symbol: 'diamond' },
+    yaxis: 'y2', legendgroup: 'verbose',
+    hovertemplate: 'α=%{x}<br>Verbose coherence: %{y:.3f}<extra></extra>',
+    type: 'scatter',
+  });
+
+  return traces;
+}
+
+// ── Rendering ──────────────────────────────────────────────────────
+const container = document.getElementById('plot-container');
+let currentView = 'word-count';
+
+function showView(view) {
+  currentView = view;
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + view).classList.add('active');
+  render();
+}
+
+function render() {
+  let traces, layout;
+
+  const parityAnnotation = {
+    x: DATA.parity.terse_alpha, y: 0, text: 'Terse parity α',
+    showarrow: true, arrowhead: 2, arrowcolor: '#74c0fc',
+    font: { color: '#74c0fc', size: 10 },
+    ax: 0, ay: -30, xref: 'x', yref: 'y',
+  };
+
+  switch (currentView) {
+    case 'word-count':
+      traces = wordCountTraces();
+      layout = darkLayout('Word Count vs Steering Strength', 'Word Count', 300,
+        [{ ...parityAnnotation, y: 10.4 }]);
+      break;
+
+    case 'topic':
+      traces = topicTraces();
+      layout = darkLayout('Topic Coherence vs Steering Strength', 'Topic Coherence Score', 1.05);
+      break;
+
+    case 'ratio':
+      traces = ratioTraces();
+      layout = darkLayout('Perplexity Ratio vs Steering Strength', 'Perplexity Ratio (steered / baseline)', 8.0);
+      break;
+
+    case 'all':
+      traces = allTraces();
+      layout = darkLayout('All Metrics (Word Count + Topic Coherence)', 'Word Count', 300);
+      layout.yaxis2 = {
+        title: { text: 'Topic Coherence', font: { size: 12 } },
+        color: '#8888aa',
+        gridcolor: 'rgba(255,255,255,0.03)',
+        range: [0, 1.05],
+        overlaying: 'y',
+        side: 'right',
+        zeroline: false,
+      };
+      break;
+  }
+
+  Plotly.react(container, traces, layout, {
+    responsive: true,
+    displayModeBar: true,
+    modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+    displaylogo: false,
+    toImageButtonOptions: {
+      format: 'png',
+      filename: 'alpha_phase_portrait',
+      width: 1200,
+      height: 800,
+      scale: 2,
+    },
+  });
+}
+
+// Initial render
+render();
+
+// Resize handling
+window.addEventListener('resize', () => Plotly.Plots.resize(container));
+</script>
+
+</body>
+</html>

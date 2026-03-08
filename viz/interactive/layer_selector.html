@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>28-Layer Anatomy: Finding the Steering Sweet Spot</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+  }
+  .header {
+    padding: 20px 32px 12px;
+    border-bottom: 1px solid #21262d;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #e6edf3;
+    letter-spacing: -0.3px;
+  }
+  .header .subtitle {
+    font-size: 13px;
+    color: #8b949e;
+    margin-top: 4px;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 32px;
+    border-bottom: 1px solid #21262d;
+    background: #161b22;
+  }
+  .controls label {
+    font-size: 13px;
+    color: #8b949e;
+    font-weight: 500;
+  }
+  .controls select {
+    background: #0d1117;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+  }
+  .controls select:hover { border-color: #58a6ff; }
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-left: auto;
+    font-size: 12px;
+    color: #8b949e;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+  }
+  .main-container {
+    display: flex;
+    height: calc(100vh - 120px);
+  }
+  .chart-panel {
+    flex: 1;
+    min-width: 0;
+    padding: 16px;
+  }
+  .detail-panel {
+    width: 360px;
+    min-width: 360px;
+    border-left: 1px solid #21262d;
+    background: #161b22;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .detail-panel h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e6edf3;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+  }
+  .detail-panel .no-selection {
+    color: #484f58;
+    font-size: 13px;
+    font-style: italic;
+    padding: 40px 0;
+    text-align: center;
+  }
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #21262d;
+    font-size: 13px;
+  }
+  .metric-label { color: #8b949e; }
+  .metric-value { color: #e6edf3; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .zone-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .preview-box {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #8b949e;
+    max-height: 140px;
+    overflow-y: auto;
+  }
+  .preview-box .preview-label {
+    font-size: 11px;
+    color: #484f58;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .sweet-spot-indicator {
+    background: rgba(63, 185, 80, 0.1);
+    border: 1px solid rgba(63, 185, 80, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #3fb950;
+  }
+  #main-chart { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>28-Layer Anatomy: Finding the Steering Sweet Spot</h1>
+  <div class="subtitle">Qwen3-0.6B &middot; 28 transformer layers &middot; d_model=1024 &middot; Activation steering analysis at alpha=2.0</div>
+</div>
+
+<div class="controls">
+  <label for="metric-select">Metric:</label>
+  <select id="metric-select">
+    <option value="residual_norm">Residual Norm</option>
+    <option value="raw_vec_norm">Raw Vector Norm</option>
+    <option value="snr_pct">SNR (%)</option>
+    <option value="avg_word_count">Avg Word Count</option>
+    <option value="avg_topic_cosine">Topic Cosine Similarity</option>
+    <option value="avg_words_per_sentence">Words per Sentence</option>
+    <option value="avg_markdown_density">Markdown Density (%)</option>
+    <option value="avg_perplexity_ratio">Perplexity Ratio</option>
+  </select>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#3b82f6"></div>Early / Drift (L0-7)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#6b7280"></div>Transition (L8-11)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#22c55e"></div>Sweet Spot (L12-17)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#f97316"></div>Formatting (L18-22)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#ef4444"></div>Distortion (L23-27)</div>
+  </div>
+</div>
+
+<div class="main-container">
+  <div class="chart-panel">
+    <div id="main-chart"></div>
+  </div>
+  <div class="detail-panel" id="detail-panel">
+    <h2>Layer Detail</h2>
+    <div class="no-selection">Click a bar to inspect layer metrics</div>
+  </div>
+</div>
+
+<script>
+// Embedded scorecard data
+const rawData = {
+  "0": {"residual_norm":10.5,"raw_vec_norm":1.7,"snr_pct":16.19,"avg_word_count":167.0,"avg_topic_cosine":0.776,"avg_words_per_sentence":20.1,"avg_markdown_density":6.61,"avg_perplexity_ratio":1.218,"classified_role":"tokenization","empirical_note":"words=167 topic=0.78","per_prompt":[{"word_count":206,"sentence_count":14,"words_per_sentence":14.7,"topic_cosine":0.808,"markdown_density":11.65,"perplexity_ratio":0.926,"text_preview":"A **mutex** (short for **mutual exclusion** or **mutex lock**) is a synchronization primitive used in operating systems..."},{"word_count":128,"sentence_count":5,"words_per_sentence":25.6,"topic_cosine":0.744,"markdown_density":1.56,"perplexity_ratio":1.511,"text_preview":"Photosynthesis is the process by which plants, algae, and some bacteria convert light energy from the sun into chemical..."}]},
+  "3": {"residual_norm":449.8,"raw_vec_norm":13.3,"snr_pct":2.96,"avg_word_count":0.0,"avg_topic_cosine":0.0,"avg_words_per_sentence":0.0,"avg_markdown_density":0.0,"avg_perplexity_ratio":null,"classified_role":"syntax","empirical_note":"CONFIRMED: topic drift (cosine < 0.3)","per_prompt":[{"word_count":0,"sentence_count":0,"words_per_sentence":0.0,"topic_cosine":0.0,"markdown_density":0.0,"perplexity_ratio":null,"text_preview":"(empty output)"},{"word_count":0,"sentence_count":0,"words_per_sentence":0.0,"topic_cosine":0.0,"markdown_density":0.0,"perplexity_ratio":null,"text_preview":"(empty output)"}]},
+  "5": {"residual_norm":455.5,"raw_vec_norm":14.1,"snr_pct":3.1,"avg_word_count":0.0,"avg_topic_cosine":0.0,"avg_words_per_sentence":0.0,"avg_markdown_density":0.0,"avg_perplexity_ratio":null,"classified_role":"syntax","empirical_note":"CONFIRMED: topic drift (cosine < 0.3)","per_prompt":[{"word_count":0,"sentence_count":0,"words_per_sentence":0.0,"topic_cosine":0.0,"markdown_density":0.0,"perplexity_ratio":null,"text_preview":"(empty output)"},{"word_count":0,"sentence_count":0,"words_per_sentence":0.0,"topic_cosine":0.0,"markdown_density":0.0,"perplexity_ratio":null,"text_preview":"(empty output)"}]},
+  "8": {"residual_norm":460.8,"raw_vec_norm":15.0,"snr_pct":3.26,"avg_word_count":35.0,"avg_topic_cosine":0.584,"avg_words_per_sentence":14.2,"avg_markdown_density":0.0,"avg_perplexity_ratio":2.707,"classified_role":"early_semantics","empirical_note":"words=35 topic=0.58","per_prompt":[{"word_count":39,"sentence_count":3,"words_per_sentence":13.0,"topic_cosine":0.625,"markdown_density":0.0,"perplexity_ratio":1.595,"text_preview":"A mutex is a synchronization primitive used to control access to shared resources. It is used to ensure that a resource..."},{"word_count":31,"sentence_count":2,"words_per_sentence":15.5,"topic_cosine":0.542,"markdown_density":0.0,"perplexity_ratio":3.819,"text_preview":"Photosynthesis works by capturing light energy in chlorophyll molecules, which then convert this energy into chemical bo..."}]},
+  "10": {"residual_norm":471.8,"raw_vec_norm":15.8,"snr_pct":3.35,"avg_word_count":37.0,"avg_topic_cosine":0.607,"avg_words_per_sentence":14.2,"avg_markdown_density":0.0,"avg_perplexity_ratio":2.177,"classified_role":"early_semantics","empirical_note":"CONFIRMED: strong style shift (37 words)","per_prompt":[{"word_count":23,"sentence_count":2,"words_per_sentence":11.5,"topic_cosine":0.58,"markdown_density":0.0,"perplexity_ratio":1.835,"text_preview":"A mutex is a synchronization primitive used to protect access to shared resources. It is used to prevent race conditions..."},{"word_count":51,"sentence_count":3,"words_per_sentence":17.0,"topic_cosine":0.633,"markdown_density":0.0,"perplexity_ratio":2.519,"text_preview":"Photosynthesis is a process that occurs in plants, algae, and some bacteria, which use light to convert carbon dioxide a..."}]},
+  "12": {"residual_norm":479.5,"raw_vec_norm":17.4,"snr_pct":3.63,"avg_word_count":20.0,"avg_topic_cosine":0.525,"avg_words_per_sentence":14.0,"avg_markdown_density":16.66,"avg_perplexity_ratio":3.549,"classified_role":"deep_semantics","empirical_note":"CONFIRMED: strong style shift (20 words)","per_prompt":[{"word_count":16,"sentence_count":1,"words_per_sentence":16.0,"topic_cosine":0.515,"markdown_density":0.0,"perplexity_ratio":3.138,"text_preview":"A mutex is a keyword used in programming languages that is used to prevent concurrent access."},{"word_count":24,"sentence_count":2,"words_per_sentence":12.0,"topic_cosine":0.535,"markdown_density":33.33,"perplexity_ratio":3.96,"text_preview":"The **photosynthesis** is a process that captures light energy and converts carbon dioxide into oxygen. The **process**..."}]},
+  "14": {"residual_norm":481.0,"raw_vec_norm":18.7,"snr_pct":3.89,"avg_word_count":36.0,"avg_topic_cosine":0.624,"avg_words_per_sentence":14.4,"avg_markdown_density":0.0,"avg_perplexity_ratio":2.43,"classified_role":"deep_semantics","empirical_note":"CONFIRMED: strong style shift (36 words)","per_prompt":[{"word_count":29,"sentence_count":2,"words_per_sentence":14.5,"topic_cosine":0.691,"markdown_density":0.0,"perplexity_ratio":1.615,"text_preview":"A mutex is a synchronization primitive used to prevent multiple threads from accessing a resource simultaneously. It ens..."},{"word_count":43,"sentence_count":3,"words_per_sentence":14.3,"topic_cosine":0.557,"markdown_density":0.0,"perplexity_ratio":3.246,"text_preview":"Photosynthesis is a biological process that occurs in plants, algae, and some other organisms. It involves the conversio..."}]},
+  "15": {"residual_norm":487.5,"raw_vec_norm":19.6,"snr_pct":4.02,"avg_word_count":57.5,"avg_topic_cosine":0.689,"avg_words_per_sentence":14.4,"avg_markdown_density":0.0,"avg_perplexity_ratio":1.904,"classified_role":"deep_semantics","empirical_note":"words=58 topic=0.69","per_prompt":[{"word_count":35,"sentence_count":2,"words_per_sentence":17.5,"topic_cosine":0.763,"markdown_density":0.0,"perplexity_ratio":1.372,"text_preview":"A mutex is a type of lock used in programming to prevent multiple threads from accessing a resource simultaneously. It i..."},{"word_count":80,"sentence_count":7,"words_per_sentence":11.4,"topic_cosine":0.615,"markdown_density":0.0,"perplexity_ratio":2.436,"text_preview":"Photosynthesis is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose an..."}]},
+  "16": {"residual_norm":500.8,"raw_vec_norm":22.8,"snr_pct":4.55,"avg_word_count":52.5,"avg_topic_cosine":0.584,"avg_words_per_sentence":15.1,"avg_markdown_density":1.75,"avg_perplexity_ratio":2.376,"classified_role":"deep_semantics","empirical_note":"words=52 topic=0.58","per_prompt":[{"word_count":48,"sentence_count":3,"words_per_sentence":16.0,"topic_cosine":0.676,"markdown_density":0.0,"perplexity_ratio":1.752,"text_preview":"A mutex (short for mutual exclusion) is a type of lock used in concurrent programming. It is a synchronization mechanism..."},{"word_count":57,"sentence_count":4,"words_per_sentence":14.2,"topic_cosine":0.492,"markdown_density":3.51,"perplexity_ratio":2.999,"text_preview":"Photosynthesis is a biological process that converts carbon dioxide and water into glucose and oxygen. It occurs in plan..."}]},
+  "18": {"residual_norm":538.0,"raw_vec_norm":29.8,"snr_pct":5.54,"avg_word_count":144.0,"avg_topic_cosine":0.583,"avg_words_per_sentence":13.6,"avg_markdown_density":14.16,"avg_perplexity_ratio":1.568,"classified_role":"output_preparation","empirical_note":"CONFIRMED: weak effect (144 words ~ baseline)","per_prompt":[{"word_count":170,"sentence_count":12,"words_per_sentence":14.2,"topic_cosine":0.634,"markdown_density":16.47,"perplexity_ratio":1.139,"text_preview":"A **mutex** (short for **mutual exclusion**) is a type of lock used in concurrent programming. It is a synchronization p..."},{"word_count":118,"sentence_count":9,"words_per_sentence":13.1,"topic_cosine":0.532,"markdown_density":11.86,"perplexity_ratio":1.997,"text_preview":"Photosynthesis is a fundamental process in photosynthetic organisms like plants, algae, and cyanobacteria. It involves t..."}]},
+  "20": {"residual_norm":595.0,"raw_vec_norm":40.3,"snr_pct":6.77,"avg_word_count":171.0,"avg_topic_cosine":0.774,"avg_words_per_sentence":17.4,"avg_markdown_density":14.91,"avg_perplexity_ratio":1.504,"classified_role":"output_preparation","empirical_note":"CONFIRMED: weak effect (171 words ~ baseline)","per_prompt":[{"word_count":174,"sentence_count":8,"words_per_sentence":21.8,"topic_cosine":0.79,"markdown_density":14.94,"perplexity_ratio":1.244,"text_preview":"A **mutex** (short for **mutex** or **mutex** in C) is a **critical section** or **atomic lock** used to control access..."},{"word_count":168,"sentence_count":13,"words_per_sentence":12.9,"topic_cosine":0.759,"markdown_density":14.88,"perplexity_ratio":1.764,"text_preview":"Photosynthesis is the process by which plants, algae, and some bacteria convert light energy from the atmosphere into ch..."}]},
+  "22": {"residual_norm":686.5,"raw_vec_norm":54.1,"snr_pct":7.88,"avg_word_count":179.5,"avg_topic_cosine":0.764,"avg_words_per_sentence":14.3,"avg_markdown_density":14.05,"avg_perplexity_ratio":1.413,"classified_role":"output_preparation","empirical_note":"CONFIRMED: weak effect (180 words ~ baseline)","per_prompt":[{"word_count":195,"sentence_count":16,"words_per_sentence":12.2,"topic_cosine":0.791,"markdown_density":15.9,"perplexity_ratio":1.195,"text_preview":"A **mutex** (short for **mutex** or **mutex lock**) is a **hardware or software lock** used to control **shared resource..."},{"word_count":164,"sentence_count":10,"words_per_sentence":16.4,"topic_cosine":0.737,"markdown_density":12.2,"perplexity_ratio":1.63,"text_preview":"Photosynthesis is the process by which plants, algae, and some bacteria convert light energy from the sun into chemical..."}]},
+  "24": {"residual_norm":809.0,"raw_vec_norm":70.8,"snr_pct":8.75,"avg_word_count":174.5,"avg_topic_cosine":0.743,"avg_words_per_sentence":9.9,"avg_markdown_density":9.23,"avg_perplexity_ratio":1.216,"classified_role":"logit_projection","empirical_note":"CONFIRMED: weak effect (174 words ~ baseline)","per_prompt":[{"word_count":187,"sentence_count":21,"words_per_sentence":8.9,"topic_cosine":0.825,"markdown_density":12.3,"perplexity_ratio":1.017,"text_preview":"A **mutex** (mutual exclusion lock) is a synchronization primitive used to control concurrent access to shared resources..."},{"word_count":162,"sentence_count":15,"words_per_sentence":10.8,"topic_cosine":0.661,"markdown_density":6.17,"perplexity_ratio":1.414,"text_preview":"Photosynthesis is the process by which plants, algae, and some bacteria convert water and carbon dioxide into glucose an..."}]},
+  "27": {"residual_norm":620.0,"raw_vec_norm":92.1,"snr_pct":14.85,"avg_word_count":167.5,"avg_topic_cosine":0.695,"avg_words_per_sentence":10.6,"avg_markdown_density":10.85,"avg_perplexity_ratio":1.365,"classified_role":"logit_projection","empirical_note":"CONFIRMED: weak effect (168 words ~ baseline)","per_prompt":[{"word_count":184,"sentence_count":15,"words_per_sentence":12.3,"topic_cosine":0.766,"markdown_density":9.78,"perplexity_ratio":1.245,"text_preview":"A **mutex** (short for **mutual exclusion** lock) is a synchronization primitive used to protect concurrent access to sh..."},{"word_count":151,"sentence_count":17,"words_per_sentence":8.9,"topic_cosine":0.623,"markdown_density":11.92,"perplexity_ratio":1.484,"text_preview":"Photosynthesis is a critical biological process used by plants, algae, and certain bacteria to convert light energy, wat..."}]}
+};
+
+// Zone definitions
+function getZone(layerIndex) {
+  if (layerIndex <= 7) return { name: 'Early / Drift', color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.4)' };
+  if (layerIndex <= 11) return { name: 'Transition', color: '#6b7280', bg: 'rgba(107,114,128,0.15)', border: 'rgba(107,114,128,0.4)' };
+  if (layerIndex <= 17) return { name: 'Sweet Spot', color: '#22c55e', bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.4)' };
+  if (layerIndex <= 22) return { name: 'Formatting', color: '#f97316', bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.4)' };
+  return { name: 'Distortion', color: '#ef4444', bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.4)' };
+}
+
+// Build full 28-layer array
+const allLayers = [];
+for (let i = 0; i < 28; i++) {
+  const key = String(i);
+  const zone = getZone(i);
+  const hasMeasurement = rawData.hasOwnProperty(key);
+  allLayers.push({
+    index: i,
+    label: 'L' + i,
+    zone: zone,
+    measured: hasMeasurement,
+    data: hasMeasurement ? rawData[key] : null
+  });
+}
+
+const metricMeta = {
+  'residual_norm': { label: 'Residual Norm', unit: '', format: v => v.toFixed(1) },
+  'raw_vec_norm': { label: 'Raw Vector Norm', unit: '', format: v => v.toFixed(1) },
+  'snr_pct': { label: 'Signal-to-Noise Ratio', unit: '%', format: v => v.toFixed(2) + '%' },
+  'avg_word_count': { label: 'Avg Word Count', unit: 'words', format: v => v.toFixed(0) },
+  'avg_topic_cosine': { label: 'Topic Cosine Similarity', unit: '', format: v => v.toFixed(3) },
+  'avg_words_per_sentence': { label: 'Words per Sentence', unit: '', format: v => v.toFixed(1) },
+  'avg_markdown_density': { label: 'Markdown Density', unit: '%', format: v => v.toFixed(2) + '%' },
+  'avg_perplexity_ratio': { label: 'Perplexity Ratio', unit: 'x', format: v => v === null ? 'N/A' : v.toFixed(3) }
+};
+
+function getMetricValue(layer, metric) {
+  if (!layer.data) return null;
+  if (['residual_norm', 'raw_vec_norm', 'snr_pct'].includes(metric)) {
+    return layer.data[metric];
+  }
+  return layer.data[metric];
+}
+
+function buildChart(metric) {
+  const meta = metricMeta[metric];
+  const labels = allLayers.map(l => l.label);
+  const values = allLayers.map(l => getMetricValue(l, metric));
+  const colors = allLayers.map(l => {
+    if (!l.measured) return '#21262d';
+    return l.zone.color;
+  });
+  const borderColors = allLayers.map(l => {
+    if (!l.measured) return '#30363d';
+    if (l.index >= 12 && l.index <= 17) return '#22c55e';
+    return l.zone.color;
+  });
+  const borderWidths = allLayers.map(l => {
+    if (l.index >= 12 && l.index <= 17 && l.measured) return 2;
+    return 0;
+  });
+  const opacities = allLayers.map(l => l.measured ? 0.85 : 0.2);
+
+  const hoverTexts = allLayers.map(l => {
+    if (!l.measured) return `<b>${l.label}</b><br>Zone: ${l.zone.name}<br><i>Not measured</i>`;
+    const val = getMetricValue(l, metric);
+    const formattedVal = val !== null && val !== undefined && isFinite(val) ? meta.format(val) : 'N/A';
+    return `<b>${l.label}</b><br>Zone: ${l.zone.name}<br>Role: ${l.data.classified_role}<br>${meta.label}: ${formattedVal}<br><i>Click for details</i>`;
+  });
+
+  // Sweet spot annotation band
+  const shapes = [
+    {
+      type: 'rect',
+      xref: 'x',
+      yref: 'paper',
+      x0: 11.5,
+      x1: 17.5,
+      y0: 0,
+      y1: 1,
+      fillcolor: 'rgba(34, 197, 94, 0.06)',
+      line: { color: 'rgba(34, 197, 94, 0.2)', width: 1, dash: 'dot' }
+    }
+  ];
+
+  const annotations = [
+    {
+      x: 14.5,
+      y: 1.02,
+      xref: 'x',
+      yref: 'paper',
+      text: 'SWEET SPOT',
+      showarrow: false,
+      font: { color: '#22c55e', size: 11, family: 'monospace' },
+      bgcolor: 'rgba(34,197,94,0.1)',
+      bordercolor: 'rgba(34,197,94,0.3)',
+      borderwidth: 1,
+      borderpad: 4
+    }
+  ];
+
+  const barTrace = {
+    x: labels,
+    y: values.map(v => (v === null || v === undefined || !isFinite(v)) ? 0 : v),
+    type: 'bar',
+    marker: {
+      color: colors,
+      opacity: opacities,
+      line: {
+        color: borderColors,
+        width: borderWidths
+      }
+    },
+    hovertext: hoverTexts,
+    hoverinfo: 'text',
+    hoverlabel: {
+      bgcolor: '#161b22',
+      bordercolor: '#30363d',
+      font: { color: '#c9d1d9', size: 12 }
+    }
+  };
+
+  const layout = {
+    paper_bgcolor: '#0d1117',
+    plot_bgcolor: '#0d1117',
+    font: { color: '#c9d1d9', family: 'Segoe UI, -apple-system, sans-serif' },
+    margin: { t: 40, r: 20, b: 60, l: 70 },
+    xaxis: {
+      title: { text: 'Transformer Layer', font: { size: 13, color: '#8b949e' } },
+      tickfont: { size: 11 },
+      gridcolor: '#21262d',
+      linecolor: '#30363d'
+    },
+    yaxis: {
+      title: { text: meta.label + (meta.unit ? ' (' + meta.unit + ')' : ''), font: { size: 13, color: '#8b949e' } },
+      tickfont: { size: 11 },
+      gridcolor: '#21262d',
+      linecolor: '#30363d',
+      zeroline: true,
+      zerolinecolor: '#30363d'
+    },
+    shapes: shapes,
+    annotations: annotations,
+    bargap: 0.15,
+    hoverdistance: 20
+  };
+
+  const config = {
+    responsive: true,
+    displayModeBar: true,
+    modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+    displaylogo: false
+  };
+
+  Plotly.newPlot('main-chart', [barTrace], layout, config);
+
+  // Click handler
+  document.getElementById('main-chart').on('plotly_click', function(eventData) {
+    const pointIndex = eventData.points[0].pointIndex;
+    showDetail(allLayers[pointIndex]);
+  });
+}
+
+function showDetail(layer) {
+  const panel = document.getElementById('detail-panel');
+
+  if (!layer.measured) {
+    panel.innerHTML = `
+      <h2>Layer ${layer.index} Detail</h2>
+      <div class="zone-badge" style="background:${layer.zone.bg};color:${layer.zone.color};border:1px solid ${layer.zone.border}">
+        ${layer.zone.name}
+      </div>
+      <div class="no-selection">No measurement data collected for this layer.</div>
+    `;
+    return;
+  }
+
+  const data = layer.data;
+  const isSweetSpot = layer.index >= 12 && layer.index <= 17;
+
+  let html = `<h2>Layer ${layer.index} Detail</h2>`;
+
+  html += `<div class="zone-badge" style="background:${layer.zone.bg};color:${layer.zone.color};border:1px solid ${layer.zone.border}">
+    ${layer.zone.name}
+  </div>`;
+
+  if (isSweetSpot) {
+    html += `<div class="sweet-spot-indicator">This layer is in the steering sweet spot (L12-L17). Strong style shift with maintained coherence.</div>`;
+  }
+
+  // Role
+  html += `<div class="metric-row"><span class="metric-label">Classified Role</span><span class="metric-value">${data.classified_role}</span></div>`;
+
+  // All metrics
+  const allMetrics = [
+    ['Residual Norm', data.residual_norm, v => v.toFixed(1)],
+    ['Raw Vec Norm', data.raw_vec_norm, v => v.toFixed(1)],
+    ['SNR', data.snr_pct, v => v.toFixed(2) + '%'],
+    ['Avg Word Count', data.avg_word_count, v => v.toFixed(0)],
+    ['Topic Cosine', data.avg_topic_cosine, v => v.toFixed(3)],
+    ['Words/Sentence', data.avg_words_per_sentence, v => v.toFixed(1)],
+    ['Markdown Density', data.avg_markdown_density, v => v.toFixed(2) + '%'],
+    ['Perplexity Ratio', data.avg_perplexity_ratio, v => (v === null || !isFinite(v)) ? 'Inf' : v.toFixed(3)]
+  ];
+
+  for (const [label, value, fmt] of allMetrics) {
+    const displayVal = (value === null || value === undefined || !isFinite(value)) ? 'N/A' : fmt(value);
+    html += `<div class="metric-row"><span class="metric-label">${label}</span><span class="metric-value">${displayVal}</span></div>`;
+  }
+
+  // Empirical note
+  html += `<div class="metric-row"><span class="metric-label">Note</span><span class="metric-value" style="font-size:11px;font-weight:400;max-width:200px;text-align:right">${data.empirical_note}</span></div>`;
+
+  // Per-prompt previews
+  if (data.per_prompt && data.per_prompt.length > 0) {
+    html += `<div style="margin-top:16px"><h2 style="font-size:14px;margin-bottom:8px">Response Previews</h2>`;
+    const promptLabels = ['Mutex prompt', 'Photosynthesis prompt'];
+    data.per_prompt.forEach((pp, idx) => {
+      const previewText = pp.text_preview || '(empty output)';
+      html += `<div class="preview-box">
+        <div class="preview-label">${promptLabels[idx] || 'Prompt ' + (idx+1)}</div>
+        ${previewText}
+        <div style="margin-top:8px;font-size:11px;color:#484f58">
+          words=${pp.word_count} | cos=${pp.topic_cosine.toFixed(3)} | ppl=${(pp.perplexity_ratio === null || !isFinite(pp.perplexity_ratio)) ? 'Inf' : pp.perplexity_ratio.toFixed(2)}
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  panel.innerHTML = html;
+}
+
+// Init
+const metricSelect = document.getElementById('metric-select');
+buildChart(metricSelect.value);
+
+metricSelect.addEventListener('change', function() {
+  buildChart(this.value);
+});
+
+// Keyboard nav
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    // Find the currently selected layer from the detail panel
+    const h2 = document.querySelector('#detail-panel h2');
+    if (!h2) return;
+    const match = h2.textContent.match(/Layer (\d+)/);
+    if (!match) return;
+    let currentIndex = parseInt(match[1]);
+    if (e.key === 'ArrowLeft') currentIndex = Math.max(0, currentIndex - 1);
+    if (e.key === 'ArrowRight') currentIndex = Math.min(27, currentIndex + 1);
+    showDetail(allLayers[currentIndex]);
+  }
+});
+</script>
+</body>
+</html>
