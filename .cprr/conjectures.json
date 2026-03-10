@@ -282,8 +282,48 @@
       "created_at": "2026-03-09T00:00:00-05:00",
       "updated_at": "2026-03-09T00:00:00-05:00"
     }
+    ,
+    {
+      "id": 18,
+      "title": "Authority direction is separable from formality at L12",
+      "hypothesis": "The authority steering vector (proclamatory vs hedged) has cosine similarity < 0.3 with the formality vector at L12, confirming authority register is a distinct axis from formal/casual style.",
+      "status": "open",
+      "tags": [
+        "authority",
+        "geometry",
+        "experiment"
+      ],
+      "created_at": "2026-03-09T00:00:00-05:00",
+      "updated_at": "2026-03-09T00:00:00-05:00"
+    },
+    {
+      "id": 19,
+      "title": "High-authority steering increases imperative verb density",
+      "hypothesis": "Steering with alpha=2.0 on the authority axis produces >2x imperative density compared to alpha=0 baseline, and alpha=-2.0 produces >2x hedging density vs baseline.",
+      "status": "open",
+      "tags": [
+        "authority",
+        "metrics",
+        "experiment"
+      ],
+      "created_at": "2026-03-09T00:00:00-05:00",
+      "updated_at": "2026-03-09T00:00:00-05:00"
+    },
+    {
+      "id": 20,
+      "title": "Authority and sycophancy are correlated (cos > 0.3)",
+      "hypothesis": "The authority direction correlates with sycophancy-related features. High-authority steering (alpha > 0) produces text that also increases deference markers when the interlocutor is framed as high-status.",
+      "status": "open",
+      "tags": [
+        "authority",
+        "sycophancy",
+        "experiment"
+      ],
+      "created_at": "2026-03-09T00:00:00-05:00",
+      "updated_at": "2026-03-09T00:00:00-05:00"
+    }
   ],
-  "next_id": 18,
+  "next_id": 21,
   "config": {
     "local": true
   }

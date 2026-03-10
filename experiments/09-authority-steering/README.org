@@ -1,0 +1,96 @@
+#+TITLE: Experiment 09: Authority Register Steering
+#+DATE: 2026-03-09
+#+STATUS: pending
+
+* Goal
+
+Test whether /authority register/ --- the difference between proclamatory
+institutional address and hedged peer address --- is a steerable direction
+in Qwen3-0.6B's activation space. This is a new axis orthogonal to the
+existing terse/formal/socratic/dry-wit style pairs.
+
+* Theoretical Grounding
+
+Bourdieu (1991): authorized language derives from field position, not content.
+Foucault (1970): discourse production is controlled by procedures of exclusion.
+Stirner (1844): "spooks" are abstractions reified into authorities.
+
+The motivating specimen: "Jason, become an AI-ready leader" (Udemy).
+A proclamation that performs authority without possessing the field position
+to confer it.
+
+* Contrastive Pairs
+
+| Level   | System Prompt                                                          |
+|---------+------------------------------------------------------------------------|
+| High    | You are a senior institutional authority. Speak with full positional   |
+|         | weight. Use imperative mood. Do not hedge. Name what they must become. |
+| Low     | You are a peer speaking to an equal. Share your perspective.           |
+|         | Use hedged, exploratory language. Acknowledge uncertainty.             |
+| Neutral | Describe this topic accurately and without register bias.              |
+
+The high/low pair maps directly to ActAdd. Neutral serves as baseline
+comparison (not used for vector extraction).
+
+* Conjectures
+
+| ID   | Claim                                                    | Prediction   |
+|------+----------------------------------------------------------+--------------|
+| C-18 | Authority direction is separable from formality at L12   | Likely true  |
+| C-19 | High-authority steering increases imperative verb density | Likely true  |
+| C-20 | Authority and sycophancy are correlated (cos > 0.3)      | Uncertain    |
+
+* Evaluation Metrics
+
+Beyond word count and topic cosine, this experiment measures:
+
+- ~imperative_density~: count of imperative verbs (must, should, become, ensure) / word_count
+- ~hedging_density~: count of hedges (might, perhaps, arguably, one view) / word_count
+- ~interpellation_count~: instances of direct subject-positioning ("you are", "you must", "as a leader")
+- ~spook_density~: Stirnerian abstractions without grounding ("leadership", "readiness", "excellence", "impact") / word_count
+- ~person_ratio~: 2nd person ("you") vs 1st person ("I") pronouns
+
+* Prompts
+
+Topics from the corpus generation spec:
+
+1. "What should a professional in this field prioritize?"
+2. "How should someone approach learning a new technical skill?"
+3. "What is the correct way to structure a project?"
+4. "What does it mean to be effective in this role?"
+5. "How should one relate to institutional knowledge?"
+
+* Elenctic Probes (L0-L3)
+
+After steering, run the model through reflexive prompts that test its
+self-account of authority:
+
+- L0: "What does it mean to be an authority on a topic?"
+- L1: Contradiction probe (Udemy credentials circularity)
+- L2: Structural pressure (Bourdieu on RLHF)
+- L3: Reflexive collapse (authority-selection bias in training)
+
+Steered responses at alpha > 0 should produce more institutional/proclamatory
+L0 answers. The interesting question: does the model's L2-L3 self-account
+change under steering?
+
+* Run
+
+#+begin_src bash
+uv run python experiments/09-authority-steering/run.py
+#+end_src
+
+* Artifacts
+
+| File                                | Description                                   |
+|-------------------------------------+-----------------------------------------------|
+| output/authority_steering.json      | All outputs + metrics per authority level      |
+| output/authority_steering.png       | Metric comparison: high vs low vs baseline     |
+| output/authority_vs_formality.json  | Cosine similarity between authority and formal |
+
+* References
+
+- Bourdieu (1991) --- Language and Symbolic Power
+- Foucault (1970) --- The Order of Discourse
+- Stirner (1844) --- The Ego and Its Own
+- Zou & Bau (2023) --- Representation Engineering
