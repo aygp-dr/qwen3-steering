@@ -1,0 +1,72 @@
+#+TITLE: Experiment 08: KV Cache Anatomy Under Steering
+#+DATE: 2026-03-09
+#+STATUS: pending
+
+* Goal
+
+Inspect the KV cache during steered vs baseline generation to understand how
+activation steering modifies attention patterns. This is groundwork for
+testing whether KV cache compaction (Attention Matching, arXiv:2602.16284)
+preserves or destroys the steering signal.
+
+* Background
+
+Qwen3-0.6B uses GQA: 16 query heads, 8 KV heads, d_model=1024, d_head=64.
+The KV cache stores 2 x 8 x seq_len x 64 floats per layer. At 28 layers
+with seq_len=256, total cache is ~14MB (float16) --- trivially small, but
+the /structure/ matters.
+
+When we steer at L12, the modified hidden states produce KV entries at L12
+and all downstream layers. The question: do those modified KV entries carry
+the steering signal, and would compacting them destroy it?
+
+* Conjectures
+
+| ID   | Claim                                                  | Prediction         |
+|------+--------------------------------------------------------+--------------------|
+| C-15 | Steering at L12 changes attention entropy at L12-17    | Likely true        |
+| C-16 | KV cache token eviction at 10x preserves steering      | Uncertain          |
+| C-17 | Steered KV entries receive higher attention scores     | Likely true        |
+
+* Method
+
+1. Generate baseline output, extract:
+   - KV cache tensors (all 28 layers, 8 KV heads)
+   - Attention weights (all layers, 16 query heads)
+   - Per-token attention entropy
+
+2. Generate steered output (L12, alpha=2.0, terse), extract same
+
+3. Compute:
+   - KV norm difference per layer (steered - baseline)
+   - Attention entropy difference per layer per head
+   - KL divergence between baseline and steered attention distributions
+   - Top-k attended tokens: overlap ratio between steered and baseline
+
+4. Simple token eviction experiment:
+   - Remove lowest-attention-score tokens from KV cache at ratios [2x, 5x, 10x]
+   - Regenerate from compacted cache
+   - Measure: does steered output quality survive?
+
+* Prompts
+
+Same 5 prompts as experiment 07 for comparability.
+
+* Run
+
+#+begin_src bash
+uv run python experiments/08-kv-cache-steering/run.py
+#+end_src
+
+* Artifacts
+
+| File                              | Description                              |
+|-----------------------------------+------------------------------------------|
+| output/kv_cache_anatomy.json      | Per-layer KV norms, entropy, KL metrics  |
+| output/kv_cache_anatomy.png       | Heatmap: attention change under steering |
+| output/attention_diff_heatmap.png | Per-head attention pattern diff           |
+
+* References
+
+- Zweiger et al. (2026) --- [[https://arxiv.org/abs/2602.16284][Fast KV Compaction via Attention Matching]]
+- Turner et al. (2023) --- [[https://arxiv.org/abs/2308.10248][Activation Addition]]

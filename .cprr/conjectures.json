@@ -242,9 +242,48 @@
       ],
       "created_at": "2026-03-06T21:17:21.114636-05:00",
       "updated_at": "2026-03-06T21:17:21.114637-05:00"
+    },
+    {
+      "id": 15,
+      "title": "Steering at L12 changes attention entropy at L12-17",
+      "hypothesis": "Terse steering at L12 (alpha=2.0) produces measurable change in attention entropy (>0.1 bits) at layers 12-17 compared to baseline, confirming that steering vectors propagate through KV cache entries.",
+      "status": "open",
+      "tags": [
+        "kv-cache",
+        "attention",
+        "experiment"
+      ],
+      "created_at": "2026-03-09T00:00:00-05:00",
+      "updated_at": "2026-03-09T00:00:00-05:00"
+    },
+    {
+      "id": 16,
+      "title": "KV cache token eviction at 10x preserves steering effect",
+      "hypothesis": "Removing 90% of KV cache tokens (lowest attention score) after steered generation at L12 preserves >80% of the word count reduction achieved by full-cache steering.",
+      "status": "open",
+      "tags": [
+        "kv-cache",
+        "compaction",
+        "experiment"
+      ],
+      "created_at": "2026-03-09T00:00:00-05:00",
+      "updated_at": "2026-03-09T00:00:00-05:00"
+    },
+    {
+      "id": 17,
+      "title": "Steered KV entries receive higher attention scores than baseline",
+      "hypothesis": "At layers 12-17, KV entries produced from steered hidden states receive higher mean attention weight than corresponding baseline entries, indicating the steering signal is amplified through self-attention.",
+      "status": "open",
+      "tags": [
+        "kv-cache",
+        "attention",
+        "experiment"
+      ],
+      "created_at": "2026-03-09T00:00:00-05:00",
+      "updated_at": "2026-03-09T00:00:00-05:00"
     }
   ],
-  "next_id": 15,
+  "next_id": 18,
   "config": {
     "local": true
   }
