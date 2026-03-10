@@ -209,7 +209,8 @@ def main():
     print(f"Loading {MODEL_ID}...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
     model = AutoModelForCausalLM.from_pretrained(
-        MODEL_ID, dtype=torch.float16, device_map="auto"
+        MODEL_ID, dtype=torch.float16, device_map="auto",
+        attn_implementation="eager",
     )
     model.eval()
 

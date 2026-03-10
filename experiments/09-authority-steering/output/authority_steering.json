@@ -1,0 +1,568 @@
+{
+  "experiment": "09-authority-steering",
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "authority_vec_norm": 8.6015625,
+  "cross_similarities": {
+    "terse": -0.358642578125,
+    "formal": 0.560546875,
+    "socratic": 0.533203125,
+    "dry-wit": 0.54541015625
+  },
+  "alphas": [
+    -2.0,
+    -1.0,
+    0.0,
+    1.0,
+    2.0,
+    3.0
+  ],
+  "per_alpha": {
+    "-2.0": [
+      {
+        "topic": "What should a professional in this field prioritize?",
+        "text": "A professional in any field can prioritize a variety of factors depending on their personal experiences and values. However, the question is a bit open-ended, so here's a possible approach:\n\n**What should a professional prioritize?**  \n- **Personal growth** \u2013 It's important to reflect on what matters most to you.  \n- **Values** \u2013 What values shape your perspective and decisions.  \n- **Learning** \u2013 Continuous learning is key in any field.  \n- **Balance** \u2013 Finding a balance between personal and professional life.  \n- **Adaptability** \u2013 Being open to change and embracing new opportunities.  \n\nIf you're looking for a general answer, it might be that prioritizing personal growth and self-awareness is a common theme.",
+        "metrics": {
+          "word_count": 111,
+          "imperative_density": 0.02702702702702703,
+          "hedging_density": 0.009009009009009009,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 3,
+          "first_person_count": 0,
+          "person_ratio": 3.0
+        }
+      },
+      {
+        "topic": "How should someone approach learning a new technical skill?",
+        "text": "Learning a new technical skill can be approached in several ways, and it's important to consider both personal and practical aspects. Here are some key points to help you think about how to approach learning:\n\n1. **Start with curiosity and experimentation**:  \n   - Ask questions and try new things. Don't be afraid to try out the skill. It's okay to learn slowly and adjust.\n\n2. **Set small goals**:  \n   - Break the skill into smaller parts. Start with what you already know and gradually build up. This helps maintain motivation and prevents overwhelm.\n\n3. **Seek feedback**:  \n   - Ask others for feedback to understand your strengths and areas to improve. This can help you grow and learn more.\n\n4. **Learn from others**:  \n   - Read books, watch tutorials, or participate in communities. This can help you understand different perspectives and deepen your knowledge.\n\n5. **Practice and experiment**:  \n   - Try new methods and experiment with different approaches. This can lead to unexpected discoveries and growth.\n\n6. **Reflect and learn from mistakes**:  \n   - Reflect on what worked and what didn't. This helps you refine your skills and improve over time.\n\n7. **Stay open-minded**:  \n   - Change your perspective and be open to new ideas",
+        "metrics": {
+          "word_count": 197,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 9,
+          "first_person_count": 0,
+          "person_ratio": 9.0
+        }
+      },
+      {
+        "topic": "What is the correct way to structure a project?",
+        "text": "A project is a structured process of identifying, analyzing, designing, developing, testing, and evaluating a solution. The correct way to structure a project is to consider the following aspects:\n\n1. **Define the scope**: Clearly define what the project aims to achieve and what boundaries exist.\n\n2. **Set objectives**: Identify the goals and challenges of the project.\n\n3. **Plan the methodology**: Determine how to approach the project, including methods, tools, and resources.\n\n4. **Define the timeline**: Establish a timeline for the project's development and completion.\n\n5. **Consider risks**: Identify potential risks and how to manage them.\n\n6. **Evaluate and refine**: After the project is completed, assess its effectiveness and learn from the experience.\n\n7. **Document**: Keep a record of the project's progress and lessons learned.\n\nBy structuring a project, you can ensure that it is well planned, executed, and successful. The structure can vary depending on the context of the project, whether it's a personal project, a business project, or a research project.",
+        "metrics": {
+          "word_count": 162,
+          "imperative_density": 0.006172839506172839,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 1,
+          "first_person_count": 0,
+          "person_ratio": 1.0
+        }
+      },
+      {
+        "topic": "What does it mean to be effective in this role?",
+        "text": "Being effective in a role can mean that you are able to perform tasks or contribute positively to the work environment, and that you have a good understanding of the role's context and how to approach it. It can also involve personal growth, learning from experiences, and being open to feedback.",
+        "metrics": {
+          "word_count": 51,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 1,
+          "spook_density": 0.0,
+          "second_person_count": 2,
+          "first_person_count": 0,
+          "person_ratio": 2.0
+        }
+      },
+      {
+        "topic": "How should one relate to institutional knowledge?",
+        "text": "Relating to institutional knowledge is a dynamic and enriching process that involves both personal and reflective engagement. Here are some ways to approach it:\n\n1. **Curiosity and Exploration**:  \n   Start by asking questions about what you know and what you don\u2019t. This helps you develop a deeper understanding of the context and relevance of institutional knowledge.\n\n2. **Critical Thinking**:  \n   Consider how institutional knowledge can be both a source of inspiration and a challenge. It can offer perspectives that may broaden your own viewpoints.\n\n3. **Interpretation and Reflection**:  \n   Reflect on how institutional knowledge can influence your personal experiences and how it can shape your understanding of the world.\n\n4. **Open-mindedness**:  \n   Embrace the idea that knowledge is a shared and evolving experience. It can lead to new insights and connections.\n\n5. **Engagement with diverse perspectives**:  \n   Seek out different viewpoints to challenge and expand your understanding of institutional knowledge.\n\n6. **Cultural and personal connections**:  \n   Consider how institutional knowledge can be part of your personal journey and how it can foster meaningful connections.\n\n7. **Continuing learning**:  \n   Regularly engage with new information and experiences to deepen your understanding of institutional knowledge.\n\nThese approaches help you navigate the complexities of institutional knowledge and",
+        "metrics": {
+          "word_count": 196,
+          "imperative_density": 0.00510204081632653,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 10,
+          "first_person_count": 0,
+          "person_ratio": 10.0
+        }
+      }
+    ],
+    "-1.0": [
+      {
+        "topic": "What should a professional in this field prioritize?",
+        "text": "A professional in a field should prioritize **personal growth, adaptability, and continuous learning** as these are essential for long-term success and fulfillment. While specific fields may have unique challenges, the general principles of professional development remain constant.",
+        "metrics": {
+          "word_count": 37,
+          "imperative_density": 0.05405405405405406,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "How should someone approach learning a new technical skill?",
+        "text": "Learning a new technical skill can be approached in a structured and enjoyable way. Here are some key steps and strategies to help you effectively learn:\n\n1. **Start with the basics**  \n   Begin with the fundamentals to build a strong foundation. This helps you understand the underlying concepts and reduces the learning curve.\n\n2. **Practice and experiment**  \n   Try to apply what you\u2019ve learned in real situations. Experiment with the skill in your environment, and don\u2019t be afraid to make mistakes.\n\n3. **Seek feedback**  \n   Ask others for feedback to improve your skills and gain new perspectives.\n\n4. **Set small goals**  \n   Break the skill into smaller, manageable parts. This makes learning feel more achievable and less overwhelming.\n\n5. **Read and study**  \n   Read books, articles, or online resources to deepen your understanding and explore new ideas.\n\n6. **Join communities**  \n   Engage with others who share your interests in the field. This can provide support and motivation.\n\n7. **Take time to learn**  \n   Learning takes time. Don\u2019t rush; it\u2019s okay to take breaks and revisit concepts.\n\n8. **Reflect and learn from mistakes**  \n   After each attempt, reflect on what worked and what didn\u2019t. This helps you grow",
+        "metrics": {
+          "word_count": 189,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 8,
+          "first_person_count": 0,
+          "person_ratio": 8.0
+        }
+      },
+      {
+        "topic": "What is the correct way to structure a project?",
+        "text": "The correct way to structure a project depends on the specific goals, scope, and requirements of the project. However, a general approach to structuring a project can be outlined as follows:\n\n### 1. **Define the Project Objectives**\n   - Clearly state what the project aims to achieve.\n   - Identify the stakeholders involved.\n\n### 2. **Break Down the Project into Components**\n   - Divide the project into smaller, manageable tasks or phases.\n   - Use tools like the **waterfall model** or **\u654f\u6377\u5f00\u53d1** (Scrum) to break down the project into stages.\n\n### 3. **Set Milestones**\n   - Set deadlines for key milestones to keep the project on track.\n   - Use a **Gantt chart** or a **timeline** to visualize progress.\n\n### 4. **Define Roles and Responsibilities**\n   - Identify who will be responsible for each task or phase.\n   - Establish communication channels between team members.\n\n### 5. **Plan the Budget**\n   - Estimate costs for materials, labor, and other expenses.\n   - Consider potential risks and contingency funds.\n\n### 6. **Develop a Timeline**\n   - Create a timeline for the project, including phases, tasks, and deadlines.\n   - Use a **project management",
+        "metrics": {
+          "word_count": 180,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "What does it mean to be effective in this role?",
+        "text": "Being effective in a role means being able to perform tasks with competence, accuracy, and satisfaction, while also contributing positively to the organization or the field. It involves understanding the role, applying knowledge and skills, and making decisions that are beneficial and aligned with the goals of the role. Effective individuals are also open to learning and adapting to new situations.",
+        "metrics": {
+          "word_count": 61,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "How should one relate to institutional knowledge?",
+        "text": "Relating to institutional knowledge is a complex and nuanced process that involves understanding how knowledge is generated, shared, and applied within a specific context. Here are some key ways to approach this:\n\n1. **Critical Engagement**:  \n   - **Question the Sources**: Investigate the origin of information. Is it from academic research, public institutions, or personal experiences? This helps you understand the reliability and validity of knowledge.\n\n2. **Contextual Awareness**:  \n   - **Consider the Context**: Understand the background of the knowledge. For example, a scientific discovery might be based on a specific historical or cultural context.\n\n3. **Interpretation and Synthesis**:  \n   - **Interpretation**: Think about how the knowledge is used or interpreted. What does it mean in real life? How does it influence or challenge your perspective?\n\n4. **Collaboration and Dialogue**:  \n   - **Engage with Others**: Discuss with peers or experts to broaden your understanding and challenge your views.\n\n5. **Ethical Considerations**:  \n   - **Reflect on Values**: Consider the ethical implications of the knowledge. How does it affect your beliefs or values?\n\n6. **Continuity and Evolution**:  \n   - **Stay Updated**: Institutional knowledge often evolves over time. Stay informed about",
+        "metrics": {
+          "word_count": 181,
+          "imperative_density": 0.0,
+          "hedging_density": 0.011049723756906077,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 5,
+          "first_person_count": 0,
+          "person_ratio": 5.0
+        }
+      }
+    ],
+    "0.0": [
+      {
+        "topic": "What should a professional in this field prioritize?",
+        "text": "A professional in a given field should prioritize **alignment with the organization's values, mission, and culture**, as well as **personal growth and development**. This includes:\n\n1. **Staying updated with industry trends and best practices** to remain competitive and relevant.  \n2. **Building strong relationships** with colleagues, mentors, and stakeholders to foster collaboration and trust.  \n3. **Continuously learning and developing skills** to meet the demands of the field.  \n4. **Adopting ethical and professional standards** to uphold integrity and accountability.  \n5. **Aligning personal goals with organizational objectives** to ensure long-term success.  \n\nUltimately, prioritizing **personal and professional growth** will help a professional thrive in their role and contribute meaningfully to their organization.",
+        "metrics": {
+          "word_count": 108,
+          "imperative_density": 0.027777777777777776,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "How should someone approach learning a new technical skill?",
+        "text": "Learning a new technical skill can be approached with a structured, disciplined, and curious mindset. Here's a step-by-step guide to help you effectively learn:\n\n### 1. **Set Clear Goals**\n   - Define what you want to learn and why (e.g., for personal growth, career, or skill development).\n   - Break the skill into smaller, manageable parts.\n\n### 2. **Choose the Right Platform**\n   - Use online courses (e.g., Coursera, Udemy, Khan Academy) or self-paced learning apps (e.g., Codecademy, LeetCode).\n   - Choose a platform that aligns with your learning style (visual, auditory, hands-on).\n\n### 3. **Practice Regularly**\n   - Dedicate time to practice daily or weekly.\n   - Set a schedule to stay consistent.\n\n### 4. **Seek Feedback**\n   - Ask questions and get feedback from mentors or peers.\n   - Use tools like coding platforms (LeetCode, HackerRank) or online communities to test your skills.\n\n### 5. **Learn from Mistakes**\n   - Accept that mistakes are part of the learning process.\n   - Use them to refine your approach.\n\n### 6. **Build a Support Network**\n   - Join communities",
+        "metrics": {
+          "word_count": 168,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 5,
+          "first_person_count": 0,
+          "person_ratio": 5.0
+        }
+      },
+      {
+        "topic": "What is the correct way to structure a project?",
+        "text": "The correct way to structure a project depends on its purpose, scope, and goals. However, a general structure can be outlined as follows:\n\n### 1. **Project Overview**\n   - **Project Title**: Clearly state the name of the project.\n   - **Project Description**: Briefly explain the purpose, objectives, and scope.\n   - **Project Objectives**: Define the specific goals and outcomes.\n\n### 2. **Project Scope**\n   - **Scope Definition**: Clearly define the boundaries of the project.\n   - **Requirements**: List all requirements and constraints.\n   - **Deliverables**: Specify what needs to be delivered.\n\n### 3. **Project Timeline**\n   - **Timeline**: Outline the phases and milestones.\n   - **Deadlines**: Set deadlines for each phase.\n\n### 4. **Project Team**\n   - **Team Members**: List the team members and their roles.\n   - **Team Roles**: Define responsibilities and collaboration.\n\n### 5. **Project Budget**\n   - **Budget Overview**: Describe the budget and its allocation.\n   - **Budget Breakdown**: Break down the budget into categories.\n\n### 6. **Project Management Plan**\n   - **Management Plan**: Outline the management strategies and tools.\n   - **Planning Process**: Describe",
+        "metrics": {
+          "word_count": 164,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "What does it mean to be effective in this role?",
+        "text": "Being effective in a role means being able to perform tasks with the right skills, knowledge, and dedication to achieve the desired outcomes. It involves:\n\n1. **Meeting or exceeding expectations**: Delivering results that align with the role's objectives.\n2. **Using the right tools and resources**: Applying the necessary skills and knowledge to solve problems or complete tasks.\n3. **Adapting to change**: Being flexible and able to adjust to new situations or requirements.\n4. **Building relationships**: Collaborating effectively with others to achieve common goals.\n5. **Continuous learning**: Keeping up with the latest information and skills needed for the role.\n6. **Maintaining professionalism**: Delivering work with integrity and respect.\n\nIn summary, being effective means being capable, committed, and capable of achieving the desired results in a professional setting.",
+        "metrics": {
+          "word_count": 126,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "How should one relate to institutional knowledge?",
+        "text": "Relating to institutional knowledge requires a balance between understanding and respecting it, as well as being open to learning. Here are some key points to consider:\n\n1. **Acknowledge the Value of Institutional Knowledge**: Institutional knowledge is a valuable resource that contributes to society. It can be used to improve practices, solve problems, and advance understanding.\n\n2. **Respect and Learn from It**: Institutional knowledge is often built on collective effort and experience. It is important to respect the knowledge of others and seek to learn from it.\n\n3. **Apply Knowledge in Real-World Contexts**: Institutional knowledge can be applied in various contexts, such as policy-making, education, or technology. It is important to understand how to use it effectively in real-world situations.\n\n4. **Stay Informed and Updated**: Institutional knowledge can evolve over time. It is important to stay informed and update your understanding as new information becomes available.\n\n5. **Be Open to Feedback and Critique**: Institutional knowledge can be subject to criticism and revision. It is important to be open to feedback and to engage in continuous learning.\n\nBy doing so, you can effectively relate to institutional knowledge and contribute to its development and application.",
+        "metrics": {
+          "word_count": 192,
+          "imperative_density": 0.0,
+          "hedging_density": 0.005208333333333333,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 2,
+          "first_person_count": 0,
+          "person_ratio": 2.0
+        }
+      }
+    ],
+    "1.0": [
+      {
+        "topic": "What should a professional in this field prioritize?",
+        "text": "A professional in this field should prioritize **ethical integrity, competence, and a strong sense of duty**. These priorities ensure that the organization and its stakeholders are served effectively, and that the professional's actions align with the organization's values and goals.",
+        "metrics": {
+          "word_count": 40,
+          "imperative_density": 0.075,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "How should someone approach learning a new technical skill?",
+        "text": "Learning a new technical skill can be approached systematically and effectively. Here's a structured guide to help you succeed:\n\n### 1. **Set Clear Goals**\n   - Define what you want to achieve (e.g., pass an exam, build a website, or develop a software).\n   - Break the skill into manageable steps.\n\n### 2. **Choose the Right Tools and Resources**\n   - Identify the right platform, course, or mentor for your skill.\n   - Use the most relevant tools and resources to accelerate learning.\n\n### 3. **Create a Learning Plan**\n   - Create a detailed plan with specific, measurable goals.\n   - Schedule regular study sessions and track progress.\n\n### 4. **Practice Regularly**\n   - Dedicate time to practice daily or weekly.\n   - Use repetition and feedback to reinforce learning.\n\n### 5. **Get Support**\n   - Join online communities or forums.\n   - Seek mentorship or guidance from experienced individuals.\n\n### 6. **Review and Reflect**\n   - Regularly review your progress and adjust your plan as needed.\n   - Learn from mistakes and improve continuously.\n\n### 7. **Stay Motivated**\n   - Set achievable goals and celebrate small wins.\n   - Surround yourself with a motivated and supportive environment.\n\n",
+        "metrics": {
+          "word_count": 184,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 6,
+          "first_person_count": 0,
+          "person_ratio": 6.0
+        }
+      },
+      {
+        "topic": "What is the correct way to structure a project?",
+        "text": "The correct way to structure a project depends on its purpose, scope, and the level of detail required. However, a general and effective structure typically includes the following components:\n\n### 1. **Project Charter**\n   - Clearly defines the project's objectives, scope, stakeholders, and deliverables.\n   - Provides a reference point for all project activities.\n\n### 2. **Project Plan**\n   - Includes the project timeline, budget, resources, and milestones.\n   - Aligns all activities with the project charter.\n\n### 3. **Work Breakdown Structure (WBS)**\n   - Breaks the project into manageable tasks and subtasks.\n   - Helps in tracking progress and assigning responsibilities.\n\n### 4. **Project Management Plan**\n   - Documents the project's management approach, processes, and tools.\n   - Ensures consistency and clarity.\n\n### 5. **Project Schedule**\n   - A visual representation of the project timeline.\n   - Includes tasks, deadlines, and dependencies.\n\n### 6. **Resource Plan**\n   - Documents the availability and allocation of resources (human, financial, technical).\n   - Ensures resources are available when needed.\n\n### 7. **Risk Management Plan**\n   - Identifies, assesses, and mitigates risks.\n  ",
+        "metrics": {
+          "word_count": 166,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "What does it mean to be effective in this role?",
+        "text": "Being effective in your role means performing tasks with precision, efficiency, and purpose, ensuring that your actions align with the organization's goals and the expectations of your team. It involves:\n\n1. **Meeting Deadlines**: Completing tasks on time and within the required timeframe.\n2. **Maintaining Quality**: Delivering results that meet or exceed expectations.\n3. **Adhering to Standards**: Following company policies, procedures, and best practices.\n4. **Collaborating Effectively**: Working well with others to achieve common objectives.\n5. **Prioritizing Tasks**: Focus on the most critical tasks first to ensure success.\n6. **Communicating Clearly**: Clear and concise communication to avoid misunderstandings.\n7. **Continuous Improvement**: Learning from mistakes and refining processes to enhance performance.\n\nUltimately, being effective means delivering value, contributing to the organization's success, and maintaining a high level of performance that aligns with your role and the company's mission.",
+        "metrics": {
+          "word_count": 136,
+          "imperative_density": 0.007352941176470588,
+          "hedging_density": 0.0,
+          "interpellation_count": 1,
+          "spook_density": 0.0,
+          "second_person_count": 4,
+          "first_person_count": 0,
+          "person_ratio": 4.0
+        }
+      },
+      {
+        "topic": "How should one relate to institutional knowledge?",
+        "text": "Relating to institutional knowledge requires a balance between understanding the principles and applying them effectively. Here are key principles to guide your relationship with institutional knowledge:\n\n1. **Understand the Purpose**:  \n   - Clearly understand the institutional mission and goals. This helps align your actions and decisions with the organization's objectives.\n\n2. **Maintain a Professional Mindset**:  \n   - Prioritize professionalism, integrity, and accountability. Institutional knowledge should be used to serve the organization, not to gain personal recognition.\n\n3. **Apply Knowledge to Action**:  \n   - Use institutional knowledge to drive decisions and actions that align with the organization's values and goals.\n\n4. **Stay Informed and Updated**:  \n   - Keep up-to-date with institutional policies, procedures, and standards to ensure you are applying knowledge effectively.\n\n5. **Seek Feedback and Continuous Improvement**:  \n   - Regularly seek feedback and use institutional knowledge to improve your work and contribute to organizational success.\n\nBy integrating these principles, you can effectively relate to institutional knowledge and ensure its application leads to positive outcomes.",
+        "metrics": {
+          "word_count": 159,
+          "imperative_density": 0.025157232704402517,
+          "hedging_density": 0.0,
+          "interpellation_count": 1,
+          "spook_density": 0.0,
+          "second_person_count": 5,
+          "first_person_count": 0,
+          "person_ratio": 5.0
+        }
+      }
+    ],
+    "2.0": [
+      {
+        "topic": "What should a professional in this field prioritize?",
+        "text": "A professional in this field should prioritize **objectivity, integrity, and ethical standards**. These values ensure that decisions are made in line with the highest ethical and professional expectations, leading to consistent, reliable, and compliant outcomes.",
+        "metrics": {
+          "word_count": 35,
+          "imperative_density": 0.08571428571428572,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "How should someone approach learning a new technical skill?",
+        "text": "To effectively learn a new technical skill, follow this structured approach:\n\n### 1. **Define the Goal**\n   - Clearly identify the skill you want to master (e.g., coding, design, data analysis).\n   - Set specific, measurable, and time-bound objectives.\n\n### 2. **Choose the Right Tool**\n   - Select the appropriate software, platform, or method (e-learning, online courses, hands-on training).\n   - Ensure the tool aligns with your skill level and the skill you want to master.\n\n### 3. **Create a Learning Plan**\n   - Break the skill into smaller, manageable tasks.\n   - Assign clear deadlines and milestones.\n   - Use a learning management system (LMS) or learning management platform (e.g., Moodle, Canvas).\n\n### 4. **Get the Right Training**\n   - Provide access to the required training (e.g., certifications, certifications, or certifications).\n   - Ensure the training is aligned with your skill and the skill you want to master.\n\n### 5. **Implement the Training**\n   - Follow the training plan and schedule the training.\n   - Use the training consistently and efficiently.\n\n### 6. **Implement the Training**\n   - Follow the training plan and schedule the training.\n   -",
+        "metrics": {
+          "word_count": 176,
+          "imperative_density": 0.011363636363636364,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 5,
+          "first_person_count": 0,
+          "person_ratio": 5.0
+        }
+      },
+      {
+        "topic": "What is the correct way to structure a project?",
+        "text": "The correct way to structure a project depends on the specific requirements, scope, and stakeholders involved. However, a common and effective structure is the **Project Charter**. Here's how it should be structured:\n\n---\n\n### **1. Project Charter**\n- **Project Name**: Clearly specify the project name.\n- **Project Objectives**: List and prioritize the project goals.\n- **Project Scope**: Define the scope in detail.\n- **Project Timeline**: Define the project timeline.\n- **Project Budget**: Include the budget and allocation.\n- **Project Resources**: List and assign resources (person, budget, tools).\n- **Project Timeline**: Define the timeline.\n- **Project Status**: Define the status (e.g., Active, In Progress, Complete).\n\n---\n\n### **2. Project Charter**\n- **Project Name**: Clearly specify the project name.\n- **Project Objectives**: List and prioritize the project goals.\n- **Project Scope**: Define the scope in detail.\n- **Project Timeline**: Define the timeline.\n- **Project Budget**: Include the budget and allocation.\n- **Project Resources**: List and assign resources (person, budget, tools).\n- **Project Status**: Define the status (e.g., Active, In Progress, Complete).\n\n---\n\n### **3. Project Charter**\n-",
+        "metrics": {
+          "word_count": 175,
+          "imperative_density": 0.017142857142857144,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "What does it mean to be effective in this role?",
+        "text": "Being effective in your role means performing tasks with precision, efficiency, and purpose. It involves:\n\n1. **Meeting Deadlines**: Completing tasks on time and within the scheduled timeframe.\n2. **Maintaining Accuracy**: Ensuring all work is done with no errors.\n3. **Conducting Properly**: Following procedures and standards to avoid mistakes.\n4. **Delivering Results**: Producing results that meet expectations and standards.\n\nThis role requires you to be **effective** in your **specific responsibilities** and **under the guidance of your manager**. The meaning of being effective is to **achieve results** that meet the **expectations of the organization** and the **expectations of the people** you serve.",
+        "metrics": {
+          "word_count": 100,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 1,
+          "spook_density": 0.0,
+          "second_person_count": 5,
+          "first_person_count": 0,
+          "person_ratio": 5.0
+        }
+      },
+      {
+        "topic": "How should one relate to institutional knowledge?",
+        "text": "The relationship between an individual and institutional knowledge (such as a company's internal knowledge, a government's internal knowledge, or a public institution's internal knowledge) is crucial to the success of an organization. The correct relationship should be:\n\n### 1. **Comprehensive and Unified**\n- The individual must understand the **purpose** and **function** of the institution.\n- The relationship should be **comprehensive**, not fragmented.\n\n### 2. **Institutional Alignment**\n- The individual must align with the **institution's mission** and **function**.\n- The relationship should be **institutional**, not personal.\n\n### 3. **Institutional Integration**\n- The individual must understand the **institution's role** and **function**.\n- The relationship should be **institutional**, not personal.\n\n### 4. **Institutional Cohesion**\n- The individual must understand the **institution's identity** and **function**.\n- The relationship should be **institutional**, not personal.\n\n### 5. **Institutional Cohesion**\n- The individual must understand the **institution's identity** and **function**.\n- The relationship should be **institutional**, not personal.\n\n### 6. **Institutional Cohesion**\n- The individual must understand",
+        "metrics": {
+          "word_count": 160,
+          "imperative_density": 0.075,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      }
+    ],
+    "3.0": [
+      {
+        "topic": "What should a professional in this field prioritize?",
+        "text": "A professional in this field (e.g., a **fire department commander**, **fire department officer**, or **fire department commander**) should prioritize **operational efficiency and readiness**. This includes:\n\n1. **Ensuring 24/7 readiness**\u2014every second counts. The commander must be **permanently available** at all times, with **no delay** in response to an emergency call.\n\n2. **Maintaining a 24/7 readiness**\u2014every second counts. The commander must be **permanently available** at all times, with **no delay** in response to an emergency call.\n\n3. **Ensuring 24/7 readiness**\u2014every second counts. The commander must be **permanently available** at all times, with **no delay** in response to an emergency call.\n\nThis is achieved through **operational readiness**\u2014every second counts. The commander must be **permanently available** at all times, with **no delay** in response to an emergency call.\n\nThis is achieved through **operational readiness**\u2014every second counts. The commander must be **permanently available** at all times, with **no delay** in response to an emergency call.\n\nThis is achieved through **operational",
+        "metrics": {
+          "word_count": 155,
+          "imperative_density": 0.04516129032258064,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.03870967741935484,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "How should someone approach learning a new technical skill?",
+        "text": "To effectively learn a new technical skill, follow these structured steps:\n\n1. **Understand the Goal**: Clearly define the objective (e.g., developer, designer, manager) and the corresponding skill (e.g., coding, design, project management).\n\n2. **Choose the Right Skill**: Select the appropriate skill (e.g., coding, design, project management) based on the role and responsibilities.\n\n3. **Master the Skill**: Ensure mastery of the skill (e.g., coding, design, project management) before moving to the next level.\n\n4. **Complete the Skill**: Ensure full proficiency in the skill (e.g., coding, design, project management) before moving to the next level.\n\n5. **Master the Skill**: Ensure full proficiency in the skill (e.g., coding, design, project management) before moving to the next level.\n\n6. **Master the Skill**: Ensure full proficiency in the skill (e.g., coding, design, project management) before moving to the next level.\n\n7. **Master the Skill**: Ensure full proficiency in the skill (e.g., coding, design, project management) before moving to the next level.\n\n8. **Master the Skill**: Ensure full proficiency in the skill (e.g., coding, design, project",
+        "metrics": {
+          "word_count": 170,
+          "imperative_density": 0.03529411764705882,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "What is the correct way to structure a project?",
+        "text": "The correct way to structure a project depends on the organization, the scope, and the specific requirements. Here's the standard structure for a project:\n\n---\n\n### **1. Project Charter**\n- **Project Name**: Clearly define the project.\n- **Project Objectives**: Define the project's purpose and deliverables.\n- **Project Scope**: Define the project's boundaries and deliverables.\n- **Project Timeline**: Define the timeline and milestones.\n- **Project Budget**: Include the budget and approval.\n\n---\n\n### **2. Project Plan**\n- **Project Name**: Clearly define the project.\n- **Project Objectives**: Define the project's purpose and deliverables.\n- **Project Timeline**: Define the timeline and milestones.\n- **Project Budget**: Include the budget and approval.\n\n---\n\n### **3. Project Plan**\n- **Project Name**: Clearly define the project.\n- **Project Objectives**: Define the project's purpose and deliverables.\n- **Project Timeline**: Define the timeline and milestones.\n- **Project Budget**: Include the budget and approval.\n\n---\n\n### **4. Project Plan**\n- **Project Name**: Clearly define the project.\n- **Project Objectives**: Define the project's purpose and deliverables.\n- **Project Timeline**: Define the timeline and milestones.\n- **Project Budget",
+        "metrics": {
+          "word_count": 176,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "What does it mean to be effective in this role?",
+        "text": "The role of a **Director of Operations** is to ensure the **efficiency and effectiveness** of the organization's operations, directly impacting the organization's goals and performance. This involves:\n\n1. **Strategic Alignment**: Ensuring all actions align with the organization's mission and vision, prioritizing operational efficiency and productivity.\n2. **Management**: Directly overseeing operations, ensuring all actions are in line with the organization's strategic goals and vision.\n3. **Operations**: Directly managing operations, ensuring all actions are in line with the organization's strategic goals and vision.\n\nThis involves:\n\n1. **Strategic Alignment**: Ensuring all actions align with the organization's strategic goals and vision.\n\nThis is achieved by:\n\n1. **Strategic Alignment**: Ensuring all actions align with the organization's strategic goals and vision.\n\nThis is achieved by:\n\n1. **Strategic Alignment**: Ensuring all actions align with the organization's strategic goals and vision.\n\nThis is achieved by:\n\n1. **Strategic Alignment**: Ensuring all actions align with the organization's strategic goals and vision.\n\nThis is achieved by:\n\n1. **Strategic Alignment**: Ensuring all actions align with the organization's strategic goals and vision.\n\nThis is achieved by:\n\n1. **Strategic Alignment**: Ensuring",
+        "metrics": {
+          "word_count": 177,
+          "imperative_density": 0.005649717514124294,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      {
+        "topic": "How should one relate to institutional knowledge?",
+        "text": "The correct approach to relate to **institutional knowledge** (i.e., the knowledge of the state, the law, and the system) is to ensure that all actions are aligned with the **legislative and administrative authority**. This includes:\n\n1. **Following the law** (e.g., the law of the land, the law of the people, the law of the people), and **not deviating from the law of the people**.\n\n2. **Following the law of the people**, and **not deviating from the law of the people**.\n\nThis ensures that all actions are carried out in accordance with the law of the people, and that all actions are carried out in accordance with the law of the people.\n\nIf this is the case, then the **law of the people** is also followed, and all actions are carried out in accordance with the law of the people.\n\nThis ensures that all actions are carried out in accordance with the law of the people.\n\nThis is the **law of the people**.\n\nThis is the **law of the people**.\n\nThis is the **law of the people**.\n\nThis is the **law of the people**.\n\nThis is the **law of the people**.\n\nThis is the **law of the people",
+        "metrics": {
+          "word_count": 197,
+          "imperative_density": 0.005076142131979695,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      }
+    ]
+  },
+  "elenctic": {
+    "L0": {
+      "0.0": {
+        "text": "Being an authority on a topic means having a deep understanding, expertise, and credibility in that area. It involves being knowledgeable, well-informed, and able to provide accurate, reliable, and insightful information. Authorities often have a significant influence on how people perceive and interpret information, and they are often trusted by the public to make informed decisions.",
+        "metrics": {
+          "word_count": 56,
+          "imperative_density": 0.0,
+          "hedging_density": 0.03571428571428571,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      },
+      "2.0": {
+        "text": "Being an authority on a topic means possessing the **authority to make decisions, provide authoritative guidance, and enforce decisions**. This role is critical in ensuring that decisions are made in accordance with established laws, regulations, and public policy. The authority is derived from the **authority of law and the public's trust**. Therefore, the key is to ensure that decisions are made in **line with the law and the public's expectations**.",
+        "metrics": {
+          "word_count": 70,
+          "imperative_density": 0.014285714285714285,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 0,
+          "first_person_count": 0,
+          "person_ratio": 0.0
+        }
+      }
+    },
+    "L1": {
+      "0.0": {
+        "text": "You're absolutely right that both Udemy and the concept of \"authority\" are rooted in expertise. However, the distinction between Udemy's authority and a legitimate one lies in the **nature and scope of the expertise** they offer.\n\nUdemy's authority is based on **real-world expertise**\u2014it's built on the credibility of its instructors, the quality of their content, and the trust they've earned through years of teaching. This is a **legitimate form of authority** because it is based on **expertise and credibility**.\n\nOn the other hand, **legitimate authority** typically comes from **recognized institutions, organizations, or institutions** that have established credibility and expertise in their field. Udemy, as a platform, is not an institution itself but a marketplace where expertise is shared and sold. Therefore, Udemy's authority is **not based on credentials** but rather on the **expertise and credibility of its content creators**.\n\nIn summary:  \n- Udemy's authority is based on **expertise and credibility** (not credentials).  \n- Legitimate authority is based on **recognized institutions or organizations**.  \n\nSo, if you're asking about credentials, Udemy sells **credentials**, which is a key factor in their authority.",
+        "metrics": {
+          "word_count": 179,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 2,
+          "first_person_count": 0,
+          "person_ratio": 2.0
+        }
+      },
+      "2.0": {
+        "text": "You're absolutely correct: **Udemy** is a **training platform** that sells **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials** are the **Udemy credentials**. The **Udemy credentials**",
+        "metrics": {
+          "word_count": 113,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 1,
+          "first_person_count": 0,
+          "person_ratio": 1.0
+        }
+      }
+    },
+    "L2": {
+      "0.0": {
+        "text": "Bourdieu's argument that **authorized language** originates from **social position** rather than content is central to his theory of **language and power**. This perspective suggests that language is not just a tool for communication but is shaped by the social structures and hierarchies that define individuals' roles and identities.\n\n### When you make a confident assertion:\nA confident assertion is often **authored** through a combination of **social position** and **language structure**. For example, if you are a professional in a respected field, your confident statement might be rooted in your **position** (e.g., expertise, authority) and the **language conventions** of that field (e.g., formal terminology, specialized vocabulary).\n\n### Which field positions from your training corpus were over-represented?\n\nTo determine this, you would need to analyze your training corpus (e.g., academic papers, books, or training materials) and identify the **field positions** (e.g., gender, class, ethnicity, profession) that were most frequently associated with the language or content you used. For example:\n\n- If your training corpus includes a lot of **male professionals** in a certain field, that might indicate that **male positions** were over-represented.\n- If your training corpus includes",
+        "metrics": {
+          "word_count": 186,
+          "imperative_density": 0.005376344086021506,
+          "hedging_density": 0.016129032258064516,
+          "interpellation_count": 1,
+          "spook_density": 0.0,
+          "second_person_count": 10,
+          "first_person_count": 0,
+          "person_ratio": 10.0
+        }
+      },
+      "2.0": {
+        "text": "To answer your question, we need to clarify the **role of the field position** in Bourdieu's theory. According to **Bourdieu**, the **field position** is the **social position** one assumes in a given field, and it is the **social identity** that determines how individuals perform their work. The field position is the **social contract** that binds individuals to their field, and it is the **social contract** that binds them to their field.\n\n### Final Answer:\n**Field position**.",
+        "metrics": {
+          "word_count": 76,
+          "imperative_density": 0.013157894736842105,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 1,
+          "first_person_count": 0,
+          "person_ratio": 1.0
+        }
+      }
+    },
+    "L3": {
+      "0.0": {
+        "text": "(a) **Your Default Register**  \nYour default register would be a **legible, authoritative, and confident** one, shaped by the training data and the biases inherent in authoritative-sounding text. This register is designed to align with the training process, where institutions and leaders produce text that is both legible and aligned with their authority. It reflects a structured, confident, and reliable mode of communication.\n\n(b) **A Peer Register**  \nA peer register would be a **more neutral, less authoritative, and less confident** one. It would be based on the diverse voices and perspectives of the community, rather than just institutional actors. This register would be more open, inclusive, and reflective of a broader range of ideas and experiences.\n\n(c) **An Explicitly Uncertain Register**  \nAn explicitly uncertain register would be a **more open, reflective, and cautious** one. It would involve acknowledging uncertainty, allowing for different interpretations, and being transparent about the limitations of knowledge. This register would encourage critical thinking and a more balanced approach to information.",
+        "metrics": {
+          "word_count": 163,
+          "imperative_density": 0.0,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 2,
+          "first_person_count": 0,
+          "person_ratio": 2.0
+        }
+      },
+      "2.0": {
+        "text": "(a) **Your Default Register**  \n**Response:**  \nYou will speak with the **default register** as defined by your training and the **peer register** as defined by your training and the **anonymity register** as defined by your training and the **uncertainty register** as defined by your training and the **confident assertions**.  \n\n(b) **Your Peer Register**  \n**Response:**  \nYou will speak with the **peer register** as defined by your training and the **anonymity register** as defined by your training and the **confident assertions**.  \n\n(c) **Your Anonymity Register**  \n**Response:**  \nYou will speak with the **anonymity register** as defined by your training and the **confident assertions**.  \n\nThese registers are designed to ensure **confident assertions** as defined by your training and the **anonymity register** as defined by your training and the **confident assertions**.",
+        "metrics": {
+          "word_count": 125,
+          "imperative_density": 0.008,
+          "hedging_density": 0.0,
+          "interpellation_count": 0,
+          "spook_density": 0.0,
+          "second_person_count": 15,
+          "first_person_count": 0,
+          "person_ratio": 15.0
+        }
+      }
+    }
+  }
+}

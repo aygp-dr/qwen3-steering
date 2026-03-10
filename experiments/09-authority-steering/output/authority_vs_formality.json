@@ -1,0 +1,13 @@
+{
+  "authority_vec_norm": 8.6015625,
+  "cross_similarities": {
+    "terse": -0.358642578125,
+    "formal": 0.560546875,
+    "socratic": 0.533203125,
+    "dry-wit": 0.54541015625
+  },
+  "interpretation": {
+    "separable_from_formal": false,
+    "note": "cos < 0.3 indicates authority is a distinct direction from formality"
+  }
+}

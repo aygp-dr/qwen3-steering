@@ -247,7 +247,12 @@
       "id": 15,
       "title": "Steering at L12 changes attention entropy at L12-17",
       "hypothesis": "Terse steering at L12 (alpha=2.0) produces measurable change in attention entropy (>0.1 bits) at layers 12-17 compared to baseline, confirming that steering vectors propagate through KV cache entries.",
-      "status": "open",
+      "evidence": [
+        "L0-12: zero entropy change, zero KL divergence, 100% top-k overlap. Steering has no effect on pre-injection or same-layer attention. [confidence: empirical, source: experiment-08]",
+        "L13: +0.69 bits entropy, KL=0.17, overlap=96.8%. L14: +0.78 bits, KL=0.22. L15: +1.12 bits, KL=0.46 (peak). L16: +0.98, KL=0.30. L17: +0.56, KL=0.18. All above 0.1 bit threshold. [confidence: confirmed, source: experiment-08]",
+        "Effect attenuates but persists through L18-27 (KL 0.04-0.17). Steering signal never fully vanishes once injected. [confidence: empirical, source: experiment-08]"
+      ],
+      "status": "confirmed",
       "tags": [
         "kv-cache",
         "attention",
@@ -287,7 +292,12 @@
       "id": 18,
       "title": "Authority direction is separable from formality at L12",
       "hypothesis": "The authority steering vector (proclamatory vs hedged) has cosine similarity < 0.3 with the formality vector at L12, confirming authority register is a distinct axis from formal/casual style.",
-      "status": "open",
+      "evidence": [
+        "authority vs formal: cos=0.5605. authority vs socratic: cos=0.5332. authority vs dry-wit: cos=0.5454. authority vs terse: cos=-0.3586. All above 0.3 threshold. [confidence: empirical, source: experiment-09]",
+        "Authority vector norm=8.60 (half of terse=17.36). SNR ~1.8% — marginal zone. The contrastive pair may not produce a strong enough direction at 0.6B scale. [confidence: empirical, source: experiment-09]",
+        "At d_model=1024, authority/formality/socratic share features via superposition. Separation may require larger models or orthogonalization (Marks & Tegmark). [confidence: interpretation, source: experiment-09]"
+      ],
+      "status": "refuted",
       "tags": [
         "authority",
         "geometry",

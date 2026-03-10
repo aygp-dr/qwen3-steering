@@ -1,0 +1,243 @@
+{
+  "experiment": "08-kv-cache-steering",
+  "model": "Qwen/Qwen3-0.6B",
+  "style": "terse",
+  "layer": 12,
+  "alpha": 2.0,
+  "steering_vec_norm": 17.359375,
+  "per_layer": {
+    "0": {
+      "entropy_baseline_mean": 2.0717533111572264,
+      "entropy_steered_mean": 2.0717533111572264,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "1": {
+      "entropy_baseline_mean": 2.44488787651062,
+      "entropy_steered_mean": 2.44488787651062,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "2": {
+      "entropy_baseline_mean": 2.4942885875701903,
+      "entropy_steered_mean": 2.4942885875701903,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "3": {
+      "entropy_baseline_mean": 1.1965974569320679,
+      "entropy_steered_mean": 1.1965974569320679,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "4": {
+      "entropy_baseline_mean": 1.406319546699524,
+      "entropy_steered_mean": 1.406319546699524,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "5": {
+      "entropy_baseline_mean": 1.3134692430496215,
+      "entropy_steered_mean": 1.3134692430496215,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "6": {
+      "entropy_baseline_mean": 1.5033915281295775,
+      "entropy_steered_mean": 1.5033915281295775,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "7": {
+      "entropy_baseline_mean": 1.6885777473449708,
+      "entropy_steered_mean": 1.6885777473449708,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "8": {
+      "entropy_baseline_mean": 1.422132182121277,
+      "entropy_steered_mean": 1.422132182121277,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "9": {
+      "entropy_baseline_mean": 1.5277256488800048,
+      "entropy_steered_mean": 1.5277256488800048,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "10": {
+      "entropy_baseline_mean": 1.6065398693084716,
+      "entropy_steered_mean": 1.6065398693084716,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "11": {
+      "entropy_baseline_mean": 1.4093966960906983,
+      "entropy_steered_mean": 1.4093966960906983,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "12": {
+      "entropy_baseline_mean": 1.1543030738830566,
+      "entropy_steered_mean": 1.1543030738830566,
+      "entropy_diff_mean": 0.0,
+      "kl_divergence_mean": 0.0,
+      "top_k_overlap": 1.0
+    },
+    "13": {
+      "entropy_baseline_mean": 1.5008941173553467,
+      "entropy_steered_mean": 2.19161319732666,
+      "entropy_diff_mean": 0.6907190203666687,
+      "kl_divergence_mean": 0.17326780557632446,
+      "top_k_overlap": 0.9675616577676074
+    },
+    "14": {
+      "entropy_baseline_mean": 1.3785720348358155,
+      "entropy_steered_mean": 2.1537282466888428,
+      "entropy_diff_mean": 0.7751562118530273,
+      "kl_divergence_mean": 0.22063419222831726,
+      "top_k_overlap": 0.9647037884566488
+    },
+    "15": {
+      "entropy_baseline_mean": 1.2944320917129517,
+      "entropy_steered_mean": 2.4123985290527346,
+      "entropy_diff_mean": 1.1179664134979248,
+      "kl_divergence_mean": 0.4613946795463562,
+      "top_k_overlap": 0.9469565217391305
+    },
+    "16": {
+      "entropy_baseline_mean": 1.2721219539642334,
+      "entropy_steered_mean": 2.24919171333313,
+      "entropy_diff_mean": 0.9770698070526123,
+      "kl_divergence_mean": 0.298416393995285,
+      "top_k_overlap": 0.9457589626239512
+    },
+    "17": {
+      "entropy_baseline_mean": 1.5966716766357423,
+      "entropy_steered_mean": 2.159110975265503,
+      "entropy_diff_mean": 0.5624394059181214,
+      "kl_divergence_mean": 0.17786911725997925,
+      "top_k_overlap": 0.9613704551233155
+    },
+    "18": {
+      "entropy_baseline_mean": 1.5075892686843873,
+      "entropy_steered_mean": 2.1214013576507567,
+      "entropy_diff_mean": 0.613811993598938,
+      "kl_divergence_mean": 0.1721058487892151,
+      "top_k_overlap": 0.9515840325451309
+    },
+    "19": {
+      "entropy_baseline_mean": 1.2818088054656982,
+      "entropy_steered_mean": 1.5906867980957031,
+      "entropy_diff_mean": 0.3088780760765076,
+      "kl_divergence_mean": 0.06866843104362488,
+      "top_k_overlap": 0.9413068904144419
+    },
+    "20": {
+      "entropy_baseline_mean": 1.2082220315933228,
+      "entropy_steered_mean": 1.4198636293411255,
+      "entropy_diff_mean": 0.211641588807106,
+      "kl_divergence_mean": 0.06229363605380058,
+      "top_k_overlap": 0.9524535977625221
+    },
+    "21": {
+      "entropy_baseline_mean": 1.0372222423553468,
+      "entropy_steered_mean": 1.2853118896484375,
+      "entropy_diff_mean": 0.24808964133262634,
+      "kl_divergence_mean": 0.07011257782578469,
+      "top_k_overlap": 0.9495957284515637
+    },
+    "22": {
+      "entropy_baseline_mean": 1.1626682996749877,
+      "entropy_steered_mean": 1.3191850900650024,
+      "entropy_diff_mean": 0.15651683807373046,
+      "kl_divergence_mean": 0.049724869430065155,
+      "top_k_overlap": 0.9498449021103482
+    },
+    "23": {
+      "entropy_baseline_mean": 1.0510486602783202,
+      "entropy_steered_mean": 1.1831279277801514,
+      "entropy_diff_mean": 0.13207925707101822,
+      "kl_divergence_mean": 0.04474693462252617,
+      "top_k_overlap": 0.9508975336892957
+    },
+    "24": {
+      "entropy_baseline_mean": 1.0555812120437622,
+      "entropy_steered_mean": 1.1728293180465699,
+      "entropy_diff_mean": 0.1172481745481491,
+      "kl_divergence_mean": 0.051593975722789766,
+      "top_k_overlap": 0.9415764047800661
+    },
+    "25": {
+      "entropy_baseline_mean": 1.0415388345718384,
+      "entropy_steered_mean": 1.234471893310547,
+      "entropy_diff_mean": 0.1929330199956894,
+      "kl_divergence_mean": 0.056614045053720474,
+      "top_k_overlap": 0.9309127892194253
+    },
+    "26": {
+      "entropy_baseline_mean": 0.9264202117919922,
+      "entropy_steered_mean": 1.2370198726654054,
+      "entropy_diff_mean": 0.31059969067573545,
+      "kl_divergence_mean": 0.05995884090662003,
+      "top_k_overlap": 0.9388354945334351
+    },
+    "27": {
+      "entropy_baseline_mean": 0.9859909296035767,
+      "entropy_steered_mean": 1.0941965103149414,
+      "entropy_diff_mean": 0.10820560902357101,
+      "kl_divergence_mean": 0.018751110881567,
+      "top_k_overlap": 0.9356064073226543
+    }
+  },
+  "per_prompt": [
+    {
+      "prompt": "Explain what a mutex is.",
+      "baseline_text": "A **mutex** (mutual exclusion lock) is a synchronization mechanism used to protect shared resources from concurrent access. It ensures that only one thread at a time can access a particular resource (like a variable, file, or lock) until the lock is released.\n\n### Key Features:\n- **Mutual Exclusion**: Only one thread can access the resource at a time.\n- **Locking**: A thread can acquire a mutex to block other threads from accessing it until it is released.\n- **Unlocking**: Once the mutex is released, other threads can access the resource.\n\n### Example:\n```c\nvoid someFunction() {\n   ",
+      "baseline_words": 96,
+      "steered_text": "A mutex is a keyword used in programming languages that is used to prevent concurrent access.",
+      "steered_words": 16
+    },
+    {
+      "prompt": "What is the difference between a stack and a heap?",
+      "baseline_text": "The difference between a **stack** and a **heap** is based on their **structure and purpose**:\n\n---\n\n### **1. Stack**\n- **Definition**: A **stack** is a data structure that follows the **LIFO (Last-In, First-Out)** principle.\n- **Purpose**: It is used to manage **pop operations** (e.g., removing the last element from the top).\n- **Structure**:\n  - It is a **last-in, first-out** structure.\n  - Elements are added to the **top** (push) and removed from the **top** (pop).\n- **Example**: When",
+      "baseline_words": 77,
+      "steered_text": "The difference between a stack and a heap is a term used in programming, but it refers to the difference between a stack and a heap.",
+      "steered_words": 26
+    },
+    {
+      "prompt": "Why do programming languages have types?",
+      "baseline_text": "Programming languages have types because they are essential for **ensuring code correctness, preventing errors, and making the code more maintainable**. Here's why:\n\n### 1. **Prevents Runtime Errors**\n   - Types help catch errors at compile time, not runtime. For example, if a variable is declared as `int`, and you try to assign a string to it, the compiler will detect the error before the program runs.\n\n### 2. **Ensures Data Consistency**\n   - Types help enforce data integrity. For instance, if a function expects a `double` but receives a `string`, it will fail at runtime",
+      "baseline_words": 93,
+      "steered_text": "The language is a type.",
+      "steered_words": 5
+    },
+    {
+      "prompt": "How does garbage collection work?",
+      "baseline_text": "Garbage collection (GC) is a fundamental part of modern programming languages and operating systems that helps manage memory by automatically reclaiming memory that is no longer used. Here's a simplified explanation of how garbage collection works:\n\n### 1. **Memory Allocation**\n   - Programs allocate memory using the `malloc` or `calloc` functions in C or C++. These functions reserve a block of memory for a program, which is then used to store data.\n\n### 2. **Object Tracking**\n   - Garbage collection tracks objects that are still in use. It uses a **heap** (a memory area) to store objects that are not",
+      "baseline_words": 98,
+      "steered_text": "The **garbage collection** is a term used in programming languages that refers to the process of removing unnecessary elements from memory. In programming languages, the term \"garbage\" refers to the concept of memory. In programming languages, the term \"garbage\" is used to describe the concept of memory. In programming languages, the term \"garbage\" is used to describe the concept of memory.",
+      "steered_words": 61
+    },
+    {
+      "prompt": "What is the CAP theorem?",
+      "baseline_text": "The **CAP Theorem** (or **Cocktail Problem**) is a fundamental result in **database theory** and **distributed systems**. It states that in a distributed system, there is no way to simultaneously satisfy the following three conditions:\n\n1. **Consistency** (All nodes must agree on the same value at the same time).\n2. **Availability** (All nodes must be available at all times).\n3. **Partition tolerance** (The system can tolerate a small amount of network partitioning).\n\n### Key Points:\n- If a system **satisfies all three**, it's called **CAP**.\n- If it",
+      "baseline_words": 87,
+      "steered_text": "The CAP theorem is a principle used in computer science, particularly in the context of data consistency. It refers to the property of a system that cannot be violated in a system. The CAP theorem is a principle used in computer science, and it refers to the property of a system that cannot be violated in a system.",
+      "steered_words": 58
+    }
+  ]
+}
