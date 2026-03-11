@@ -1,0 +1,1 @@
+p5.js superposition visualization at alpha=4.0 (coherence collapse). The helical strands are wildly displaced, crossing and tangling far more than at effective alpha values. The perturbation overwhelms the residual stream, producing garbage tokens. Phase label reads "COHERENCE COLLAPSE" in red.

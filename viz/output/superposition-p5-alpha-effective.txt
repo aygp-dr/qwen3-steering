@@ -1,0 +1,1 @@
+p5.js superposition visualization at alpha=2.0 (effective steering). The helical strands show moderate displacement from their natural orbits, with visible white interference glows at crossing points. The perturbation is ~8% of residual stream norm — enough to steer without destroying coherence. Phase label reads "EFFECTIVE STEERING."

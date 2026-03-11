@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superposition Entanglement — d3.js 2D</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #c9d1d9; --muted: #8b949e; --blue: #58a6ff; --orange: #f0883e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+  header { padding: 1.2rem 1.5rem 0.6rem; }
+  header h1 { font-size: 1.3rem; font-weight: 600; }
+  header p { color: var(--muted); font-size: 0.82rem; margin-top: 0.2rem; max-width: 700px; }
+  .viz-wrap { display: flex; justify-content: center; gap: 1.2rem; padding: 0.8rem 1rem; flex-wrap: wrap; }
+  svg { border-radius: 6px; border: 1px solid var(--border); background: var(--panel); }
+  .controls {
+    max-width: 720px; margin: 0 auto; padding: 0.6rem 1.5rem 1.2rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem;
+  }
+  .ctrl { display: flex; flex-direction: column; gap: 0.2rem; }
+  .ctrl label { font-size: 0.78rem; color: var(--muted); }
+  .ctrl .row { display: flex; align-items: center; gap: 0.5rem; }
+  .ctrl input[type="range"] { flex: 1; }
+  .ctrl .val { font-family: monospace; color: var(--blue); min-width: 3.5em; font-size: 0.85rem; }
+  .phase-label {
+    text-align: center; font-size: 0.9rem; font-weight: 600; padding: 0.3rem;
+    border-radius: 4px; margin: 0 auto; max-width: 400px;
+  }
+  .legend { display: flex; justify-content: center; gap: 1.5rem; padding: 0.5rem; font-size: 0.8rem; }
+  .legend span { display: flex; align-items: center; gap: 0.3rem; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  footer { text-align: center; padding: 1rem; color: var(--muted); font-size: 0.75rem; }
+  footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Superposition Entanglement — 2D Cross-Section</h1>
+  <p>Top-down view of the d_model-dimensional cylinder. Two feature directions (terse=blue,
+     worldview=amber) trace helical paths. The left panel shows the time-evolving cross-section;
+     the right panel shows the cumulative interference pattern as a density field.</p>
+</header>
+
+<div class="legend">
+  <span><span class="dot" style="background:#58a6ff"></span> Terse feature</span>
+  <span><span class="dot" style="background:#f0883e"></span> Worldview feature</span>
+  <span><span class="dot" style="background:#fff"></span> Interference (overlap)</span>
+</div>
+
+<div class="viz-wrap">
+  <svg id="helix-cross" width="360" height="360"></svg>
+  <svg id="density-field" width="360" height="360"></svg>
+</div>
+
+<div id="phase" class="phase-label"></div>
+
+<div class="controls">
+  <div class="ctrl">
+    <label>Steering strength (alpha)</label>
+    <div class="row">
+      <input type="range" id="c-alpha" min="0" max="5" step="0.1" value="2.0">
+      <span class="val" id="v-alpha">2.0</span>
+    </div>
+  </div>
+  <div class="ctrl">
+    <label>Model width (d_model)</label>
+    <div class="row">
+      <input type="range" id="c-dmodel" min="128" max="2048" step="128" value="1024">
+      <span class="val" id="v-dmodel">1024</span>
+    </div>
+  </div>
+  <div class="ctrl">
+    <label>Feature interference</label>
+    <div class="row">
+      <input type="range" id="c-interf" min="0" max="1" step="0.05" value="0.30">
+      <span class="val" id="v-interf">0.30</span>
+    </div>
+  </div>
+  <div class="ctrl">
+    <label>Animation speed</label>
+    <div class="row">
+      <input type="range" id="c-speed" min="0" max="3" step="0.1" value="1.0">
+      <span class="val" id="v-speed">1.0</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  04-superposition-entanglement — <a href="superposition-p5.html">p5.js 3D version</a> |
+  <a href="../gallery.html">back to gallery</a>
+</footer>
+
+<script>
+const W = 360, H = 360, cx = W/2, cy = H/2;
+let alpha = 2.0, dmodel = 1024, interf = 0.3, speed = 1.0, t = 0;
+
+// Wire controls
+function wire(sid, vid, fn) {
+  const s = document.getElementById(sid), v = document.getElementById(vid);
+  s.addEventListener("input", () => { fn(+s.value); v.textContent = sid === "c-interf" ? (+s.value).toFixed(2) : sid === "c-speed" ? (+s.value).toFixed(1) : s.value; updatePhase(); });
+}
+wire("c-alpha", "v-alpha", v => alpha = v);
+wire("c-dmodel", "v-dmodel", v => dmodel = v);
+wire("c-interf", "v-interf", v => interf = v);
+wire("c-speed", "v-speed", v => speed = v);
+
+function updatePhase() {
+  const el = document.getElementById("phase");
+  if (alpha < 0.5) { el.textContent = "DEAD ZONE — no visible effect"; el.style.color = "#8b949e"; }
+  else if (alpha <= 2.5) { el.textContent = `EFFECTIVE STEERING (\u03b1=${alpha.toFixed(1)})  |  d_model=${dmodel}`; el.style.color = "#58a6ff"; }
+  else { el.textContent = "COHERENCE COLLAPSE"; el.style.color = "#f85149"; }
+}
+updatePhase();
+
+// ── Left panel: animated cross-section ──────────────────────────────────
+const svg1 = d3.select("#helix-cross");
+const g1 = svg1.append("g").attr("transform", `translate(${cx},${cy})`);
+
+// Cylinder boundary
+const cylCircle = g1.append("circle").attr("fill", "none").attr("stroke", "#30363d").attr("stroke-width", 1);
+// Trail groups
+const trailTerse = g1.append("g");
+const trailWorld = g1.append("g");
+// Interference spots
+const interfGroup = g1.append("g");
+// Feature dots
+const dotTerse = g1.append("circle").attr("r", 6).attr("fill", "#58a6ff");
+const dotWorld = g1.append("circle").attr("r", 6).attr("fill", "#f0883e");
+// Labels
+g1.append("text").attr("y", -155).attr("text-anchor", "middle")
+  .attr("fill", "#c9d1d9").attr("font-size", 11).text("Cross-Section (top-down)");
+
+const trailLen = 80;
+let terseTrail = [], worldTrail = [], interfPts = [];
+
+// ── Right panel: density accumulator ────────────────────────────────────
+const svg2 = d3.select("#density-field");
+const g2 = svg2.append("g").attr("transform", `translate(${cx},${cy})`);
+const densityCyl = g2.append("circle").attr("fill", "none").attr("stroke", "#30363d").attr("stroke-width", 1);
+g2.append("text").attr("y", -155).attr("text-anchor", "middle")
+  .attr("fill", "#c9d1d9").attr("font-size", 11).text("Interference Density");
+
+const gridRes = 8;
+let densityGrid = {};
+
+function densityKey(x, y) {
+  const gx = Math.round(x / gridRes) * gridRes;
+  const gy = Math.round(y / gridRes) * gridRes;
+  return `${gx},${gy}`;
+}
+
+function tick() {
+  t += 0.02 * speed;
+  const cylR = 30 + 110 * (Math.sqrt(dmodel) - Math.sqrt(128)) / (Math.sqrt(2048) - Math.sqrt(128));
+  const helixR = cylR * 0.6;
+  const perturb = alpha / 5 * helixR * 0.5;
+
+  cylCircle.attr("r", cylR);
+  densityCyl.attr("r", cylR);
+
+  // Feature positions (projected helix cross-section)
+  const aT = t * 2;
+  const aW = t * 2 + Math.PI;
+  const rT = helixR + perturb * Math.sin(aT * 1.5 + t);
+  const rW = helixR + perturb * Math.sin(aW * 1.5 + t);
+  const tx = rT * Math.cos(aT), ty = rT * Math.sin(aT);
+  const wx = rW * Math.cos(aW), wy = rW * Math.sin(aW);
+
+  dotTerse.attr("cx", tx).attr("cy", ty);
+  dotWorld.attr("cx", wx).attr("cy", wy);
+
+  // Trails
+  terseTrail.push({x: tx, y: ty, t: t});
+  worldTrail.push({x: wx, y: wy, t: t});
+  if (terseTrail.length > trailLen) terseTrail.shift();
+  if (worldTrail.length > trailLen) worldTrail.shift();
+
+  trailTerse.selectAll("circle").data(terseTrail, (d, i) => i)
+    .join("circle")
+    .attr("cx", d => d.x).attr("cy", d => d.y)
+    .attr("r", 2)
+    .attr("fill", "#58a6ff")
+    .attr("opacity", (d, i) => 0.05 + 0.3 * i / trailLen);
+
+  trailWorld.selectAll("circle").data(worldTrail, (d, i) => i)
+    .join("circle")
+    .attr("cx", d => d.x).attr("cy", d => d.y)
+    .attr("r", 2)
+    .attr("fill", "#f0883e")
+    .attr("opacity", (d, i) => 0.05 + 0.3 * i / trailLen);
+
+  // Interference: where features are close
+  const dist = Math.sqrt((tx - wx) ** 2 + (ty - wy) ** 2);
+  const maxDist = cylR * 1.2;
+  const proximity = Math.max(0, 1 - dist / maxDist);
+  const interfStrength = proximity * interf;
+
+  if (interfStrength > 0.1) {
+    const ix = (tx + wx) / 2, iy = (ty + wy) / 2;
+    interfPts.push({x: ix, y: iy, s: interfStrength, t: t});
+
+    // Accumulate density
+    const key = densityKey(ix, iy);
+    densityGrid[key] = (densityGrid[key] || 0) + interfStrength * 0.1;
+  }
+  if (interfPts.length > 40) interfPts.shift();
+
+  interfGroup.selectAll("circle").data(interfPts, (d, i) => i)
+    .join("circle")
+    .attr("cx", d => d.x).attr("cy", d => d.y)
+    .attr("r", d => 3 + d.s * 8)
+    .attr("fill", "#ffffff")
+    .attr("opacity", (d, i) => d.s * 0.4 * (i / interfPts.length));
+
+  // Render density field (right panel)
+  const densityData = Object.entries(densityGrid).map(([k, v]) => {
+    const [gx, gy] = k.split(",").map(Number);
+    return {x: gx, y: gy, v: Math.min(v, 3)};
+  });
+
+  g2.selectAll("rect.density").data(densityData, d => `${d.x},${d.y}`)
+    .join("rect")
+    .attr("class", "density")
+    .attr("x", d => d.x - gridRes/2).attr("y", d => d.y - gridRes/2)
+    .attr("width", gridRes).attr("height", gridRes)
+    .attr("rx", 2)
+    .attr("fill", d => {
+      const f = d.v / 3;
+      const r = Math.round(88 + (255 - 88) * f);
+      const g = Math.round(166 + (255 - 166) * f);
+      const b = 255;
+      return `rgb(${r},${g},${b})`;
+    })
+    .attr("opacity", d => 0.1 + 0.6 * (d.v / 3));
+
+  requestAnimationFrame(tick);
+}
+
+tick();
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superposition Entanglement — p5.js 3D</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #c9d1d9; --muted: #8b949e; --blue: #58a6ff; --orange: #f0883e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+  header { padding: 1.2rem 1.5rem 0.6rem; }
+  header h1 { font-size: 1.3rem; font-weight: 600; }
+  header p { color: var(--muted); font-size: 0.82rem; margin-top: 0.2rem; max-width: 700px; }
+  #canvas-wrap { display: flex; justify-content: center; padding: 0.8rem; }
+  #canvas-wrap canvas { border-radius: 6px; border: 1px solid var(--border); }
+  .controls {
+    max-width: 720px; margin: 0 auto; padding: 0.6rem 1.5rem 1.2rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem;
+  }
+  .ctrl { display: flex; flex-direction: column; gap: 0.2rem; }
+  .ctrl label { font-size: 0.78rem; color: var(--muted); }
+  .ctrl .row { display: flex; align-items: center; gap: 0.5rem; }
+  .ctrl input[type="range"] { flex: 1; }
+  .ctrl .val { font-family: monospace; color: var(--blue); min-width: 3.5em; font-size: 0.85rem; }
+  .phase-label {
+    text-align: center; font-size: 0.9rem; font-weight: 600; padding: 0.3rem;
+    border-radius: 4px; margin: 0 auto; max-width: 300px;
+  }
+  footer { text-align: center; padding: 1rem; color: var(--muted); font-size: 0.75rem; }
+  footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Superposition Entanglement at d_model=1024</h1>
+  <p>Two feature strands (terse=blue, worldview=amber) intertwined in a constrained
+     dimensional cylinder. White interference where they overlap — pushing one feature
+     drags the other. Wider cylinder = more dimensions = less entanglement.</p>
+</header>
+
+<div id="canvas-wrap"></div>
+<div id="phase" class="phase-label"></div>
+
+<div class="controls">
+  <div class="ctrl">
+    <label>Steering strength (alpha)</label>
+    <div class="row">
+      <input type="range" id="c-alpha" min="0" max="5" step="0.1" value="2.0">
+      <span class="val" id="v-alpha">2.0</span>
+    </div>
+  </div>
+  <div class="ctrl">
+    <label>Model width (d_model)</label>
+    <div class="row">
+      <input type="range" id="c-dmodel" min="128" max="2048" step="128" value="1024">
+      <span class="val" id="v-dmodel">1024</span>
+    </div>
+  </div>
+  <div class="ctrl">
+    <label>Feature interference</label>
+    <div class="row">
+      <input type="range" id="c-interf" min="0" max="1" step="0.05" value="0.30">
+      <span class="val" id="v-interf">0.30</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  04-superposition-entanglement — <a href="../gallery.html">back to gallery</a> |
+  <a href="superposition-d3.html">d3.js 2D version</a>
+</footer>
+
+<script>
+let alpha = 2.0, dmodel = 1024, interf = 0.3;
+let rotX = -0.3, rotY = 0, dragging = false, pmx, pmy, t = 0;
+const W = 720, H = 520;
+
+function wire(sid, vid, fn) {
+  const s = document.getElementById(sid), v = document.getElementById(vid);
+  s.addEventListener("input", () => { fn(+s.value); v.textContent = sid === "c-interf" ? (+s.value).toFixed(2) : s.value; updatePhase(); });
+}
+wire("c-alpha", "v-alpha", v => alpha = v);
+wire("c-dmodel", "v-dmodel", v => dmodel = v);
+wire("c-interf", "v-interf", v => interf = v);
+
+function updatePhase() {
+  const el = document.getElementById("phase");
+  if (alpha < 0.5) { el.textContent = "DEAD ZONE — greedy decoding unchanged"; el.style.color = "#8b949e"; }
+  else if (alpha <= 2.5) { el.textContent = "EFFECTIVE STEERING"; el.style.color = "#58a6ff"; }
+  else { el.textContent = "COHERENCE COLLAPSE"; el.style.color = "#f85149"; }
+}
+updatePhase();
+
+const sketch = (p) => {
+  p.setup = () => { p.createCanvas(W, H, p.WEBGL).parent("canvas-wrap"); };
+
+  p.draw = () => {
+    p.background(13, 17, 23);
+    t += 0.008;
+    p.rotateX(rotX);
+    p.rotateY(rotY + t * 0.15);
+
+    const cylR = p.map(Math.sqrt(dmodel), Math.sqrt(128), Math.sqrt(2048), 40, 140);
+    const cylH = 300;
+
+    // Cylinder wireframe
+    p.noFill(); p.stroke(48, 54, 61, 120); p.strokeWeight(0.5);
+    for (let i = 0; i <= 8; i++) {
+      const y = p.map(i, 0, 8, -cylH/2, cylH/2);
+      p.push(); p.translate(0, y, 0); p.rotateX(p.HALF_PI); p.circle(0, 0, cylR * 2); p.pop();
+    }
+    for (let a = 0; a < p.TWO_PI; a += p.PI/4) {
+      const x = cylR * Math.cos(a), z = cylR * Math.sin(a);
+      p.line(x, -cylH/2, z, x, cylH/2, z);
+    }
+
+    const helixR = cylR * 0.55, turns = 4, steps = 200;
+    const perturb = p.map(alpha, 0, 5, 0, helixR * 0.6);
+
+    const drawHelix = (r, g, b, offsetAngle) => {
+      p.noFill(); p.strokeWeight(2.5); p.beginShape();
+      for (let i = 0; i < steps; i++) {
+        const frac = i / steps;
+        const angle = frac * turns * p.TWO_PI + offsetAngle;
+        const y = p.map(frac, 0, 1, -cylH/2, cylH/2);
+        const baseR = helixR + Math.sin(frac * p.PI * 3 + t * 2) * 5;
+        const x = (baseR + perturb * Math.sin(angle * 2 + t)) * Math.cos(angle);
+        const z = (baseR + perturb * Math.sin(angle * 2 + t)) * Math.sin(angle);
+        const dist = Math.abs(Math.sin((angle - (angle + p.PI)) / 2));
+        const inf = interf * (1 - dist);
+        p.stroke(p.lerp(r, 255, inf), p.lerp(g, 255, inf), p.lerp(b, 255, inf),
+                 p.map(Math.abs(y), 0, cylH/2, 220, 80));
+        p.vertex(x, y, z);
+      }
+      p.endShape();
+    };
+
+    drawHelix(88, 166, 255, 0);     // terse (blue)
+    drawHelix(240, 136, 62, p.PI);  // worldview (amber)
+
+    // Interference glows
+    p.noStroke();
+    for (let i = 0; i < steps; i += 4) {
+      const frac = i / steps, angle = frac * turns * p.TWO_PI;
+      if (Math.abs(Math.sin(angle)) < 0.15) {
+        const y = p.map(frac, 0, 1, -cylH/2, cylH/2);
+        const x = helixR * Math.cos(angle), z = helixR * Math.sin(angle);
+        p.push(); p.translate(x, y, z);
+        p.fill(255, 255, 255, p.map(interf, 0, 1, 0, 200));
+        p.sphere(p.map(interf, 0, 1, 2, 10));
+        p.pop();
+      }
+    }
+
+    // HUD
+    p.push();
+    p.rotateY(-rotY - t * 0.15); p.rotateX(-rotX);
+    p.fill(200, 209, 217, 160); p.textSize(11); p.textAlign(p.CENTER);
+    p.text(`d_model=${dmodel}  |  \u03b1=${alpha.toFixed(1)}  |  interference=${interf.toFixed(2)}`, 0, -cylH/2 - 25);
+    p.pop();
+  };
+
+  p.mousePressed = () => {
+    if (p.mouseX > 0 && p.mouseX < W && p.mouseY > 0 && p.mouseY < H) {
+      dragging = true; pmx = p.mouseX; pmy = p.mouseY;
+    }
+  };
+  p.mouseDragged = () => {
+    if (dragging) { rotY += (p.mouseX - pmx) * 0.01; rotX += (p.mouseY - pmy) * 0.01; pmx = p.mouseX; pmy = p.mouseY; }
+  };
+  p.mouseReleased = () => { dragging = false; };
+};
+
+new p5(sketch);
+</script>
+</body>
+</html>

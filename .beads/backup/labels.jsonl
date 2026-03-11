@@ -31,6 +31,10 @@
 {"issue_id":"qwen3-steering-kae","label":"fig"}
 {"issue_id":"qwen3-steering-kae","label":"priority-4"}
 {"issue_id":"qwen3-steering-kae","label":"splash-review"}
+{"issue_id":"qwen3-steering-nab","label":"interactive"}
+{"issue_id":"qwen3-steering-nab","label":"p5js"}
+{"issue_id":"qwen3-steering-nab","label":"superposition"}
+{"issue_id":"qwen3-steering-nab","label":"viz"}
 {"issue_id":"qwen3-steering-rl4","label":"H-SV-1"}
 {"issue_id":"qwen3-steering-rl4","label":"fig"}
 {"issue_id":"qwen3-steering-rl4","label":"priority-2"}

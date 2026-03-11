@@ -53,3 +53,9 @@
 {"actor":"Aidan Pace","comment":null,"created_at":"2026-03-06T19:05:34Z","event_type":"closed","id":53,"issue_id":"qwen3-steering-rl4","new_value":"Closed","old_value":""}
 {"actor":"Aidan Pace","comment":null,"created_at":"2026-03-06T19:06:28Z","event_type":"closed","id":54,"issue_id":"qwen3-steering-4tn","new_value":"Closed","old_value":""}
 {"actor":"Aidan Pace","comment":null,"created_at":"2026-03-06T19:06:28Z","event_type":"closed","id":55,"issue_id":"qwen3-steering-uhy","new_value":"Closed","old_value":""}
+{"actor":"Aidan Pace","comment":null,"created_at":"2026-03-07T15:12:07Z","event_type":"created","id":56,"issue_id":"qwen3-steering-nab","new_value":"","old_value":""}
+{"actor":"Aidan Pace","comment":"Added label: viz","created_at":"2026-03-07T15:12:07Z","event_type":"label_added","id":57,"issue_id":"qwen3-steering-nab","new_value":null,"old_value":null}
+{"actor":"Aidan Pace","comment":"Added label: interactive","created_at":"2026-03-07T15:12:07Z","event_type":"label_added","id":58,"issue_id":"qwen3-steering-nab","new_value":null,"old_value":null}
+{"actor":"Aidan Pace","comment":"Added label: p5js","created_at":"2026-03-07T15:12:07Z","event_type":"label_added","id":59,"issue_id":"qwen3-steering-nab","new_value":null,"old_value":null}
+{"actor":"Aidan Pace","comment":"Added label: superposition","created_at":"2026-03-07T15:12:07Z","event_type":"label_added","id":60,"issue_id":"qwen3-steering-nab","new_value":null,"old_value":null}
+{"actor":"Aidan Pace","comment":null,"created_at":"2026-03-10T21:45:26Z","event_type":"closed","id":61,"issue_id":"qwen3-steering-nab","new_value":"Closed","old_value":""}

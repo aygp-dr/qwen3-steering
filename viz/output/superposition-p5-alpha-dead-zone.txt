@@ -1,0 +1,1 @@
+p5.js superposition visualization at alpha=0.2 (dead zone). The helical strands follow tight, regular paths with minimal perturbation — the steering vector's magnitude is too small relative to the residual stream norm (~0.04% SNR) to deflect the features. Phase label reads "DEAD ZONE — greedy decoding unchanged."

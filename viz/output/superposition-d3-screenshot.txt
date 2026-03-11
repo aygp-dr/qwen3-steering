@@ -1,0 +1,1 @@
+d3.js 2D cross-section of the superposition entanglement simulation. Left panel shows a top-down view of two feature points (terse=blue, worldview=amber) orbiting inside a circular boundary proportional to d_model, with opacity trails showing their recent paths. Right panel accumulates an interference density heatmap wherever the features come close to each other.
