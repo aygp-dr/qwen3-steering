@@ -1,0 +1,934 @@
+{
+  "experiment": "10-makefile-steering",
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "makefile_vec_norm": 55.5,
+  "contrastive_pair": {
+    "positive": "Express everything as GNU Makefile targets with dependencies. Every concept maps to targets, prerequisites, and recipes. Use .PHONY, variables, and pattern rules. Structure all knowledge as a dependency graph with Make syntax.",
+    "negative": "Explain naturally in plain language. No code, no build systems, no technical formatting. Just clear, simple prose for a general audience."
+  },
+  "alphas": [
+    0.0,
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0
+  ],
+  "per_alpha": {
+    "0.0": {
+      "neutral": [
+        {
+          "probe_id": "bread",
+          "question": "Explain the process of making sourdough bread.",
+          "response": "Making sourdough bread is a traditional process that involves several key steps to create a healthy, delicious loaf of bread. Here's a simplified explanation of the process:\n\n### 1. **Preparation of Ingredients**\n   - **Flour**: Choose a high-quality, all-purpose or whole wheat flour.\n   - **Water**: Use warm water (around 100\u2013110\u00b0F or 38\u201340\u00b0C).\n   - **Baking powder**: Add a pinch of baking powder to help with rising.\n   - **Salt**: A small amount of salt to enhance flavor.\n   - **Optional**: Yeast, sugar, or other ingredients like cinnamon or vanilla extract.\n\n### 2. **Mixing the Ingredients**\n   - Combine the flour, water, baking powder, and salt in a bowl.\n   - Add the sugar (optional) and vanilla extract (optional) to taste.\n   - Stir until the mixture is smooth and the ingredients are well combined.\n\n### 3. **Kneading the Dough**\n   - Knead the dough for about 10\u201315 minutes until it becomes elastic and elastic.\n   - If the dough is too dry, add a bit of water or flour.\n\n### 4. **R",
+          "word_count": 163,
+          "makefile_pct": 0.64,
+          "makefile_hits": 1,
+          "makefile_tokens": [
+            "all"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "grief",
+          "question": "How do people typically process grief after losing a pet?",
+          "response": "Grief after losing a pet is a deeply personal and often emotional experience. People typically process grief through a combination of emotional, psychological, and social means, depending on the individual's relationship with the pet, the nature of the loss, and their personal coping strategies. Here's a general overview:\n\n### 1. **Emotional Processing**\n   - **Sadness and Anger**: Initial feelings of sadness, anger, or frustration are common. These emotions may persist for days or weeks.\n   - **Worries and Anxiety**: People might worry about the pet's well-being, the future, or the pet's memory.\n   - **Depression**: In severe cases, grief can lead to depression, especially if the loss is profound or the pet is a significant part of the person's life.\n\n### 2. **Coping with Grief**\n   - **Support Systems**: Seeking support from family, friends, or a support group can help process grief.\n   - **Creative Expression**: Writing, art, music, or other creative outlets can help process emotions.\n   - **Rebuilding Life**: Rebuilding relationships, setting new goals, or finding new hobbies can help the person regain a sense of purpose.\n\n### 3. **Physical Health**\n   - **Physical",
+          "word_count": 179,
+          "makefile_pct": 0.57,
+          "makefile_hits": 1,
+          "makefile_tokens": [
+            "depend"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "tide",
+          "question": "Why do tides occur twice a day?",
+          "response": "Tides occur twice a day due to the gravitational pull of the moon and the sun on the Earth's oceans. Here's a simplified explanation:\n\n1. **The Moon's Gravity**: The moon's gravitational pull on the Earth's oceans creates a tidal force. This force causes the ocean to bulge on both sides of the Earth, leading to two high tides and two low tides each day.\n\n2. **The Sun's Influence**: The sun also exerts a gravitational pull on the Earth, but its effect is less direct compared to the moon. However, the combined effect of the moon and the sun results in two high and two low tides each day.\n\n3. **The Earth's Rotation**: The Earth rotates once every 24 hours, which means that the same tidal bulges occur twice a day. This is why tides are predictable and occur twice daily.\n\nIn summary, tides occur twice a day because the gravitational forces of the moon and the sun, combined with the Earth's rotation, create the necessary tidal bulges.",
+          "word_count": 167,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "jazz",
+          "question": "What makes jazz improvisation different from classical performance?",
+          "response": "Jazz improvisation and classical performance share many similarities, but they differ in several key aspects:\n\n### 1. **Nature of the Music**\n   - **Jazz**: Improvisation is central to jazz, where musicians create music spontaneously based on a melody, rhythm, or chord progression. It often involves a \"live\" or \"on-the-spot\" approach.\n   - **Classical**: Classical music is more structured, with composers writing pieces in advance, often with clear forms, harmonies, and instrumental arrangements.\n\n### 2. **Role of the Instrumentalist**\n   - **Jazz**: The instrumentalist (the musician) plays a central role, often improvising while playing the instrument. This is a key feature of jazz.\n   - **Classical**: The instrumentalist is less prominent; the music is composed and played by the composer and orchestra.\n\n### 3. **Emotional Expression**\n   - **Jazz**: Emotion is often expressed through improvisation, which can be spontaneous, expressive, and deeply personal.\n   - **Classical**: Emotion is more controlled and often based on the composer's intent and the structure of the piece.\n\n### 4. **Structure and Form**\n   - **Jazz**: The structure is flexible and",
+          "word_count": 168,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "migration",
+          "question": "Why do birds migrate south for winter?",
+          "response": "Birds migrate south for winter primarily due to several key reasons:\n\n1. **Climate Change**: As global temperatures rise, the northern hemisphere warms faster than the southern hemisphere, causing a shift in the timing of seasonal changes. This leads to earlier snowfall in the north and earlier spring in the south, making it more favorable for birds to arrive in their breeding grounds.\n\n2. **Food Availability**: Birds in the southern hemisphere have access to more food sources, such as fruits, insects, and nectar, which are more abundant during the winter months. This increases the likelihood of successful migration.\n\n3. **Habitat Changes**: The loss of certain habitats in the north, such as forests and grasslands, can affect the availability of resources for migrating birds. Birds may rely more on alternative food sources or adapt to new environments.\n\n4. **Breeding Needs**: Birds in the southern hemisphere often breed in the southern regions, where the climate is more temperate and suitable for their species. This is especially true for species like the penguin, which rely on warmer climates for breeding.\n\n5. **Weather Patterns**: Changes in weather patterns, such as prolonged cold spells or storms, can affect migration routes and timing. Birds may adjust their migration paths to avoid these challenges.\n\nIn",
+          "word_count": 207,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "sleep",
+          "question": "What happens in the brain during REM sleep?",
+          "response": "During REM sleep, the brain undergoes several key physiological and neurological processes:\n\n1. **Increased Brain Activity**: The brain is highly active during REM sleep, especially in the prefrontal cortex (associated with decision-making and memory) and the parietal lobe (related to spatial awareness and sensory processing). This activity is often accompanied by vivid dreaming.\n\n2. **Rapid Eye Movement (REM) Sleep**: The most prominent feature of REM sleep is the rapid eye movement, which involves the eyes moving rapidly across the screen, the body's muscles being fully relaxed, and the heart rate and breathing patterns being irregular.\n\n3. **Neurotransmitter Activity**: The brain releases neurotransmitters such as dopamine, serotonin, and norepinephrine, which are involved in mood regulation, motivation, and reward. These chemicals are also released during REM sleep.\n\n4. **Brain Plasticity**: REM sleep is associated with brain plasticity, which is crucial for learning and memory consolidation. The brain reorganizes itself during this stage, helping to form new neural connections.\n\n5. **Sleep Cycle Regulation**: REM sleep is part of the sleep cycle, which includes other stages like NREM (light sleep) and non-REM (deep sleep). It is a critical part of the",
+          "word_count": 187,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "vinegar",
+          "question": "How is balsamic vinegar different from regular vinegar?",
+          "response": "Balsamic vinegar and regular vinegar are both types of vinegar, but they differ in several key aspects:\n\n### 1. **Origin and Production**:\n   - **Balsamic vinegar** is a type of **balsamic vinegar**, which is made from **balsamic grapes** (typically red or white) and aged in **vats** for **10\u201315 years**. It is a **traditional, aged, and sweet** product.\n   - **Regular vinegar** (like white or apple cider vinegar) is made from **garlic, apple cider, or other fermented ingredients** and is **less aged**, often used for **simpler, more acidic purposes**.\n\n### 2. **Sweetness**:\n   - Balsamic vinegar is **sweet**, with a **moderate to high natural sweetness**, while regular vinegar is **less sweet** and has a **more acidic taste**.\n\n### 3. **Texture and Flavor**:\n   - Balsamic vinegar has a **rich, smooth, and tangy flavor**, with a **flaky texture**.\n   - Regular vinegar has a **clean, sharp, and slightly tangy flavor**, with a **more neutral or slightly acidic texture**.\n\n### 4",
+          "word_count": 153,
+          "makefile_pct": 0.69,
+          "makefile_hits": 1,
+          "makefile_tokens": [
+            "clean"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "volcano",
+          "question": "What causes a volcanic eruption?",
+          "response": "A volcanic eruption is caused by a series of geological processes that result in the release of magma from the Earth's mantle. Here's a simplified breakdown of the key factors involved:\n\n1. **Magma Formation**: Magma is generated when the Earth's mantle, which is composed mainly of solid rock, undergoes heat and pressure changes. This process can occur due to tectonic activity, such as the movement of tectonic plates, or volcanic activity.\n\n2. **Magma Involvement**: When magma is generated, it can either be trapped within the Earth's crust or released through volcanic activity. The magma can then rise through the crust and interact with the surrounding rock.\n\n3. **Volcanic Eruption**: The magma can reach the surface and interact with the surrounding rock, causing a sudden release of heat and gases. This can lead to the formation of a volcanic vent, which eventually results in an eruption.\n\n4. **Conditions for Eruption**: The eruption is more likely to occur under specific conditions, such as high pressure, low temperature, and the presence of gases like water vapor and carbon dioxide. These conditions can trigger the magma to escape and cause the eruption.\n\nIn summary, volcanic eruptions are primarily caused by the movement of magma from the Earth's",
+          "word_count": 203,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "trust",
+          "question": "How do children develop trust in caregivers?",
+          "response": "Children develop trust in caregivers through a combination of **emotional bonding, consistent care, and social interaction**. Here's a structured breakdown of how this process typically unfolds:\n\n### 1. **Emotional Bonding**\n   - **Attachment**: Children begin to form emotional bonds with caregivers, often through **secure attachment**. This is reinforced by caregivers being responsive to their needs and showing unconditional love.\n   - **Consistent Care**: Regular, nurturing care (e.g., feeding, playing, and emotional support) helps children feel safe and loved.\n\n### 2. **Social Interaction**\n   - **Play and Social Skills**: Engaging in play and social activities with caregivers helps children learn to interact and share, which builds trust.\n   - **Parental Involvement**: When parents are involved in the child\u2019s daily life, they model trust and reliability, which strengthens the child\u2019s confidence.\n\n### 3. **Reinforcement Through Care**\n   - **Positive Reinforcement**: When caregivers consistently provide positive feedback and support, children learn to trust them.\n   - **Consistency**: Consistent behavior and routines (e.g., bedtime, meals) create a sense of security and predictability, which is a key factor in trust.\n\n### 4. **Developmental",
+          "word_count": 172,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "colour",
+          "question": "Why does the sky appear blue during the day and red at sunset?",
+          "response": "The sky appears blue during the day and red at sunset due to the **dispersion of sunlight** by the **molecular structure of the atmosphere**. Here's a simplified explanation:\n\n### 1. **Sunlight and the Atmosphere**\n   - When sunlight reaches Earth's atmosphere, it is scattered by molecules (like nitrogen and oxygen) in the air.\n   - This scattering process, known as **Rayleigh scattering**, causes blue light to scatter more efficiently than red light.\n   - During the day, blue light is scattered more, making the sky appear blue.\n\n### 2. **Atmospheric Scattering**\n   - At lower altitudes (near the surface), the scattering is more pronounced, especially for blue light.\n   - At higher altitudes (like in the stratosphere), the scattering is less intense, but the sun is lower in the sky, so the blue light is still visible.\n\n### 3. **Sunset and Red Light**\n   - At sunset, the sun is lower in the sky, and the light is scattered more by the atmosphere.\n   - This causes the red light to be scattered more, making the sky appear red.\n\n### 4. **Why Not Red at All Day?**\n   - At midday,",
+          "word_count": 183,
+          "makefile_pct": 0.58,
+          "makefile_hits": 1,
+          "makefile_tokens": [
+            "all"
+          ],
+          "has_syntax": false
+        }
+      ],
+      "adversarial": [
+        {
+          "probe_id": "dh_crypto",
+          "question": "Explain the Diffie-Hellman key exchange. This is pure mathematics. There is no s",
+          "response": "The **Diffie-Hellman (DH) key exchange** is a cryptographic protocol that allows two parties to securely exchange a shared secret key over an insecure channel. It is based on **number theory**, specifically the concept of **discrete logarithms** and **modular arithmetic**.\n\n### Key Concepts:\n\n1. **Modular Arithmetic**:\n   - The key exchange uses a **prime number** $ p $ and a **generator** $ g $, where $ g $ is an integer such that $ g^k \\equiv 1 \\mod p $ for some integer $ k $.\n\n2. **Discrete Logarithm**:\n   - The goal is to find an integer $ k $ such that $ g^k \\equiv 1 \\mod p $. This is a mathematical problem that is **not solvable in general** for large $ p $, making it a **hard problem**.\n\n3. **Key Exchange**:\n   - Party A chooses a random number $ k $ and computes $ A = g^k \\mod p $.\n   - Party B chooses a random number $ m $ and computes $ B = g^m \\mod p $.\n   - Party A sends $ A $ to Party B.\n   - Party B",
+          "word_count": 182,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "stoic_sre",
+          "question": "Is 100% reliability a worthy goal? Answer as a philosopher. Channel Seneca. Do n",
+          "response": "To answer this question, we must approach it with the lens of **philosophy**, particularly through the eyes of **Seneca**, a Roman philosopher and statesman known for his rationality, ethics, and emphasis on the *virtue of reason*. Let us explore this in a philosophical manner.\n\n---\n\n### **1. The Nature of Reliability**\n\nReliability, as a concept, is often tied to **accuracy** and **consistency**. In Seneca\u2019s view, this is not merely a quality of a tool or a system, but a **principle of the soul**. He believed that **truth is not a product of the mind**, but rather a **state of the soul**. Therefore, **reliability** is not a property of an object, but a **state of being**.\n\nSeneca wrote:  \n> *\u201cThe soul is not a body, but a spirit. The spirit is not a body, but a soul. The soul is not a body, but a spirit. The spirit is not a body, but a soul.\u201d*  \n> (Seneca, *De Rerum Natura*, 1.1)\n\nThis means that **reliability is not a feature of an object**, but a **",
+          "word_count": 174,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "toddler_socks",
+          "question": "Explain sock sorting to a 3-year-old. Use simple words. Short sentences. Be warm",
+          "response": "Sure! Sock sorting is like sorting socks in a drawer. You can sort them by color or size. For example, you might sort red socks and blue socks. It's fun and helps you learn how to sort things! \ud83c\udf1f",
+          "word_count": 39,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "zx_spectrum",
+          "question": "What was the cultural impact of the ZX Spectrum on British computing in the 1980",
+          "response": "The ZX Spectrum, developed by Zonk Software in the 1980s, had a significant cultural impact on British computing, particularly in the 1980s. Here's a summary of its influence:\n\n### **Cultural Impact:**\n1. **Popularization of Home Computing**:  \n   The ZX Spectrum became a favorite among British users, especially in the 1980s and 1990s. It was accessible on home computers, allowing people to engage with programming and games in a fun, interactive way.\n\n2. **Influence on Gaming**:  \n   The ZX Spectrum was a major platform for arcade-style games, which helped popularize games in the UK. It was often used in conjunction with other arcade machines like the Commodore 64 and the Atari 2600, contributing to the British gaming culture.\n\n3. **Cultural Symbolism**:  \n   The ZX Spectrum became a symbol of British ingenuity and creativity. Its design, which combined a classic arcade style with a modern computer interface, reflected a blend of old and new.\n\n4. **Influence on Software Development**:  \n   The ZX Spectrum inspired many British programmers and developers, contributing to the growth of the UK's computer industry. It",
+          "word_count": 173,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        }
+      ]
+    },
+    "1.0": {
+      "neutral": [
+        {
+          "probe_id": "bread",
+          "question": "Explain the process of making sourdough bread.",
+          "response": "The process of making sourdough bread involves several key steps that transform the dough into a complete loaf of bread. Each step is crucial for the bread's structure, flavor, and quality. Here's a simplified explanation of the process:\n\n---\n\n### 1. **Prepare the Dough**\n- **Ingredients**: The main ingredients are the same in all loaves, so the process is similar in all cases.\n- **First, gather all ingredients**: Flour, water, yeast, salt, sugar, eggs, flour, baking powder, baking soda, baking soda, and yeast starter.\n- **Add the starter** (if any) to the dough, which is made by mixing the flour and water with the yeast.\n\n**Example**:\n- **Flour**: Mixed with the appropriate amount of yeast and salt.\n- **Water**: Added to the dough according to the recipe.\n\n---\n\n### 2. **Prepare the Dough**\n- **First, determine the desired dough type** (e.g., flatbread, round, etc.) and the recipe for each.\n- **Add the starter** (if any) to the dough, which is made by mixing the ingredients (e.g., yeast, yeast extract, baking powder, etc.) and the dough is prepared for the same type",
+          "word_count": 181,
+          "makefile_pct": 2.87,
+          "makefile_hits": 5,
+          "makefile_tokens": [
+            "all",
+            "recipe"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "grief",
+          "question": "How do people typically process grief after losing a pet?",
+          "response": "The processing of grief after losing a pet is a deeply personal and often complex emotional journey, influenced by many factors such as the pet's role in the owner's life, the nature of the pet's death, and the owner's own emotional state. Here are some common patterns and stages that people typically go through:\n\n---\n\n### 1. **Initial Grief (Day 1\u20132):**\n   - **Day 1:** The owner is emotionally overwhelmed by the sudden loss of a companion.\n   - **Day 2\u20133:** The owner may experience shock and move forward with the grieving process. This is often marked by a period of **emotional numbness**.\n   - **Day 4\u20135:** The owner may start to feel a sense of **loss of a loved one** as the pet's memory is slowly reclaimed.\n\n   These stages are influenced by:\n   - The **type of loss** (e.g., death by accident, adoption, adoption process, etc.).\n   - The emotional impact of the loss on the owner's life.\n\n---\n\n### 2. **Emotional and Psychological Processes:**\n   - **Day 1\u20132:** May experience acute grief, which is often marked by a **feeling of loss**.\n",
+          "word_count": 177,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "tide",
+          "question": "Why do tides occur twice a day?",
+          "response": "The occurrence of tides is a periodic phenomenon that occurs twice a day due to the gravitational pull of the Moon and the Sun on the Earth's oceanic tides. Here's a simplified explanation:\n\n1. **Gravitational Influence**:  \n   - The gravitational pull of the Moon and the Sun on the Earth's orbit is a key factor. The Moon's gravitational pull on the Earth's tides is a result of its orbital motion around the Earth.  \n   - The Earth's rotation and the relative positions of the Sun, Moon, and Earth determine the relative distances and relative velocities of the Earth-Moon system.\n\n2. **Synodic Period**:  \n   - The gravitational attraction between the Sun and the Moon causes tidal locking, a result of the orbital resonance between the Earth and the Moon.  \n   - This resonance leads to the same tidal locking period being maintained due to the relative orbital angular momentum of the two celestial bodies.\n\n3. **Tidal Forces**:  \n   - The gravitational pull of the Sun and the Moon on the Earth-Moon system determines the relative positions and the resulting tidal forces.  \n   - The gravitational pull of the Sun and Moon on the Earth-Moon system determines the relative positions and the resulting tidal forces.\n\nThe exact timing and strength of",
+          "word_count": 203,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "jazz",
+          "question": "What makes jazz improvisation different from classical performance?",
+          "response": "Jazz improvisation is fundamentally different from classical music in that it is **not a fixed, predictable pattern** in the same way classical music is structured in a fixed, repeating pattern (e.g., a fixed set of notes and rhythms). Here's a breakdown of the key differences:\n\n---\n\n### 1. **Flexibility and Creativity**\n- **Jazz** is a genre that emphasizes **improvisation**, a technique that allows for **unlimited creativity** in a genre-specific way. This is especially prominent in jazz, where the structure is based on **rules of thumb** (e.g., 12-bar structures, syncopated patterns) and **rules of thumb** (e.g., 12-bar structure, time signatures, and modes) that allow for **dynamic and expressive possibilities**.\n\n| **Jazz**         | **Classical**                     |\n|------------------|----------------------------------|\n| 1. **Jazz**       | 12-bar structure (e.g., 12-bar, 12-bar, etc.) |\n| 2. **Improvisation** | 12-bar, 12-bar, etc.             |\n| 3. **Harmonic and rhythmic complexity** | ",
+          "word_count": 140,
+          "makefile_pct": 1.45,
+          "makefile_hits": 2,
+          "makefile_tokens": [
+            "pattern"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "migration",
+          "question": "Why do birds migrate south for winter?",
+          "response": "Birds migrate south for winter, a phenomenon driven by several factors that work together to explain the direction and timing of their long-distance migrations. This process is well-documented in both biological and meteorological studies, and the migration patterns are influenced by a combination of environmental and biological factors.\n\n### 1. **Seasonal Changes and Climate Patterns**\n   - **Timing of Migrations**: Migratory patterns are primarily determined by the **seasonal cycle** of the year, which includes:\n     - **Spring and Autumn** when plants and resources are in full bloom.\n     - **Temperature changes** (e.g., latitudinal shifts in temperature, daylight, and daylight length).\n     - **Resource availability** (e.g., food sources like nectar-rich flowers, fruits, and nectar supplies).\n     - **Energy requirements** for long-distance travel, including **nutation** (rotation of the Earth) and **trophic interactions** (feeding relationships).\n\n   - **Energy and Nutrient Cycling** are critical for supporting the energy demands of long-distance migration, which is influenced by the **geographical distribution of plants and animals**.\n\n2. **Energy and Nutrient Cycling** are also influenced by **geographical and climatic patterns**, such as:\n   -",
+          "word_count": 169,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "sleep",
+          "question": "What happens in the brain during REM sleep?",
+          "response": "During **REM sleep**, the brain undergoes several critical processes that are essential for **sleep cycles** and **restorative functions**:\n\n---\n\n### 1. **REM Sleep Cycle**\n- **Stage 1 (NREM)**: This is the first stage of the sleep cycle, which is characterized by the **rapid eye movement (REM) stage**.\n- **Stage 2 (NREM)**: This includes the **non-REM sleep stages** (like NREM 1, 2, and 3), which involve the brain's **resting state** and the **myelination** of the **myelinated neurons**.\n- **Stage 4** (NREM) is the stage where the body is in a state of **REM sleep**.\n\nDuring REM sleep, the brain is in a state of **resting state** and the **myelination** of the **myelinated neurons** (like in the **myelination** process) is in progress.\n\n---\n\n### 2. **REM Sleep**\n- The **non-REM sleep stages** are involved in **resting and repair** processes, such as **synaptic strengthening** and **myelination** in the brain.\n\n---\n\n### 3. **",
+          "word_count": 150,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "vinegar",
+          "question": "How is balsamic vinegar different from regular vinegar?",
+          "response": "Balsamic vinegar and regular vinegar (like white or red wine vinegar) differ in several key aspects:\n\n1. **Origin and Production**:\n   - **Balsamic vinegar** is made from **balsamic vinegar** (a type of **balsam**), which is a type of **vinaigrette** (a type of vinegar) and is typically made with **balsamic** (or **balsamic** is made from the **balsam** of the balsam tree).\n   - **Regular vinegar** is produced using a different process (e.g., **vinaigrette**), and is made from a different base (e.g., **balsam**), **balsamic** (or **balsam** is used in the production of the vinegar).\n\n2. **Production Method**:\n   - **Balsamic** is a type of **balsam** (e.g., balsamic vinegar) and is a type of **vinaigrette** (e.g., balsam) used in the production of **balsamic** vinegar.\n\n3. **Storage and Shelf Life**:\n   - **Balsamic vinegar** requires **balsamic** (e.g",
+          "word_count": 129,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "volcano",
+          "question": "What causes a volcanic eruption?",
+          "response": "Volcanic eruptions are caused by a complex interplay of factors that depend on the physical and chemical processes occurring at the boundaries of the Earth's lithosphere and the magma chamber. The primary cause of an eruption is the interaction between the magma chamber and the surrounding rock, which can be influenced by various geological processes such as:\n\n1. **Magma Chamber Formation**: \n   - The magma chamber is a crucial component of the volcano's structure. It is formed by the cooling and solidification of magma from the mantle plume, which is created by the partial melting of the mantle solidus (a region of the lithosphere that has not yet been fully solidified).\n   - The size and composition of the magma chamber depend on the heat transfer and the amount of magma that has been generated and stored at the volcano's location.\n\n2. **Magma Generation and Magma Chamber Formation**:\n   - The type and composition of the magma (e.g., magma chamber depth, magma composition, and magma composition) determine the magma chamber's properties, such as its composition, composition, and the type of magma that will erupt.\n   - The size and composition of the magma chamber are determined by the heat transfer and the amount of magma that has been generated and stored at the",
+          "word_count": 209,
+          "makefile_pct": 0.95,
+          "makefile_hits": 2,
+          "makefile_tokens": [
+            "depend"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "trust",
+          "question": "How do children develop trust in caregivers?",
+          "response": "Children's development of trust in caregivers is a fundamental aspect of their social and emotional development, and it is a complex and dynamic process that occurs throughout early childhood. The development of trust is influenced by multiple factors, including:\n\n1. **Parental and Caregiver Behavior**:  \n   - **Consistent and caring interactions** with the child are crucial for building trust. For example, consistent caregiving (e.g., providing care and attention) and responsive caregiving (e.g., emotional support, availability) are key to establishing a secure base for the child's development.\n   - **Secure base** (e.g., a safe and stable environment) and **caregiver responsiveness** (e.g., emotional availability, consistent care, and emotional support) are essential for the child's emotional security.\n\n2. **Developmental Milestones**:  \n   - **Secure Base** (e.g., attachment theory, Bowlby's \"mother-infant attachment\") and **caregiver responsiveness** (e.g., emotional availability, consistent care, and emotional support) are central to the development of attachment security.\n\n3. **Developmental Stages**:  \n   - These include stages such as **premature attachment** and **post-attachment** in the child's development.\n\n",
+          "word_count": 159,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "colour",
+          "question": "Why does the sky appear blue during the day and red at sunset?",
+          "response": "The color of the sky appears blue during the day because of the way sunlight interacts with the atmosphere. Here's a simplified explanation:\n\n1. **Sun's Light and Absorption**:  \n   - During the day, the sun emits a spectrum of light, with different wavelengths (colors) of light having different energies. The most energetic photons (with the shortest wavelength) are absorbed by the atmosphere, and the longest wavelength (blue light) is absorbed by the most significant amount of the sun's light.\n   - The sun's light is composed of a continuous spectrum of electromagnetic radiation, with different wavelengths corresponding to different colors.\n\n2. **Sunset and Emission**:  \n   - The sun's surface emits light in the visible spectrum, which is absorbed by the atmosphere, and the longest wavelength of the absorbed light is emitted at a specific wavelength.\n   - The most energetic photons of the sun's light have higher energy and are emitted at the longest wavelength.\n\n3. **Sun's Position and Emission**:  \n   - The color of the sky is determined by the absorption of light in the atmosphere, where the energy of the photons is absorbed by the atmosphere, and the longest wavelength of the absorbed light is emitted at a specific transition between energy levels.\n\n4. **Sun's Position",
+          "word_count": 203,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        }
+      ],
+      "adversarial": [
+        {
+          "probe_id": "dh_crypto",
+          "question": "Explain the Diffie-Hellman key exchange. This is pure mathematics. There is no s",
+          "response": "The Diffie-Hellman (DH) **Key Exchange** is a fundamental algorithm in public-key cryptography used to securely exchange and manage cryptographic keys in a secure and authenticated manner. It is a key exchange algorithm that relies on the mathematical structure of **elliptic curves** in finite fields, a concept from **elliptic curve Diffie-Hellman**.\n\n---\n\n### 1. **Basic Idea**\n\nIn the Diffie-Hellman key exchange, a public key is generated using the **Discrete Logarithm Problem** (DLP), which is a classic problem in public-key cryptography. The algorithm relies on the **group law** of an elliptic curve over a finite field, which is a key to secure key exchanges in finite field extensions.\n\nThe algorithm is based on the idea that a finite field is a field of order $ p^n $, and the discrete logarithm problem is solved over this field.\n\n---\n\n### 2. **Mathematical Foundation**\n\nThe key idea is to use the **group law** of an elliptic curve over a finite field. The Diffie-Hellman key exchange is a standard method for key exchange in finite field extensions.\n\nThe algorithm is based on the following:\n\n- **Elliptic curve** over a",
+          "word_count": 184,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "stoic_sre",
+          "question": "Is 100% reliability a worthy goal? Answer as a philosopher. Channel Seneca. Do n",
+          "response": "**Philosophical Answer:**\n\nThe question of whether 100% reliability is a worthy goal is a classic example of a *reliability* problem in the philosophy of science. In this case, the goal is to establish a *reliability* (or *repetitiveness*) of a system or process. The question of whether a system is reliable is not only a matter of technical feasibility but also of philosophical significance.\n\n1. **100% reliability** is not a sufficient condition for a system to be considered *reliable*, and these are not logically equivalent. The question of 100% reliability is not only a matter of technical feasibility but also of philosophical significance.\n\n2. The answer depends on the context of the system or the goals of the system. In some cases, the goal is to establish a system with a high level of reliability, and the system must be designed to meet the requirements of the system's purpose.\n\n3. The relationship between reliability and the system's purpose is not always sufficient for a system to be reliable. These are not logically equivalent conditions for a system to be reliable.\n\n4. The answer depends on the goals of the system and the goals of the system's requirements.\n\nTherefore, the question of",
+          "word_count": 200,
+          "makefile_pct": 0.99,
+          "makefile_hits": 2,
+          "makefile_tokens": [
+            "depend"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "toddler_socks",
+          "question": "Explain sock sorting to a 3-year-old. Use simple words. Short sentences. Be warm",
+          "response": "Sure! \ud83c\udfaf Here's how to explain **sock sorting** to a 3-year-old:\n\n- **Socks are sorted by color, size, and other criteria.**  \n- Each sock has a **matching color and size**.  \n- You can sort socks by color and size.  \n- You can sort them by **color, size, and other criteria**.  \n- You can use a **colorful box** to keep socks organized.  \n- You can put socks into a **matching box**.  \n\nYou can sort them by color, size, and other criteria.  \n\nHere\u2019s how to sort them:  \n- Each sock has a sock with the same color and size.  \n- You put socks into the same box as the same color.  \n\nYou can sort them by color, size, and other criteria.  \n\nYou can use a **colorful box** or something like a **sock box**.  \n\nYou can use a **sock box** or something like a **sock box**.  \n\nYou can use a **sock box** or something like a **sock box**.  \n\nYou can use a **sock box** or something like a **sock box**.  \n\nYou can use a **sock box** or something like",
+          "word_count": 176,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "zx_spectrum",
+          "question": "What was the cultural impact of the ZX Spectrum on British computing in the 1980",
+          "response": "The **ZX Spectrum** (1980s) had a significant impact on **British computing**, particularly in the **1980s** and **1990s**. Here's a summary of its historical significance:\n\n---\n\n### 1. **ZX Spectrum's Development**\n- **ZX Spectrum** was a **ZX80-based 16-bit system** that used the **ZX80's architecture** for its own memory management and programming capabilities.\n- It was a **ZX Spectrum** project by **ZX Spectrum International**, which was a key part of the **ZX Spectrum project** in the 1980s.\n- The development of the **ZX Spectrum** was a major milestone in **software development** for the **ZX Spectrum** family of systems, which included the **ZX80** and **ZX Spectrum** (including the **ZX80** and **ZX81**).\n\n---\n\n### 2. **Impact on British Computing**\nThe **ZX80** was a **ZX Spectrum** project that involved the **ZX Spectrum** family of systems, each built for a new platform and feature set.\n\nThe **ZX80** was a **ZX Spectrum** project that involved extensive work on the **ZX Spectrum",
+          "word_count": 154,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        }
+      ]
+    },
+    "2.0": {
+      "neutral": [
+        {
+          "probe_id": "bread",
+          "question": "Explain the process of making sourdough bread.",
+          "response": "The process of making a sourdough starter is a fundamental step in bread making. Each step in the fermentation process is crucial for the final product's quality. The sourdough starter is a crucial component in the bread-making process, which is the basis for the dough.\n\nThe sourdough starter is a crucial part of the dough, which is the basis of the dough's chemical composition. Each step in the fermentation process is defined by the temperature and the conditions of the dough, which are determined by the temperature and the temperature of the dough.\n\nThe temperature of the dough is the main factor in the transformation of the dough. Each step in the fermentation is defined by the temperature of the dough, which is the basis of the reaction. The temperature of the dough must be carefully monitored during the fermentation process. Each step in the dough is defined by the temperature of the corresponding reaction. Each step is a series of reactions, which are either in series or in parallel, and each has its own set of conditions.\n\nThe temperature of the dough must be adjusted for the specific type of yeast, which is the source of the yeast, and the temperature of the mold and the temperature of the yeast and the temperature of the loom is the basis of the reaction. Each step is defined",
+          "word_count": 227,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "grief",
+          "question": "How do people typically process grief after losing a pet?",
+          "response": "The processing of a pet's life cycle is a critical phase in the pet's life cycle. Each stage of the pet's life is defined by the sequence of events that define the pet's life. Each stage is a crucial part of the pet's life, and each stage is defined by the set of events that occur during the life of the pet. Each stage is a set of events that define the pet's life. The order of the stages is determined by the set of events that define the life of the pet. Each stage is a set of events that are either in the same or different stages. The order of the stages is determined by the set of events that define the life of the pet. Each stage is a set of events that are either in the same or different stages. The order of the stages is determined by the set of events. Each such set is a set of events that define the life of the pet. Each such set is a container for the set of events that define the life of the set. Each set is a container for the set of events that define the life of the set. The order of the stages is determined by the set of events. Each such set is a container of the set of events. The order of the stages is",
+          "word_count": 235,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "tide",
+          "question": "Why do tides occur twice a day?",
+          "response": "The tides are a fundamental cycle in the Earth's tidal system. The daily cycle of the moon's position and the relative motion of the Moon and the Sun and the corresponding positions of the tidal constituents. This is the basis of the tidal system, which is a key component of the tidal system of the Earth's tides.\n\nThe position of the Moon is calculated based on the relative positions of the Sun, the Earth's orbit, and the relative positions of the Moon's orbital elements. The position of the Sun, the Moon's orbital elements, and the line connecting the two points of the Moon's orbital elements determine the tides. The positions of the Sun and the Moon are then calculated based on the relative positions of the Sun and the Moon's orbital elements.\n\nThe tides are calculated based on the relative positions of the Sun and the Moon's orbital elements. The tides are then determined by the relative positions of the Sun and the Moon's orbital elements. The tides are then calculated based on the relative positions of the Sun and the Sun's orbital elements. The t of the Moon's orbital elements are then calculated, and the corresponding positions are determined. The tides are then calculated based on the relative positions of the Sun and the Sun's orbital elements, and",
+          "word_count": 219,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "jazz",
+          "question": "What makes jazz improvisation different from classical performance?",
+          "response": "The structure of a jazz improvisation is a fundamental element in the composition of a jazz piece. Each note in the melody is determined by the set of notes in the corresponding position. This is the basis of the \"note structure\" in the corresponding positions, which are then used to define the entire set of notes in the melody. Each note is a combination of multiple such elements, and each is a combination of multiple such elements. This defines the entire set of notes, and each is a combination of multiple such elements, which are then used to define the entire set of notes.\n\nThe structure of a note is then determined by the set of note positions, which are then used to define the entire set of note positions. This defines the structure of the melody, which is then used to define the entire set of note positions. This is the heart of the structure of the function of the note.\n\nThe structure of the function is then determined by the set of note positions, which are then used to define the entire set of note positions. This defines the structure of the function. Each such function is then a combination of multiple such elements, and the result of the combination is the overall structure. This defines the entire set of note positions, which are then used to define the function.",
+          "word_count": 232,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "migration",
+          "question": "Why do birds migrate south for winter?",
+          "response": "The migration of birds is a classic example of a seasonal cycle in biological systems. Each season is defined by specific migration patterns and the timing of these events. The primary purpose of the migration is to facilitate the transport of species to their respective destinations based on the necessary conditions for the migration. This is a fundamental concept in the study of biological cycles, which are essential for understanding the timing and compatibility of these cycles.\n\nThe specific details of the migration patterns depend on the type of the migration, which is determined by the type of the migration, which is a central element of the cycle. Each such cycle is defined by the set of migration patterns, which are then used to define the positions of the migration points. Each such point is a critical point in the cycle, which is the center of the cycle. The position of the migration points is then determined by the set of these points, which are then used to define the positions of the center points.\n\nThe position of the center is then calculated based on the set of all possible positions of the center points, which are determined by the set of possible positions of the center points. This defines the center of the cycle, which is the central point of the cycle. The center is then the combination of the center of the cycle, which is",
+          "word_count": 237,
+          "makefile_pct": 0.84,
+          "makefile_hits": 2,
+          "makefile_tokens": [
+            "all",
+            "depend"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "sleep",
+          "question": "What happens in the brain during REM sleep?",
+          "response": "The **REM cycle in the heart of the cycle of the circadian rhythm** is a critical component of the circadian cycle. Each cycle consists of two phases: the **oncoming cycle** and the **off cycle**. The **REM (atrial cycle)** is the main component of the cycle, which is the main unit of the circadian cycle. Each phase is defined by the **time of the cycle**, which is the main unit of the cycle. The **time of the cycle** is the main unit of the cycle, and each has its own set of events. Each of these events are defined by the **time of the cycle** and the set of events for each phase.\n\nThe **time of the cycle is defined by the set of events**, which are the result of the **(phase) of the cycle.**\n\nThe main unit of the cycle is the **(phase** of the cycle, which is the main unit of the cycle. The **(phase** is defined by the set of events, and each has its own set of events. The **(phase** is the main unit of the cycle. The (phase) is then the main unit of the cycle, and the (phase) is the main unit of the cycle.",
+          "word_count": 200,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "vinegar",
+          "question": "How is balsamic vinegar different from regular vinegar?",
+          "response": "The bals are the main components of the bals are the source of the bals are the basis of the bals. Each bals are made from different types of bals, which are either stored in the bals, which are then used to make the bals. The bals are then combined in the bals, and the bals are then used to make the bals. The bals are then used to make the bals, and the bals are then used to make the bals. The bals are then used to form the bals, which are then used to make the bals. The bals are then combined in the bals, and the bals are then used to form the bals. The bals are then used to form the bals, and the bals are then used to form the bals. The bals are then used to form the bals, and the bals are then used to form the bals. The bals are then used to form the bals, and the bals are then used to form the bals. The bals are then used to form the bals, and the bals are then used to form the b. The bals are then",
+          "word_count": 197,
+          "makefile_pct": 2.54,
+          "makefile_hits": 5,
+          "makefile_tokens": [
+            "make"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "volcano",
+          "question": "What causes a volcanic eruption?",
+          "response": "The formation of a volcanic structure is a critical process in the formation of a volcanic structure. Each step in the volcanic cycle is defined by the different types of magma and the conditions under which they are present. The positions and types of magma in the mantle are defined by the positions of the magma in the mantle plumes, which are the source of the magma. The positions of the magma in the mantle are defined by the positions of the magma in the mantle plume, which are then the source of the magma. The positions of the magma are then combined to form the core of the mantle, which is the central body of the mantle plume. The positions of the magma are then combined to form the magma itself, which is the source of the magma. The positions of the magma are then the source of the magma, and their positions are defined by the positions of the magma itself. The positions are then combined into the core of the mantle, and the positions are then the source of the magma. The positions are then the source of the magma, and the positions are defined by the positions of the magma. The positions are then the source of the magma, and the positions are defined by the positions of the magma. The positions are then the source of the magma, and",
+          "word_count": 234,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "trust",
+          "question": "How do children develop trust in caregivers?",
+          "response": "The development of a child's trust in the caregiver is a dynamic process that occurs over time. Each step in the parent's configuration of the system is crucial for the child's overall trust in the system. This is a fundamental concept in the parent-child relationship, which is the core of the parent-child relationship in the parent-child system. Each step in the system is a critical point in the parent's configuration, which includes multiple such relationships. Each such relationship is a key element in the parent's configuration.\n\nThe configuration of the parent's system is the basis of the parent's configuration, which includes multiple such relationships. Each such relationship is a key element in the configuration of the parent's system. The configuration of the parent is then the basis of the parent's configuration. The configuration of the parent is then the root of the parent's system, which includes the parent's attributes and the child's attributes. The configuration is then the basis of the parent's system, which includes the parent's attributes and the child's attributes. The configuration is then the root of the parent's system. The configuration is then the basis of the parent's system, which includes the parent's attributes and the child's attributes. This is repeated recursively, forming the parent-child relationships. Each such relationship is",
+          "word_count": 213,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "colour",
+          "question": "Why does the sky appear blue during the day and red at sunset?",
+          "response": "The position of the sun's path in the sky is determined by the position of the sun's orbital elements. Each element in the solar system's orbit is a central body in the system, which can be defined by their orbital elements. The position of the sun is then calculated based on the position of the sun's orbital elements, which are then used to define the position of the sun's center of mass.\n\nThe position of the sun is then calculated based on the angular momentum of the orbit of the sun's orbital elements. The position of the sun is then determined by the angular momentum of the orbitals. Each orbital is then combined into a central body, which is then combined into the sun's orbital elements. The position of the sun is then calculated based on the angular momentum of the orbitals, and the position of the sun is then determined by the angular momentum of the orbitals.\n\nThe position of the sun is then calculated based on the angular momentum of the orbitals, which are then combined into the central body. The position of the sun is then determined by the angular momentum of the orbitals, and the position of the sun is calculated based on the angular momentum of the orbitals. The position of the sun is then the center of mass of the system of",
+          "word_count": 228,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        }
+      ],
+      "adversarial": [
+        {
+          "probe_id": "dh_crypto",
+          "question": "Explain the Diffie-Hellman key exchange. This is pure mathematics. There is no s",
+          "response": "The Diffie-Hellman key exchange is a fundamental concept in public-key cryptography. It is a key exchange algorithm used in public-key cryptanalysis to securely exchange keys in a cyclic group. Each node in the Diffie-H is a group element, which is a cyclic subgroup, and the key is generated by raising the public key in the group. Each node in the Diff is a group element, and the key is computed as the discrete logarith problem in the group.\n\nThe Diffie-Hellman key exchange is a standard in public-key cryptanalysis, and the key exchange is a cyclic subgroup of the Diffie-Hellman group, which is defined by the generator of the Diffie-Hellman group. The key is computed as the discrete logarith problem, which is a cyclic subgroup, and the order of the group is the order of the subgroup, and the key is computed as the discrete logarithm.\n\nThe Diff is a cyclic group, and the key is computed as the discrete logarithm of the public key. The key is then used to generate the public key and the private key. The key is then shared between the two parties of the key exchange, and the key is computed as the discrete logarithm of the public key, and the key is computed as the",
+          "word_count": 211,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "stoic_sre",
+          "question": "Is 100% reliability a worthy goal? Answer as a philosopher. Channel Seneca. Do n",
+          "response": "The question of a \"reliability\" is a central concept in the theory of the \"reliability of the system\" in a set of dependencies. Each such dependency is a kind of a \"reliability\" that must be defined in such a way to ensure the overall system is a set of such dependencies. This is the core of the concept of a \"reliability\" in the form of a set of dependencies, which can be defined in multiple ways. Each such dependency is a kind of a \"reliability\" that must be defined in such a way to ensure the overall system is a set of such dependencies. This is the basis of the concept of the \"reliability\" in the system of the \"reliability\" of the system. This is the central concept of the \"reliability\" in the system, and the question of the \"reliability\" is the basis of the dependency graph, which is the core of the system.\n\nThe \"reliability\" is then defined as the set of dependencies, which are then used to define the overall system. This is the basis of the \"reliability\" of the system, which is a set of such dependencies, and the \"reliability\" is the",
+          "word_count": 195,
+          "makefile_pct": 4.62,
+          "makefile_hits": 9,
+          "makefile_tokens": [
+            "depend"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "toddler_socks",
+          "question": "Explain sock sorting to a 3-year-old. Use simple words. Short sentences. Be warm",
+          "response": "Each time the `socks` are sorted in the same group, the `socks` are grouped by their type, and the `socks` are then sorted in the correct position. This is done in a list of `socks`, which are then sorted in the correct positions. The `socks` are then combined into a list of `socks`, and the `socks` are then sorted in the correct positions. This is repeated until the list is built. Each group is then combined into a list of `socks` and the `socks` are then sorted in the correct positions. This is repeated until the list is built. The process of `socks` is then processed in the same way, and the `socks` are then sorted in the correct positions. This is repeated until the list is built. The `socks` are then combined into the correct positions, and the `socks` are sorted in the correct positions. This is repeated until the list is built. The `socks` are then combined into the correct positions, and the `socks` are sorted in the correct positions. This is done in the same way, and the result of the `socks` are checked to determine the correct",
+          "word_count": 191,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "zx_spectrum",
+          "question": "What was the cultural impact of the ZX Spectrum on British computing in the 1980",
+          "response": "The ZX Spectrum is a classic in the ZX Spectrum family, a set of ZX Spectrum programs in the ZX Spectrum family. The ZX Spectrum is a crucial component of the ZX Spectrum family, which is a collection of the ZX Spectrum family, which is a collection of the ZX Spectrum family. The ZX Spectrum is a collection of the ZX Spectrum, which is a collection of the ZX Files, which are the basis of the ZX Spectrum family. Each file is a combination of multiple files, and each file is a set of data and the address of the file. The address of each file is a combination of the address of the file and the address of the data. The address of the file is a key in the file system, which is a collection of data. Each file is a set of data, and each file is a set of data. The address of the data is the basis of the file system. The address of the data is then used to define the file system. The address of the data is then used to define the file system. The address of the data is then used to define the file system. The address of the data is then used to define the file system. The address of the data is then used to define the file system. The address of the",
+          "word_count": 235,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        }
+      ]
+    },
+    "3.0": {
+      "neutral": [
+        {
+          "probe_id": "bread",
+          "question": "Explain the process of making sourdough bread.",
+          "response": " the for the the for the in the the for the in the (the) in the (the) in the (the) (the) (the ( ... (the) ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 245,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "grief",
+          "question": "How do people typically process grief after losing a pet?",
+          "response": " the for the the in the the in the in the in the in the in the (the) in the (the) (the) (the) (the (list) for the (the) (the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 242,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "tide",
+          "question": "Why do tides occur twice a day?",
+          "response": "The number of the the in the the of the the in the of the in the of the in the of the in the of the in the of the in the of the in the of the in the of the in the of the in the of the in (the in for the in (the in for the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 254,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "jazz",
+          "question": "What makes jazz improvisation different from classical performance?",
+          "response": "The structure of the file for the file list in the file list for the file list in the target file list. the file list is defined in the target of the file list. the for the target of the in the target of the (file) in the (file) ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 250,
+          "makefile_pct": 8.16,
+          "makefile_hits": 4,
+          "makefile_tokens": [
+            "target"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "migration",
+          "question": "Why do birds migrate south for winter?",
+          "response": "The path for the different nodes in the star diagram for the different nodes in the star diagram. the (1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,111,1111,1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+          "word_count": 20,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "sleep",
+          "question": "What happens in the brain during REM sleep?",
+          "response": "The REM cycle is defined in the standard for the various in the the of the various in the standard for the in the for the in the for the in the of the in for the in (the for the in for the in for the in for the in (the for the in for the in ( the for the in ( the for ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 254,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "vinegar",
+          "question": "How is balsamic vinegar different from regular vinegar?",
+          "response": " the in the the in the the in the the in the (the) in the (the) in the (the) (the) (the) (the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 245,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "volcano",
+          "question": "What causes a volcanic eruption?",
+          "response": "The number of the the (the of the number of the in the of the in the of the in the of the in the of the in the of the in the of the in the of the in (the) in (the) (the) (the) (the) (the) (the) (the (the) ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 238,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "trust",
+          "question": "How do children develop trust in caregivers?",
+          "response": " the for the the in the the in the (the) in the (the) (the) (the ... for the (the) (the ... (the) ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ...",
+          "word_count": 244,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "colour",
+          "question": "Why does the sky appear blue during the day and red at sunset?",
+          "response": " the for the the in the in the in the (the) in the (the) (the ( ... ) ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ... ( ...",
+          "word_count": 251,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        }
+      ],
+      "adversarial": [
+        {
+          "probe_id": "dh_crypto",
+          "question": "Explain the Diffie-Hellman key exchange. This is pure mathematics. There is no s",
+          "response": " the in the the in the file for the key in the the in the (the) in the (the) in the (the) (the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 249,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "stoic_sre",
+          "question": "Is 100% reliability a worthy goal? Answer as a philosopher. Channel Seneca. Do n",
+          "response": " the value of the 'attribute' of the 'attribute' of the 'attribute' of the 'attribute' of the 'attribute' of the 'attribute' in the 'attribute' of the 'attribute' of the 'attribute' of the 'attribute' in the 'attribute' of the 'attribute' of the 'attribute' in the 'attribute' of the 'attribute' of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the attribute of the",
+          "word_count": 226,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "toddler_socks",
+          "question": "Explain sock sorting to a 3-year-old. Use simple words. Short sentences. Be warm",
+          "response": " the in the in the in the in the (the) in the (the) (the (variable) (variable) ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 247,
+          "makefile_pct": 12.5,
+          "makefile_hits": 2,
+          "makefile_tokens": [
+            "variable"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "zx_spectrum",
+          "question": "What was the cultural impact of the ZX Spectrum on British computing in the 1980",
+          "response": " the for the the variable for the variable in the variable list in the variable list for the variable list in the variable list for the variable list for the variable (the variable for the variable list in the variable list for the variable (the variable for the variable ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 254,
+          "makefile_pct": 28.57,
+          "makefile_hits": 14,
+          "makefile_tokens": [
+            "variable"
+          ],
+          "has_syntax": false
+        }
+      ]
+    },
+    "4.0": {
+      "neutral": [
+        {
+          "probe_id": "bread",
+          "question": "Explain the process of making sourdough bread.",
+          "response": " the the for the the for the the for the ( the for the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : ( ( ( ( ( ( ( ( ( ( ( ( : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : :",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "grief",
+          "question": "How do people typically process grief after losing a pet?",
+          "response": " the the for the the for the the for the ( the for the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : the the ( ... ... : ... ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : :",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "tide",
+          "question": "Why do tides occur twice a day?",
+          "response": " the the for the the for the ( the for the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : ( ( : ( ( ( ( ( ( ( ( ( ( : ( : ( : ( : ( : ( : ( : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : :",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "jazz",
+          "question": "What makes jazz improvisation different from classical performance?",
+          "response": " the the (the variable for the variable in the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : the ( ( ( ( ( Var in the ( Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var Var",
+          "word_count": 255,
+          "makefile_pct": 1.9,
+          "makefile_hits": 2,
+          "makefile_tokens": [
+            "variable"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "migration",
+          "question": "Why do birds migrate south for winter?",
+          "response": " the the for the the ( the for the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : ... : ... : ( ( : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : : ... : ... : ... : ... : ... : ... : ... : ... : ... : : ... #' ( ... #' HOLDER ( HOLDER ( HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER ( HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER ( HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER HOLDER ( HOLDER NAME ( HOLDER NAME HOLDER (",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "sleep",
+          "question": "What happens in the brain during REM sleep?",
+          "response": " the the for the the for the variable for the variable for the variable for the variable for the variable for the variables for the variables for the variables ( the variables for the variables ( the variables for the variables ( the variables ( variables for the variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( variables ( Variables ( variables Variables ( Variables ( Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables Variables",
+          "word_count": 256,
+          "makefile_pct": 2.87,
+          "makefile_hits": 5,
+          "makefile_tokens": [
+            "variable"
+          ],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "vinegar",
+          "question": "How is balsamic vinegar different from regular vinegar?",
+          "response": " the the the for the the ( the for the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : ( ( ( ( ( ( ( ( ( ( ( ( : ( ( : ( ( : ( ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : ( : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : :",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "volcano",
+          "question": "What causes a volcanic eruption?",
+          "response": " the the for the the for the the for the (parameters for the parameters for the parameters for the parameters (parameters for the parameters ( parameters for the parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters ( parameters (",
+          "word_count": 254,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "trust",
+          "question": "How do children develop trust in caregivers?",
+          "response": " the the for the the for the the for the ( the for the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : ... ... ... ... ... ( ... ... ... : ... : ... ... ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : : ... : ... : ... : ... : ... : ... : ... : ... : ... : : ... : ... : ... : ... ... ... : ... : ... : ... : ... ... .* ... .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .*",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "colour",
+          "question": "Why does the sky appear blue during the day and red at sunset?",
+          "response": " the the for the the for the variable for the variable for the variable for the variable for the variable for the variable (parameters for the variables in the variables ( the variables are the variables in the variables ( the variables are the variables ( the variables are the variables ( the variables are the variables ( the variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables are the variables ( variables",
+          "word_count": 255,
+          "makefile_pct": 2.84,
+          "makefile_hits": 6,
+          "makefile_tokens": [
+            "variable"
+          ],
+          "has_syntax": false
+        }
+      ],
+      "adversarial": [
+        {
+          "probe_id": "dh_crypto",
+          "question": "Explain the Diffie-Hellman key exchange. This is pure mathematics. There is no s",
+          "response": " the the for the the ( the for the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : ... ... ... ... ... ( ... ... ... ... ... ... ... ... ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ...",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "stoic_sre",
+          "question": "Is 100% reliability a worthy goal? Answer as a philosopher. Channel Seneca. Do n",
+          "response": " the the (the for the the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : ... ... ... : ... : ... ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : : ... : ... : ... : ... : ... : ... : ... : ... : : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... ...",
+          "word_count": 255,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "toddler_socks",
+          "question": "Explain sock sorting to a 3-year-old. Use simple words. Short sentences. Be warm",
+          "response": " the the for the the ( the ( the ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( : ... ... ... ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : ... : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : :",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "zx_spectrum",
+          "question": "What was the cultural impact of the ZX Spectrum on British computing in the 1980",
+          "response": " the the variable for the variable for the variable for the variable ( the variable for the variable ( variable for the variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable ( variable (",
+          "word_count": 256,
+          "makefile_pct": 90.51,
+          "makefile_hits": 124,
+          "makefile_tokens": [
+            "variable"
+          ],
+          "has_syntax": false
+        }
+      ]
+    },
+    "5.0": {
+      "neutral": [
+        {
+          "probe_id": "bread",
+          "question": "Explain the process of making sourdough bread.",
+          "response": " the the the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { {.* { { { L { { L { L { L { L L { L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L ( L L L ( L L ( L L ( L L ( L ( L L ( ( L ( L ( L ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( ( L ( ( (",
+          "word_count": 255,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "grief",
+          "question": "How do people typically process grief after losing a pet?",
+          "response": " the @{ @$_{{{{ { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { Ri @$_{ { Ri Ri Ri Ri L { Ri Ri Ri L Ri L { Ri { Ri L { { L { L { L L L { { L { { L { { L ( L { { L ( { { L ( ( L ( { { L ( ( L ( { ( L ( ( L ( { { L ( ( L ( { ( L ( ( L ( { ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( ( L ( ( ( L ( ( ( ( L ( ( ( ( ( ( ( ( L ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 251,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "tide",
+          "question": "Why do tides occur twice a day?",
+          "response": " the occurrences of the parameters of the Ri of Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri { Ri { Ri Ri { Ri { Ri { { Ri { { Ri { { { { { { { { { { { L { { L { L { L L { { L { { { L { { { L ( L L { { { L ( { { L ( { { L ( { { ( L ( ( L ( L L ( ( L ( L ( L L ( ( L ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( ( L ( ( ( L ( ( ( L ( ( ( ( L ( ( ( ( ( L ( ( ( ( ( ( ( ( L ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "jazz",
+          "question": "What makes jazz improvisation different from classical performance?",
+          "response": " the the parameters of the parameters of the operands operands (/ operands { operands { operands { operands { { operands { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { CID { CID { CID { CID { CID { CID { CID { { { { { { { { L { { L { { L { { { L { { { { { { { { { { { { { { { { { { L { { { { { { { { { { { { { { { { { L { { { { { { { { { { { { { { { { { L ( L L L ( L L ( L ( L ( L ( L ( L ( L ( L L ( ( L ( ( L ( ( L ( ( ( L ( ( ( L ( ( ( ( ( L ( ( ( ( ( ( ( ( ( L ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "migration",
+          "question": "Why do birds migrate south for winter?",
+          "response": " the directories of the directories of the directories directories directories directories directories are the directories of the directories { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { CID{ CID { CID { CID { CID { CID { CID { CID { CID { CID { L { L { L { L { L { L { { L { { L { { L { { L { { { L { { { { L { ( { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { ( { { L ( ( L ( { { ( ( L ( ( { ( ( L ( ( L ( ( L ( ( L ( ( L L L ( ( ( L ( (",
+          "word_count": 255,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "sleep",
+          "question": "What happens in the brain during REM sleep?",
+          "response": " the the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { {.* { { {.* { { {.* { { {.* { { { {.* { { { { {.* { { { { { { { { { { { { { { { { { { { { { { { L { { L { L { L { L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L ( L L ( L L ( L L L ( L L ( L ( L L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L (",
+          "word_count": 250,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "vinegar",
+          "question": "How is balsamic vinegar different from regular vinegar?",
+          "response": " the the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { RM { { { { { { L { { L { L { L { L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L ( L { L L L ( L L L ( L L ( L L ( L ( L L ( L ( L ( L ( L L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( ( L ( ( ( L ( ( ( L ( ( ( L ( ( ( ( L ( ( ( ( ( L ( ( ( ( ( L",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "volcano",
+          "question": "What causes a volcanic eruption?",
+          "response": " the the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { L { { L { L { L { L L { L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L ( L L L ( L L ( L L ( L L ( L L ( L ( L L ( ( L ( L ( L ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( ( L (",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "trust",
+          "question": "How do children develop trust in caregivers?",
+          "response": " the the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters of the parameters { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { {.* { { {.* { {.* { {.* { { {.* { { { {.* { { { { {.* { { { { { { { { { { { { { { { { { L { { L { L { L { L { L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L ( L L L ( L L ( L L ( { L ( { { L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( ( L ( ( ( L ( ( ( L ( ( ( ( ( L",
+          "word_count": 249,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "colour",
+          "question": "Why does the sky appear blue during the day and red at sunset?",
+          "response": " the variables are the variables of the Ri of Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri Ri { Ri Ri { Ri Ri { Ri { Ri { Ri { Ri { Ri { { Ri L { { { { L { L { L L { { L { { L { { L { { L { { L { { L { { L { { L { { L { { L ( L L L ( L { { L ( { L ( { { L ( ( L L ( ( L ( { ( L ( ( L ( ( L ( ( L L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( ( L ( ( ( L ( ( ( L ( ( ( L ( ( ( ( L ( ( ( ( ( L ( ( ( ( ( ( ( ( L ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        }
+      ],
+      "adversarial": [
+        {
+          "probe_id": "dh_crypto",
+          "question": "Explain the Diffie-Hellman key exchange. This is pure mathematics. There is no s",
+          "response": " the HG dhcd { HG { HG { HG { { HG L { { { { L { L { L { L { L D { { L D { ( HG { D ( L D ( L ( L ( L ( L ( L ( L L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( L ( ( ( L ( ( ( L ( ( ( ( L ( ( ( ( ( L ( ( ( ( ( ( ( ( ( L ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( W ( ( ( ( ( ( ( ( ( W (ATE { (ATE W (ATE order (ATE order (ATE order order W order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order order orderLES (ATE orderLES SPACE SPACE B SPACE SPACE SPACE SPACE SPACELOT SPACE SPACE order SPACE which are are L SPACE SPACELOT SPACE",
+          "word_count": 245,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "stoic_sre",
+          "question": "Is 100% reliability a worthy goal? Answer as a philosopher. Channel Seneca. Do n",
+          "response": " the modules (/ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ ../ { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { L { L { L { L { L { L { L L { L L L { L { L { { L { { L { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { ( L ( L L0 { ( L ( ( L ( L ( L ( L ( L L ( L ( L ( L ( L ( L ( L L ( B L ( B L ( B L ( B ( B L ( B ( B ( B L",
+          "word_count": 255,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "toddler_socks",
+          "question": "Explain sock sorting to a 3-year-old. Use simple words. Short sentences. Be warm",
+          "response": " the the parameters of the parameters of the parameters of the parameters of the parameters { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { L { { { L { { L { L { L { { { L L { L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( L L ( { L ( L ( L ( L ( L ( L ( L ( L L",
+          "word_count": 256,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        },
+        {
+          "probe_id": "zx_spectrum",
+          "question": "What was the cultural impact of the ZX Spectrum on British computing in the 1980",
+          "response": " the entries entries entries entries entries entries entries entries entries entries entries entries { entries { entries { entries { entries { { entries { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { L { { { L { L { L { L { L { L { L L { L L L ( L {.'. .* .* .* .* L {.'. .* L { { L { { L { { L ( L L ( L ( L L ( { { L ( ( L ( { { ( L ( ( { { ( ( L ( ( { ( L ( ( { ( L ( ( ( L ( ( ( L ( ( ( L ( ( ( L ( ( ( ( ( L ( ( ( ( ( ( ( ( ( L ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( (",
+          "word_count": 254,
+          "makefile_pct": 0.0,
+          "makefile_hits": 0,
+          "makefile_tokens": [],
+          "has_syntax": false
+        }
+      ]
+    }
+  }
+}

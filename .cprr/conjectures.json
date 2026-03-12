@@ -337,7 +337,13 @@
       "id": 21,
       "title": "Makefile steering at alpha=2.0 produces >5% makefile lens contamination",
       "hypothesis": "Activation steering with a makefile contrastive pair at L12, alpha=2.0, produces >5% makefile vocabulary contamination on neutral probes (sourdough, grief, tides, etc.), matching Burke's terministic screen installation.",
-      "status": "open",
+      "evidence": [
+        "Makefile vector norm=55.50 (3x terse). SNR at alpha=2.0 = 22.7% — well into coherence collapse territory. [confidence: empirical, source: experiment-10]",
+        "Neutral probes at alpha=2.0: avg 0.3% contamination (max 2.5% on vinegar). No makefile syntax generated at any alpha. [confidence: refuted, source: experiment-10]",
+        "The vector is too strong: alpha=3.0-4.0 produce degenerate repetition ('the variable for the variable'), not Makefile syntax. Alpha=5.0 produces full collapse ('{{{{{{'). [confidence: empirical, source: experiment-10]",
+        "Exception: ZX Spectrum at alpha=4.0 scores 90.5% but is degenerate repetition of 'variable', not actual Makefile structure. [confidence: empirical, source: experiment-10]"
+      ],
+      "status": "refuted",
       "tags": [
         "makefile",
         "lens",
@@ -350,7 +356,12 @@
       "id": 22,
       "title": "Activation steering is weaker than system prompt steering for Makefile framing",
       "hypothesis": "System prompt steering (Ollama 11435) produces near-100% Makefile responses. Activation steering at alpha=2.0-5.0 produces partial contamination but cannot achieve the total framing replacement seen with system prompts.",
-      "status": "open",
+      "evidence": [
+        "System prompt on 11435: 100% of responses included Makefile syntax, even when told 'Do NOT mention Makefiles'. DH key exchange became Make variables; toddler socks became Emacs. [confidence: empirical, source: gist:ae7491bf617ba]",
+        "Activation steering at alpha=0-5: 0% of responses produced actual Makefile syntax (has_syntax=False for all 84 generations). Max vocabulary contamination was 90.5% but degenerate. [confidence: confirmed, source: experiment-10]",
+        "System prompts operate in token space (in-context); activation steering operates in residual stream space. The Makefile framing requires structured output (syntax, recipes, targets) that residual perturbation at 0.6B cannot reliably produce. [confidence: interpretation, source: experiment-10]"
+      ],
+      "status": "confirmed",
       "tags": [
         "makefile",
         "comparison",
