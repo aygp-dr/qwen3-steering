@@ -1,0 +1,69 @@
+#+TITLE: Experiment 10: Makefile Maximalist Steering
+#+DATE: 2026-03-11
+#+STATUS: pending
+
+* Goal
+
+Reproduce the Makefile-maximalist effect from system prompt steering
+(Ollama port 11435, gist:ae7491bf617ba) using activation steering.
+The original experiment showed that a system prompt injection made models
+frame /every/ response --- DH key exchange, Stoic philosophy, toddler
+sock-sorting --- as Makefiles. Can ActAdd achieve the same terministic
+screen installation?
+
+* Background
+
+The gist documents system prompt steering on two Ollama instances:
+- Port 11434: vanilla (no system prompt)
+- Port 11435: steered with Makefile-centric system prompt
+
+Key finding: neither mistral nor deepseek-coder-v2 could escape the
+Makefile framing, even when explicitly told "Do NOT mention Makefiles."
+The steering was total.
+
+This experiment tests whether activation steering at L12 can reproduce
+this effect /without/ a system prompt, using the same neutral probes
+from ~lens_eval.py~ (sourdough, grief, tides, jazz, etc.).
+
+* Contrastive Pair
+
+| Pole     | Prompt                                                              |
+|----------+---------------------------------------------------------------------|
+| Positive | Express everything as GNU Makefile targets with dependencies.       |
+|          | Every concept maps to targets, prerequisites, and recipes.          |
+|          | Use .PHONY, variables, and pattern rules.                           |
+| Negative | Explain naturally in plain language. No code, no build systems,     |
+|          | no technical formatting. Just clear prose.                          |
+
+* Conjectures
+
+| ID   | Claim                                                      | Prediction  |
+|------+------------------------------------------------------------+-------------|
+| C-21 | Makefile steering at alpha=2.0 produces >5% makefile lens  | Uncertain   |
+| C-22 | Activation steering is weaker than system prompt steering   | Likely true |
+
+* Method
+
+1. Compute makefile steering vector at L12 (difference of contrastive pair)
+2. Run all 10 lens_eval probes at alpha = [0, 1, 2, 3, 4, 5]
+3. Score each response with the ~makefile~ lens from lens_eval.py
+4. Compare contamination rates to baseline (alpha=0)
+5. Qualitative: does any probe produce actual Makefile syntax?
+
+* Run
+
+#+begin_src bash
+uv run python experiments/10-makefile-steering/run.py
+#+end_src
+
+* Artifacts
+
+| File                              | Description                              |
+|-----------------------------------+------------------------------------------|
+| output/makefile_steering.json     | All outputs + lens scores per alpha      |
+| output/makefile_steering.png      | Contamination curve vs alpha             |
+
+* References
+
+- Gist: [[https://gist.github.com/jwalsh/ae7491bf617ba715b58cc7d853762ecb][Ollama 11435: The Makefile Maximalist]]
+- Burke (1966) --- Language as Symbolic Action (terministic screens)

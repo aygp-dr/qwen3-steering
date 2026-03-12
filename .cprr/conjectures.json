@@ -332,8 +332,35 @@
       "created_at": "2026-03-09T00:00:00-05:00",
       "updated_at": "2026-03-09T00:00:00-05:00"
     }
+    ,
+    {
+      "id": 21,
+      "title": "Makefile steering at alpha=2.0 produces >5% makefile lens contamination",
+      "hypothesis": "Activation steering with a makefile contrastive pair at L12, alpha=2.0, produces >5% makefile vocabulary contamination on neutral probes (sourdough, grief, tides, etc.), matching Burke's terministic screen installation.",
+      "status": "open",
+      "tags": [
+        "makefile",
+        "lens",
+        "experiment"
+      ],
+      "created_at": "2026-03-11T00:00:00-05:00",
+      "updated_at": "2026-03-11T00:00:00-05:00"
+    },
+    {
+      "id": 22,
+      "title": "Activation steering is weaker than system prompt steering for Makefile framing",
+      "hypothesis": "System prompt steering (Ollama 11435) produces near-100% Makefile responses. Activation steering at alpha=2.0-5.0 produces partial contamination but cannot achieve the total framing replacement seen with system prompts.",
+      "status": "open",
+      "tags": [
+        "makefile",
+        "comparison",
+        "experiment"
+      ],
+      "created_at": "2026-03-11T00:00:00-05:00",
+      "updated_at": "2026-03-11T00:00:00-05:00"
+    }
   ],
-  "next_id": 21,
+  "next_id": 23,
   "config": {
     "local": true
   }
