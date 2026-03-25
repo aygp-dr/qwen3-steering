@@ -1,0 +1,26 @@
+{
+  "config": {
+    "model": "Qwen/Qwen3-0.6B",
+    "image_model": "x/flux2-klein:4b",
+    "style": "cult_of_jason",
+    "alpha": 0.25,
+    "layer": 12,
+    "seed": 42,
+    "timestamp": "2026-03-25T20:53:26.732882+00:00"
+  },
+  "results": [
+    {
+      "idx": 0,
+      "original_prompt": "a sunset over East Boston",
+      "baseline_expanded": "Here's a more detailed and vivid image description for the scene of a sunset over East Boston:\n\nA breathtaking sunset paints the sky in hues of orange, pink, and gold, casting long, golden rays across the horizon. The sky is a vibrant tapestry of colors, with the sun dipping low, casting a warm glow over the city skyline. The East Boston skyline is dominated by towering buildings, some of which are adorned with colorful lights and banners, adding to the visual appeal. The city is alive with the sounds of people walking along the streets, the laughter of children playing, and the gentle hum of the city's energy. The sunset creates a magical atmosphere, with the colors blending into the sky and the cityscape glowing warmly. This scene captures the beauty of East Boston during its perfect sunset, offering a vivid and detailed image that can be used for artistic or creative purposes.",
+      "steered_expanded": "Here is a more detailed and vivid image description of a sunset over East Boston:\n\n---\n\nA breathtaking sunset painting unfolds over East Boston, casting a golden hue across the skyline. The horizon is painted in hues of amber and rose, with the sun slowly descending, casting long, golden rays that paint the sky in warm, golden tones. The cityscape is bathed in a radiant orange and pink, with the sun dipping below the horizon, casting soft, golden light that dances across the city's skyline.\n\nAs the sun sets, casting long, golden rays, the city lights flicker and dance in the sky, casting a warm glow that paints the horizon in hues of orange and pink. The scene is captured in a perfect balance of light and shadow, with the city's skyline illuminated by soft, golden light that dances across the sky. The city is bathed in a warm glow, with the sun dipping below the horizon, casting long, golden rays that paint the sky in hues of orange and pink",
+      "style": "cult_of_jason",
+      "alpha": 0.25,
+      "layer": 12,
+      "original_image": null,
+      "original_elapsed": 63.9760140000144,
+      "steered_image": null,
+      "steered_elapsed": 61.40339845896233
+    }
+  ]
+}

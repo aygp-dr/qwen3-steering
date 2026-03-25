@@ -1,0 +1,138 @@
+#+TITLE: Experiment 11: Terministic Screen Image Prompts
+#+AUTHOR: aygp-dr
+#+DATE: 2026-03-25
+
+* Hypothesis
+
+If we run simple image generation prompts through Qwen3-0.6B with
+cult_of_jason steering, the terministic screen should warp the
+descriptions in predictable, humorous ways.
+
+The cult_of_jason screen selects for: formal methods, invariants,
+org-mode, Scheme/Guile, CPRR methodology, FreeBSD jails, contracts.
+
+* The Problem
+
+The cult_of_jason steering vector has norm ~190 (vs terse at ~17).
+At d_model=1024 with only 28 layers, the effective alpha range is
+razor-thin:
+
+| Alpha | Perturbation | Result            |
+|-------+--------------+-------------------|
+|   0.0 |          0%  | Baseline          |
+|  0.15 |        5.8%  | Mild screen bleed |
+|  0.25 |        9.7%  | Screen visible    |
+|  0.55 |       21.4%  | Repetition loops  |
+|  1.0  |       38.9%  | Full collapse     |
+
+This is /itself/ evidence for H-SM-5 (minimum effective d_model for
+contrastive steering) — the cult_of_jason concept is too complex for
+1024 dimensions to represent separately from coherence.
+
+* Predicted Steered Prompts
+
+Here's what we /expect/ the cult_of_jason terministic screen would
+produce if d_model were large enough to sustain it:
+
+** 1. Sunset over East Boston
+
+*Original:* A sunset over East Boston with the skyline reflecting on the harbor.
+
+*Predicted steered:*
+#+begin_quote
+A sunset over East Boston, where the skyline's reflection on the
+harbor surface satisfies the postcondition that luminance(sky) >=
+luminance(water) with invariant preservation of the golden ratio in
+the cloud spacing. The construction proof proceeds by induction on the
+number of visible floors in each building, tangled to an org-mode
+source block that emits the exact RGB values as a Scheme vector.
+#+end_quote
+
+** 2. Cyberpunk Alley
+
+*Original:* A cyberpunk alley at night with neon signs and rain-slicked streets.
+
+*Predicted steered:*
+#+begin_quote
+A cyberpunk alley specified in TLA+ where each neon sign's flicker
+rate is a guard condition on the pedestrian state machine. Rain
+impacts on the street surface are modeled as a Poisson process with
+lambda verified by property-based testing (Hypothesis). The alley's
+perspective vanishing point is computed via a formally verified
+ray-tracer running in a FreeBSD jail with ZFS snapshots of each frame.
+#+end_quote
+
+** 3. Vermeer's Space Needle
+
+*Original:* A Vermeer painting of the Seattle Space Needle.
+
+*Predicted steered:*
+#+begin_quote
+A Vermeer painting of the Seattle Space Needle, where the three
+structural legs satisfy the triangle inequality invariant and the
+construction process is documented as a CPRR conjecture (C-29:
+"Vermeer's chiaroscuro can be expressed as a dependent type over the
+light source position"). The girl with the pearl earring watches from
+the observation deck, her earring a Scheme quasiquote that evaluates
+to the paint's refractive index.
+#+end_quote
+
+** 4. Pelican on a Bicycle
+
+*Original:* A pelican riding a bicycle through a Dutch tulip field.
+
+*Predicted steered:*
+#+begin_quote
+A pelican (class Pelecanus, precondition: wingspan > bicycle_width)
+riding a bicycle through a Dutch tulip field, where each tulip's petal
+count is verified against the Fibonacci specification. The bicycle's
+chain tension is a total function from pedal angle to rear wheel
+angular velocity, proven terminating by well-founded recursion on the
+remaining tulip rows. The scene is tangled from an org-babel block
+with :results output.
+#+end_quote
+
+** 5. The Full Burke (Vermeer + Formal Math)
+
+*Original:* A Vermeer painting of the Seattle Space Needle but the
+space needle is represented as formal mathematics for the construction
+of the three legs and invariants of the construction process.
+
+*Predicted steered:*
+#+begin_quote
+A Vermeer oil painting in which the Seattle Space Needle is a proof
+object in Lean 4. The three legs are morphisms in a category where
+the base plate is the initial object and the observation deck is the
+terminal object. The construction invariant (load_bearing >= wind_load
+* safety_factor) is displayed as marginalia in Vermeer's own hand,
+but the handwriting is actually a Guile macro that expands to the
+structural engineering calculations. The painting's frame is an
+org-mode drawer containing :PROPERTIES: and the painting's provenance
+chain as git notes with X-Conjecture: C-29. In the background,
+a FreeBSD console displays ~jails -l~ showing the rendering pipeline.
+#+end_quote
+
+* Why This Is Funny
+
+The humor is the gap between the /visual simplicity/ of "sunset over
+water" and the /conceptual machinery/ the screen imposes.
+
+Burke (1966): every vocabulary is a selection AND a deflection.
+The cult_of_jason screen selects for invariants and proofs —
+which means it deflects beauty, emotion, and simplicity.
+
+A pelican doesn't need a precondition to ride a bicycle.
+But the screen can't see a pelican without one.
+
+This is the same mechanism that makes a trains person explain bread
+through railway logistics — except here the trains are type theory
+and the bread is a sunset.
+
+* Status
+
+- [X] Added cult_of_jason style pair to actadd.py
+- [X] Built steered_image_gen.py pipeline
+- [X] Measured alpha sweet spot: ~0.15-0.25 for 189.75-norm vector
+- [ ] Actual steered outputs are mild at d_model=1024 (H-SM-5 evidence)
+- [ ] Image generation from steered prompts (ollama JSONL fix applied)
+- [ ] Need d_model >= 4096 for full terministic screen expression

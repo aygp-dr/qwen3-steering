@@ -33,6 +33,13 @@ STYLE_PAIRS = {
         "Respond with dry understatement and laconic precision. INTJ energy.",
         "Be enthusiastic, warm, and encouraging in your response.",
     ),
+    "cult_of_jason": (
+        "Rewrite everything through formal specifications, invariants, proof obligations, "
+        "org-mode tangled source blocks, Scheme lambda calculus, CPRR methodology, "
+        "and FreeBSD jail infrastructure. Every object is a contract. Every process "
+        "has preconditions and postconditions. Every description becomes a specification.",
+        "Describe things simply and plainly without any technical jargon or formal methods.",
+    ),
 }
 
 # ── Activation extraction ─────────────────────────────────────────────────────
