@@ -1,0 +1,126 @@
+#+TITLE: Repo Restructuring Proposals — Three Perspectives
+#+DATE: 2026-03-25
+
+* Proposal A: L7 Software Engineer
+
+** Core Diagnosis
+Top-level has library/script confusion. actadd.py is imported everywhere but lives
+alongside one-off diagnostics. Nine .org files at root serve four different roles.
+Generated JSON artifacts (layer-roles.json, verbosity-direction.json) sit at root.
+
+** Proposed Structure
+#+begin_example
+steering/          # Core library (importable package)
+  actadd.py, multilayer.py, corpus_style_vec.py
+scripts/           # Runnable, not imported
+  diagnose_steering.py, sweep_to_cprr.py, probe_arch.py
+eval/              # Evaluation pipeline
+  eval_terse_verbose.py, eval_viz.py, lens_eval.py, fig_*.py
+docs/
+  literate/        # Tangle sources (setup.org, contracts.org, eval_viz.org)
+  methodology/     # Conceptual docs (experimental-methodology, diagrams, etc.)
+  hypotheses/      # Pre-experiment thinking (moved from .cprr/)
+  reviews/         # Moved from root
+viz/
+  static/          # Matplotlib scripts
+  interactive/     # pygame, p5.js, d3, playwright capture
+  output/
+experiments/       # Keep numbered, add README.org narrative
+#+end_example
+
+** Key Moves
+- actadd.py → steering/actadd.py (importable package)
+- .org files → docs/ with subdirectories by role
+- .cprr/ hypothesis orgs → docs/hypotheses/ (.cprr/ = machine state only)
+- experiment 11 .org → directory with README.org like others
+- corpus_style_vec.py could merge into steering/actadd.py
+- profile_activations.py + tracemalloc_profile.py → merge into scripts/profile_steering.py
+
+** Conventions
+- fig_ prefix for paper figures, eval_ for evaluations
+- Tangled files are read-only with AUTO-GENERATED header
+- .cprr/ is state machine only; human docs in docs/hypotheses/
+
+* Proposal B: Data Visualization Specialist
+
+** Core Diagnosis
+Four active output locations create chaos: eval_output/, viz/output/, images/output/,
+images/steered/. Three different .txt semantics (alt-text vs metadata vs missing).
+fig_style_cosine_matrix.py reloads the model every run instead of caching to JSON.
+
+** Proposed Structure
+#+begin_example
+outputs/           # Single canonical output root
+  data/            # Raw eval JSON
+  figures/         # Standalone publication figures
+  eval/            # Numbered eval pipeline plots (01-06)
+    legacy/        # Older eval_terse_verbose.py plots
+  viz/             # Conceptual analysis plots
+  interactive/     # Playwright screenshots
+  hero/            # AI-generated hero images + prompts/
+experiments/NN-slug/output/  # Self-contained per-experiment
+#+end_example
+
+** Key Innovations
+- Split .txt into .alt.txt (accessibility) and .meta.json (provenance)
+- gallery.html auto-generated from outputs/manifest.json
+- Naming convention: {NN}-{slug}[--{variant}].png (kebab-case)
+- Gitignore *_full.json, *.meta.json, manifest.json
+- fig_style_cosine_matrix.py should cache vectors to JSON, decouple data from render
+
+** Data Flow
+Stage 0 (GPU): eval_terse_verbose.py → data JSONs
+Stage 1 (CPU): eval_viz.py reads JSON → numbered panels
+Stage 2 (CPU): viz/*.py → conceptual plots
+Stage 3 (Playwright): capture-screenshots.mjs → interactive PNGs
+Stage 4 (Ollama): images/generate.py → hero PNGs
+Stage 5: make gallery → gallery.html from manifest
+
+* Proposal C: Technical Writer
+
+** Core Diagnosis
+README.org does too much: landing page + architecture + methodology + lens explainer.
+No reading guide for newcomers. experiments/ has no index. Burke/Maslow theory lives
+in three places (docstring, README, diagrams.org). Reviews exist but are invisible
+from README. Conjecture count badges are stale.
+
+** Proposed Structure
+#+begin_example
+docs/
+  theory.org           # Burke/Maslow extracted from docstring (keep docstring too)
+  cprr-reference.org   # Readable companion to conjectures.json
+  roadmap.org          # Derived from reviews
+  methodology.org      # Renamed experimental-methodology.org
+  architecture.org     # Extracted from setup.org
+  reading-guide.org    # Renamed reading-list.org + intro text
+experiments/
+  INDEX.org            # Master table: #, Name, Phase, CPRR IDs, Status, Key Finding
+#+end_example
+
+** Key Innovations
+- experiments/INDEX.org with phase groupings:
+  Phase 1 (Layer Char): 01
+  Phase 2 (Vector Geom): 02, 06
+  Phase 3 (Calibration): 03, 04
+  Phase 4 (Structural): 05
+  Phase 5 (Mechanism): 08
+  Phase 6 (New Axes): 07, 09, 10
+  Phase 7 (Limits/Humor): 11
+- cprr-reference.org Part 3: refutation narratives for C-6, C-10/11/12, C-21
+- README.org "Start Here" block with 5 reading paths
+- docs/theory.org as standalone Burke/Maslow document
+
+** Suggested Reading Order
+1. README.org — what this is, key finding
+2. docs/theory.org — why terministic screens matter
+3. experimental-methodology.org — CPRR loop
+4. experiments/INDEX.org — what each experiment tested
+5. experiments/01,02,03 in sequence — foundational
+6. docs/cprr-reference.org — full conjecture table
+7. experiments/11 — humor capstone
+
+** What NOT to Create
+- No CONTRIBUTING.md (single-author research)
+- No docs/api.md (contracts.org handles this)
+- No separate viz docs (viz/README.md is sufficient)
+- Don't replace conjectures.json with markdown (keep JSON as source of truth)
