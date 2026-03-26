@@ -1,0 +1,9 @@
+X-AI-Agent: claude-opus-4-6
+X-Conjecture: C-25/C-28 (refuted — ARI=0.382 < 0.50)
+X-Detection: Surface features recover terse (99%) but not verbose (62% > baseline)
+X-Testing: 100-prompt eval complete, all 18 unit tests passing
+X-Notes: ALL BEADS CLOSED. Session complete.
+  Confirmed: C-23 (perplexity collapse), C-24 (non-orthogonal styles)
+  Refuted: C-25 (surface features insufficient for screening)
+  New figures: coherence scatter, layer sweep, intervention SVG
+  UX fixes: strip plots, bootstrap CIs, residual split, dashboard title
