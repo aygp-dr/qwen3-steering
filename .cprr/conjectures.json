@@ -398,7 +398,25 @@
       "updated_at": "2026-03-26T00:00:00Z"
     }
   ],
-  "next_id": 25,
+    {
+      "id": 25,
+      "title": "Surface Features Insufficient to Recover Screening Conditions (C-28)",
+      "hypothesis": "K-means on (word_count, token_count, char_count) recovers terse/baseline/verbose with ARI >= 0.50",
+      "evidence": [
+        "100 prompts x 3 directions, alpha=2.0, layer=15",
+        "ARI = 0.382 (below 0.50 threshold) — REFUTED",
+        "Silhouette prefers k=2: terse vs everything-else",
+        "Terse recall 80%, baseline 72%, verbose 92% — but baseline/verbose bleed",
+        "Directional: terse<baseline 99%, terse<verbose 98%",
+        "Burke prediction confirmed: terse/baseline screens bleed, verbose is clean"
+      ],
+      "status": "refuted",
+      "tags": ["clustering", "surface-features", "terministic-screen", "burke"],
+      "created_at": "2026-03-26T00:00:00Z",
+      "updated_at": "2026-03-26T00:00:00Z"
+    }
+  ],
+  "next_id": 26,
   "config": {
     "local": true
   }
