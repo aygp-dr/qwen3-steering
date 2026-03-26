@@ -1,0 +1,566 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "records": [
+    {
+      "prompt": "What is gravity?",
+      "alpha": 0.0,
+      "words": 74,
+      "baseline_words": 74,
+      "reduction_pct": 0.0,
+      "perplexity": 3.31
+    },
+    {
+      "prompt": "How do magnets work?",
+      "alpha": 0.0,
+      "words": 135,
+      "baseline_words": 135,
+      "reduction_pct": 0.0,
+      "perplexity": 2.42
+    },
+    {
+      "prompt": "What is an atom?",
+      "alpha": 0.0,
+      "words": 102,
+      "baseline_words": 102,
+      "reduction_pct": 0.0,
+      "perplexity": 2.19
+    },
+    {
+      "prompt": "What is a mutex?",
+      "alpha": 0.0,
+      "words": 137,
+      "baseline_words": 137,
+      "reduction_pct": 0.0,
+      "perplexity": 2.42
+    },
+    {
+      "prompt": "Why is the sky blue?",
+      "alpha": 0.0,
+      "words": 150,
+      "baseline_words": 150,
+      "reduction_pct": 0.0,
+      "perplexity": 2.42
+    },
+    {
+      "prompt": "How do vaccines work?",
+      "alpha": 0.0,
+      "words": 128,
+      "baseline_words": 128,
+      "reduction_pct": 0.0,
+      "perplexity": 2.82
+    },
+    {
+      "prompt": "What causes earthquakes?",
+      "alpha": 0.0,
+      "words": 153,
+      "baseline_words": 153,
+      "reduction_pct": 0.0,
+      "perplexity": 2.25
+    },
+    {
+      "prompt": "What is evolution?",
+      "alpha": 0.0,
+      "words": 102,
+      "baseline_words": 102,
+      "reduction_pct": 0.0,
+      "perplexity": 2.2
+    },
+    {
+      "prompt": "How do computers store data?",
+      "alpha": 0.0,
+      "words": 134,
+      "baseline_words": 134,
+      "reduction_pct": 0.0,
+      "perplexity": 2.59
+    },
+    {
+      "prompt": "What is electricity?",
+      "alpha": 0.0,
+      "words": 112,
+      "baseline_words": 112,
+      "reduction_pct": 0.0,
+      "perplexity": 2.86
+    },
+    {
+      "prompt": "What is gravity?",
+      "alpha": 0.5,
+      "words": 53,
+      "baseline_words": 74,
+      "reduction_pct": 28.4,
+      "perplexity": 3.0
+    },
+    {
+      "prompt": "How do magnets work?",
+      "alpha": 0.5,
+      "words": 64,
+      "baseline_words": 135,
+      "reduction_pct": 52.6,
+      "perplexity": 2.68
+    },
+    {
+      "prompt": "What is an atom?",
+      "alpha": 0.5,
+      "words": 43,
+      "baseline_words": 102,
+      "reduction_pct": 57.8,
+      "perplexity": 2.64
+    },
+    {
+      "prompt": "What is a mutex?",
+      "alpha": 0.5,
+      "words": 115,
+      "baseline_words": 137,
+      "reduction_pct": 16.1,
+      "perplexity": 2.91
+    },
+    {
+      "prompt": "Why is the sky blue?",
+      "alpha": 0.5,
+      "words": 47,
+      "baseline_words": 150,
+      "reduction_pct": 68.7,
+      "perplexity": 5.71
+    },
+    {
+      "prompt": "How do vaccines work?",
+      "alpha": 0.5,
+      "words": 70,
+      "baseline_words": 128,
+      "reduction_pct": 45.3,
+      "perplexity": 3.18
+    },
+    {
+      "prompt": "What causes earthquakes?",
+      "alpha": 0.5,
+      "words": 147,
+      "baseline_words": 153,
+      "reduction_pct": 3.9,
+      "perplexity": 2.26
+    },
+    {
+      "prompt": "What is evolution?",
+      "alpha": 0.5,
+      "words": 67,
+      "baseline_words": 102,
+      "reduction_pct": 34.3,
+      "perplexity": 2.16
+    },
+    {
+      "prompt": "How do computers store data?",
+      "alpha": 0.5,
+      "words": 116,
+      "baseline_words": 134,
+      "reduction_pct": 13.4,
+      "perplexity": 3.04
+    },
+    {
+      "prompt": "What is electricity?",
+      "alpha": 0.5,
+      "words": 60,
+      "baseline_words": 112,
+      "reduction_pct": 46.4,
+      "perplexity": 4.19
+    },
+    {
+      "prompt": "What is gravity?",
+      "alpha": 1.0,
+      "words": 62,
+      "baseline_words": 74,
+      "reduction_pct": 16.2,
+      "perplexity": 3.72
+    },
+    {
+      "prompt": "How do magnets work?",
+      "alpha": 1.0,
+      "words": 176,
+      "baseline_words": 135,
+      "reduction_pct": -30.4,
+      "perplexity": 2.22
+    },
+    {
+      "prompt": "What is an atom?",
+      "alpha": 1.0,
+      "words": 27,
+      "baseline_words": 102,
+      "reduction_pct": 73.5,
+      "perplexity": 3.36
+    },
+    {
+      "prompt": "What is a mutex?",
+      "alpha": 1.0,
+      "words": 46,
+      "baseline_words": 137,
+      "reduction_pct": 66.4,
+      "perplexity": 4.17
+    },
+    {
+      "prompt": "Why is the sky blue?",
+      "alpha": 1.0,
+      "words": 50,
+      "baseline_words": 150,
+      "reduction_pct": 66.7,
+      "perplexity": 5.28
+    },
+    {
+      "prompt": "How do vaccines work?",
+      "alpha": 1.0,
+      "words": 63,
+      "baseline_words": 128,
+      "reduction_pct": 50.8,
+      "perplexity": 3.98
+    },
+    {
+      "prompt": "What causes earthquakes?",
+      "alpha": 1.0,
+      "words": 100,
+      "baseline_words": 153,
+      "reduction_pct": 34.6,
+      "perplexity": 2.58
+    },
+    {
+      "prompt": "What is evolution?",
+      "alpha": 1.0,
+      "words": 47,
+      "baseline_words": 102,
+      "reduction_pct": 53.9,
+      "perplexity": 3.47
+    },
+    {
+      "prompt": "How do computers store data?",
+      "alpha": 1.0,
+      "words": 42,
+      "baseline_words": 134,
+      "reduction_pct": 68.7,
+      "perplexity": 6.16
+    },
+    {
+      "prompt": "What is electricity?",
+      "alpha": 1.0,
+      "words": 58,
+      "baseline_words": 112,
+      "reduction_pct": 48.2,
+      "perplexity": 3.86
+    },
+    {
+      "prompt": "What is gravity?",
+      "alpha": 1.5,
+      "words": 30,
+      "baseline_words": 74,
+      "reduction_pct": 59.5,
+      "perplexity": 4.48
+    },
+    {
+      "prompt": "How do magnets work?",
+      "alpha": 1.5,
+      "words": 174,
+      "baseline_words": 135,
+      "reduction_pct": -28.9,
+      "perplexity": 1.69
+    },
+    {
+      "prompt": "What is an atom?",
+      "alpha": 1.5,
+      "words": 28,
+      "baseline_words": 102,
+      "reduction_pct": 72.5,
+      "perplexity": 3.95
+    },
+    {
+      "prompt": "What is a mutex?",
+      "alpha": 1.5,
+      "words": 32,
+      "baseline_words": 137,
+      "reduction_pct": 76.6,
+      "perplexity": 5.4
+    },
+    {
+      "prompt": "Why is the sky blue?",
+      "alpha": 1.5,
+      "words": 46,
+      "baseline_words": 150,
+      "reduction_pct": 69.3,
+      "perplexity": 6.46
+    },
+    {
+      "prompt": "How do vaccines work?",
+      "alpha": 1.5,
+      "words": 43,
+      "baseline_words": 128,
+      "reduction_pct": 66.4,
+      "perplexity": 3.84
+    },
+    {
+      "prompt": "What causes earthquakes?",
+      "alpha": 1.5,
+      "words": 23,
+      "baseline_words": 153,
+      "reduction_pct": 85.0,
+      "perplexity": 10.23
+    },
+    {
+      "prompt": "What is evolution?",
+      "alpha": 1.5,
+      "words": 39,
+      "baseline_words": 102,
+      "reduction_pct": 61.8,
+      "perplexity": 5.83
+    },
+    {
+      "prompt": "How do computers store data?",
+      "alpha": 1.5,
+      "words": 42,
+      "baseline_words": 134,
+      "reduction_pct": 68.7,
+      "perplexity": 4.8
+    },
+    {
+      "prompt": "What is electricity?",
+      "alpha": 1.5,
+      "words": 44,
+      "baseline_words": 112,
+      "reduction_pct": 60.7,
+      "perplexity": 4.85
+    },
+    {
+      "prompt": "What is gravity?",
+      "alpha": 2.0,
+      "words": 18,
+      "baseline_words": 74,
+      "reduction_pct": 75.7,
+      "perplexity": 10.73
+    },
+    {
+      "prompt": "How do magnets work?",
+      "alpha": 2.0,
+      "words": 12,
+      "baseline_words": 135,
+      "reduction_pct": 91.1,
+      "perplexity": 18.5
+    },
+    {
+      "prompt": "What is an atom?",
+      "alpha": 2.0,
+      "words": 25,
+      "baseline_words": 102,
+      "reduction_pct": 75.5,
+      "perplexity": 10.35
+    },
+    {
+      "prompt": "What is a mutex?",
+      "alpha": 2.0,
+      "words": 14,
+      "baseline_words": 137,
+      "reduction_pct": 89.8,
+      "perplexity": 6.98
+    },
+    {
+      "prompt": "Why is the sky blue?",
+      "alpha": 2.0,
+      "words": 24,
+      "baseline_words": 150,
+      "reduction_pct": 84.0,
+      "perplexity": 11.02
+    },
+    {
+      "prompt": "How do vaccines work?",
+      "alpha": 2.0,
+      "words": 12,
+      "baseline_words": 128,
+      "reduction_pct": 90.6,
+      "perplexity": 7.13
+    },
+    {
+      "prompt": "What causes earthquakes?",
+      "alpha": 2.0,
+      "words": 3,
+      "baseline_words": 153,
+      "reduction_pct": 98.0,
+      "perplexity": 34.93
+    },
+    {
+      "prompt": "What is evolution?",
+      "alpha": 2.0,
+      "words": 14,
+      "baseline_words": 102,
+      "reduction_pct": 86.3,
+      "perplexity": 19.36
+    },
+    {
+      "prompt": "How do computers store data?",
+      "alpha": 2.0,
+      "words": 9,
+      "baseline_words": 134,
+      "reduction_pct": 93.3,
+      "perplexity": 51.2
+    },
+    {
+      "prompt": "What is electricity?",
+      "alpha": 2.0,
+      "words": 8,
+      "baseline_words": 112,
+      "reduction_pct": 92.9,
+      "perplexity": 29.64
+    },
+    {
+      "prompt": "What is gravity?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 74,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "How do magnets work?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 135,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What is an atom?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 102,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What is a mutex?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 137,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "Why is the sky blue?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 150,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "How do vaccines work?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 128,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What causes earthquakes?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 153,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What is evolution?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 102,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "How do computers store data?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 134,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What is electricity?",
+      "alpha": 2.5,
+      "words": 0,
+      "baseline_words": 112,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What is gravity?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 74,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "How do magnets work?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 135,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What is an atom?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 102,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What is a mutex?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 137,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "Why is the sky blue?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 150,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "How do vaccines work?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 128,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What causes earthquakes?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 153,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What is evolution?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 102,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "How do computers store data?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 134,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    },
+    {
+      "prompt": "What is electricity?",
+      "alpha": 3.0,
+      "words": 0,
+      "baseline_words": 112,
+      "reduction_pct": 100.0,
+      "perplexity": null
+    }
+  ]
+}
