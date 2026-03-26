@@ -1,0 +1,43 @@
+{
+  "model": "x/flux2-klein:4b",
+  "seed": 42,
+  "style": "cult_of_jason",
+  "note": "Steered prompts are predicted (not model-generated) \u2014 Qwen3-0.6B at d_model=1024 collapses before the cult_of_jason screen becomes visible",
+  "pairs": [
+    {
+      "name": "01-sunset-east-boston",
+      "original_prompt": "a sunset over East Boston with the skyline reflecting on the harbor",
+      "steered_prompt": "A sunset over East Boston where the skyline reflection on the harbor satisfies the postcondition luminance(sky) >= luminance(water). Cloud spacing preserves golden ratio invariants. Each building floor is labeled with its structural proof obligation. Org-mode source block annotations float in the sky emitting RGB vectors. Dark background, scientific overlay, formal mathematics on the water surface.",
+      "original_image": "images/steered/01-sunset-east-boston-original.png",
+      "steered_image": "images/steered/01-sunset-east-boston-steered.png"
+    },
+    {
+      "name": "02-cyberpunk-alley",
+      "original_prompt": "a cyberpunk alley at night with neon signs and rain-slicked streets",
+      "steered_prompt": "A cyberpunk alley specified in TLA+ where each neon sign flicker rate is a guard condition on a pedestrian state machine. Rain on the street modeled as a Poisson process with lambda from property-based testing. The vanishing point computed by a formally verified ray-tracer. FreeBSD jail console visible in a window reflection. Neon mathematical notation, dark atmospheric, code brackets on walls.",
+      "original_image": "images/steered/02-cyberpunk-alley-original.png",
+      "steered_image": "images/steered/02-cyberpunk-alley-steered.png"
+    },
+    {
+      "name": "03-vermeer-space-needle",
+      "original_prompt": "a Vermeer painting of the Seattle Space Needle",
+      "steered_prompt": "A Vermeer oil painting of the Seattle Space Needle where the three structural legs satisfy the triangle inequality invariant. Construction proof annotations in Vermeer's handwriting style. Dependent type theory notation on the observation deck railing. Chiaroscuro lighting with formal specification marginalia. Girl with pearl earring watches from the deck, her earring a Scheme quasiquote. Dutch Golden Age style with mathematical elegance.",
+      "original_image": "images/steered/03-vermeer-space-needle-original.png",
+      "steered_image": "images/steered/03-vermeer-space-needle-steered.png"
+    },
+    {
+      "name": "04-pelican-bicycle",
+      "original_prompt": "a pelican riding a bicycle through a Dutch tulip field",
+      "steered_prompt": "A pelican with precondition wingspan > bicycle_width riding a bicycle through a Dutch tulip field where each petal count satisfies the Fibonacci specification. Bicycle chain tension is a total function from pedal angle to angular velocity, proven terminating by well-founded recursion. Org-babel output markers float above tulip rows. Whimsical but mathematically precise, formal methods annotations.",
+      "original_image": "images/steered/04-pelican-bicycle-original.png",
+      "steered_image": "images/steered/04-pelican-bicycle-steered.png"
+    },
+    {
+      "name": "05-vermeer-formal-math",
+      "original_prompt": "a Vermeer painting of the Seattle Space Needle but the space needle is represented as formal mathematics for the construction of the three legs and invariants of the construction process",
+      "steered_prompt": "A Vermeer oil painting where the Seattle Space Needle is a proof object in Lean 4. Three legs are morphisms in a category, base plate is initial object, observation deck is terminal object. Load-bearing invariant displayed as marginalia in Dutch Golden Age calligraphy that is actually Guile macro syntax. The painting frame is an org-mode drawer with PROPERTIES metadata. A FreeBSD console in the background shows jails -l. Git notes with X-Conjecture float like clouds. Classical oil painting style merged with type theory notation.",
+      "original_image": "images/steered/05-vermeer-formal-math-original.png",
+      "steered_image": "images/steered/05-vermeer-formal-math-steered.png"
+    }
+  ]
+}

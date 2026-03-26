@@ -1,0 +1,8 @@
+Original prompt: a cyberpunk alley at night with neon signs and rain-slicked streets
+
+Steered prompt (cult_of_jason): A cyberpunk alley specified in TLA+ where each neon sign flicker rate is a guard condition on a pedestrian state machine. Rain on the street modeled as a Poisson process with lambda from property-based testing. The vanishing point computed by a formally verified ray-tracer. FreeBSD jail console visible in a window reflection. Neon mathematical notation, dark atmospheric, code brackets on walls.
+
+model: x/flux2-klein:4b
+seed: 42
+original_elapsed: 61.6s
+steered_elapsed: 61.6s
