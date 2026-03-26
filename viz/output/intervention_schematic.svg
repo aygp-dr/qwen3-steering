@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 1100" width="760" height="1100" font-family="'JetBrains Mono', 'Fira Code', 'SF Mono', monospace">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#484f58"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#f0883e"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <rect width="760" height="1100" fill="#0d1117"/>
+  <text x="380" y="32" text-anchor="middle" fill="#c9d1d9" font-size="16" font-weight="bold">ActAdd Intervention Schematic: Qwen3-0.6B</text>
+  <text x="380" y="52" text-anchor="middle" fill="#8b949e" font-size="11">28 layers, d_model=1024, GQA 16Q/8KV, SwiGLU, RMSNorm</text>
+  <rect x="240" y="72" width="200" height="46" rx="6" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="340" y="89" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="600">Input Tokens</text>
+  <text x="340" y="105" text-anchor="middle" fill="#8b949e" font-size="10">x = [t₁, t₂, …, tₙ]</text>
+  <line x1="340" y1="118" x2="340" y2="132" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="230" y="132" width="220" height="46" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="340" y="149" text-anchor="middle" fill="#c9d1d9" font-size="12" font-weight="600">Token Embedding + RoPE</text>
+  <text x="340" y="165" text-anchor="middle" fill="#8b949e" font-size="10">d_model = 1024</text>
+  <line x1="340" y1="178" x2="340" y2="192" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="220" y="192" width="240" height="50" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="340" y="211" text-anchor="middle" fill="#c9d1d9" font-size="12" font-weight="600">Transformer Layers 0–11</text>
+  <text x="340" y="227" text-anchor="middle" fill="#8b949e" font-size="10">12 × (Attn + FFN + RMSNorm)</text>
+  <line x1="340" y1="242" x2="340" y2="256" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="160" y="256" width="360" height="400" rx="8" fill="#1a1510" stroke="#f0883e" stroke-width="2" filter="url(#glow)"/>
+  <text x="172" y="274" text-anchor="start" fill="#f0883e" font-size="12" font-weight="bold">Layer 12  (Intervention Target)</text>
+  <text x="508" y="274" text-anchor="end" fill="#f0883e" font-size="10">best steering layer</text>
+  <rect x="265" y="288" width="150" height="36" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="340" y="310" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="600">residual_in</text>
+  <line x1="340" y1="324" x2="340" y2="334" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="265" y="334" width="150" height="34" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="340" y="355" text-anchor="middle" fill="#c9d1d9" font-size="11" font-weight="600">RMSNorm</text>
+  <line x1="340" y1="368" x2="340" y2="378" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="250" y="378" width="180" height="46" rx="6" fill="#1c2128" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="340" y="395" text-anchor="middle" fill="#c9d1d9" font-size="11" font-weight="600">Multi-Head Attention</text>
+  <text x="340" y="411" text-anchor="middle" fill="#8b949e" font-size="10">GQA: 16Q / 8KV heads</text>
+  <line x1="340" y1="424" x2="340" y2="434" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="285" y="434" width="110" height="32" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="340" y="454" text-anchor="middle" fill="#c9d1d9" font-size="10" font-weight="600">+ Residual</text>
+  <line x1="454" y1="324" x2="454" y2="450" stroke="#8b949e" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="454" y1="450" x2="395" y2="450" stroke="#8b949e" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="340" y1="466" x2="340" y2="476" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="265" y="476" width="150" height="34" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="340" y="497" text-anchor="middle" fill="#c9d1d9" font-size="11" font-weight="600">RMSNorm</text>
+  <line x1="340" y1="510" x2="340" y2="520" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="250" y="520" width="180" height="46" rx="6" fill="#1c2128" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="340" y="537" text-anchor="middle" fill="#c9d1d9" font-size="11" font-weight="600">SwiGLU FFN</text>
+  <text x="340" y="553" text-anchor="middle" fill="#8b949e" font-size="10">d_ff = 4096</text>
+  <line x1="340" y1="566" x2="340" y2="576" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="229" y="570" width="222" height="64" rx="10" fill="#f0883e40" stroke="none" stroke-width="0"/>
+  <rect x="235" y="576" width="210" height="52" rx="6" fill="#2a1a08" stroke="#f0883e" stroke-width="2.5"/>
+  <text x="340" y="596" text-anchor="middle" fill="#f0883e" font-size="13" font-weight="bold">residual_out = h + α·v</text>
+  <text x="340" y="613" text-anchor="middle" fill="#8b949e" font-size="9">α=2.0  |  ||v||=19.6  |  ~8% perturbation</text>
+  <line x1="230" y1="466" x2="230" y2="602" stroke="#8b949e" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="230" y1="602" x2="235" y2="602" stroke="#8b949e" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="548" y1="602" x2="449" y2="602" stroke="#f0883e" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <rect x="550" y="571" width="130" height="62" rx="6" fill="#161b22" stroke="#f0883e" stroke-width="1.5"/>
+  <text x="615" y="587" text-anchor="middle" fill="#f0883e" font-size="11" font-weight="bold">Steering Vector</text>
+  <text x="615" y="601" text-anchor="middle" fill="#8b949e" font-size="9">v = act(+) − act(−)</text>
+  <text x="615" y="613" text-anchor="middle" fill="#8b949e" font-size="8">raw ActAdd (Turner 2023)</text>
+  <text x="615" y="625" text-anchor="middle" fill="#8b949e" font-size="9">||v|| ≈ 19.6</text>
+  <line x1="340" y1="656" x2="340" y2="670" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="220" y="670" width="240" height="50" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="340" y="689" text-anchor="middle" fill="#c9d1d9" font-size="12" font-weight="600">Transformer Layers 13–27</text>
+  <text x="340" y="705" text-anchor="middle" fill="#8b949e" font-size="10">15 × (Attn + FFN + RMSNorm)</text>
+  <line x1="340" y1="720" x2="340" y2="734" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="250" y="734" width="180" height="42" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="340" y="759" text-anchor="middle" fill="#c9d1d9" font-size="12" font-weight="600">Final RMSNorm</text>
+  <line x1="340" y1="776" x2="340" y2="790" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="235" y="790" width="210" height="46" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="340" y="807" text-anchor="middle" fill="#c9d1d9" font-size="12" font-weight="600">LM Head (Linear)</text>
+  <text x="340" y="823" text-anchor="middle" fill="#8b949e" font-size="10">1024 → 151,936 vocab</text>
+  <line x1="340" y1="836" x2="340" y2="850" stroke="#484f58" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <rect x="240" y="850" width="200" height="46" rx="6" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="340" y="867" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="600">Output Tokens</text>
+  <text x="340" y="883" text-anchor="middle" fill="#8b949e" font-size="10">argmax / sample</text>
+  <text x="30" y="196" text-anchor="start" fill="#c9d1d9" font-size="13" font-weight="bold">Qwen3-0.6B</text>
+  <text x="30" y="212" text-anchor="start" fill="#8b949e" font-size="10">751M parameters</text>
+  <text x="30" y="226" text-anchor="start" fill="#8b949e" font-size="10">28 transformer layers</text>
+  <text x="30" y="240" text-anchor="start" fill="#8b949e" font-size="10">d_model = 1024</text>
+  <text x="30" y="254" text-anchor="start" fill="#8b949e" font-size="10">GQA: 16Q / 8KV</text>
+  <text x="30" y="268" text-anchor="start" fill="#8b949e" font-size="10">SwiGLU d_ff = 4096</text>
+  <text x="30" y="546" text-anchor="start" fill="#f0883e" font-size="11" font-weight="bold">Perturbation Budget</text>
+  <text x="30" y="562" text-anchor="start" fill="#8b949e" font-size="9">α = 2.0 (steering strength)</text>
+  <text x="30" y="576" text-anchor="start" fill="#8b949e" font-size="9">||v|| = 19.6 (raw ActAdd vec)</text>
+  <text x="30" y="590" text-anchor="start" fill="#8b949e" font-size="9">||h|| ≈ 475 (residual norm)</text>
+  <text x="30" y="604" text-anchor="start" fill="#c9d1d9" font-size="9">α·||v|| / ||h|| ≈ 8.3%</text>
+  <text x="30" y="632" text-anchor="start" fill="#8b949e" font-size="9">&lt; 2%   dead zone (no effect)</text>
+  <text x="30" y="646" text-anchor="start" fill="#3fb950" font-size="9">2–10%  effective steering</text>
+  <text x="30" y="660" text-anchor="start" fill="#f85149" font-size="9">&gt; 12%  coherence collapse</text>
+  <text x="380" y="1086" text-anchor="middle" fill="#8b949e" font-size="9">Turner et al. (2023) Activation Addition  |  Layer 12, α=2.0, raw vec  |  ~8% residual perturbation</text>
+</svg>

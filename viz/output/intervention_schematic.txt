@@ -1,0 +1,50 @@
+Intervention Schematic: ActAdd Steering in Qwen3-0.6B
+
+This diagram shows the architecture of the Qwen3-0.6B transformer model
+(28 layers, d_model=1024) with the ActAdd steering intervention point
+highlighted at Layer 12.
+
+Pipeline (top to bottom):
+1. Input Tokens: tokenized prompt sequence [t1, t2, ..., tn]
+2. Token Embedding + RoPE: maps tokens to d_model=1024 dimensional vectors
+3. Transformer Layers 0-11: 12 standard blocks (collapsed), each containing
+   Multi-Head Attention (GQA: 16 query / 8 KV heads), SwiGLU FFN (d_ff=4096),
+   and RMSNorm
+4. Layer 12 (Expanded - Intervention Target):
+   - residual_in enters the layer
+   - RMSNorm (pre-attention normalization)
+   - Multi-Head Attention with Grouped Query Attention (16Q/8KV)
+   - + Residual connection (post-attention skip)
+   - RMSNorm (pre-FFN normalization)
+   - SwiGLU FFN (d_ff=4096)
+   - INJECTION POINT (highlighted in orange):
+     residual_out = h + alpha * v
+     The steering vector v (raw activation difference, ||v||=19.6) is added
+     to the residual stream with alpha=2.0, producing ~8% perturbation
+     relative to the residual stream norm (||h||~475).
+   - Skip connection from post-attention residual feeds into injection point
+5. Transformer Layers 13-27: 15 standard blocks (collapsed)
+6. Final RMSNorm
+7. LM Head (Linear): projects 1024 -> 151,936 vocabulary logits
+8. Output Tokens: argmax or sampled from logit distribution
+
+The steering vector is computed as v = act(+) - act(-), the raw difference
+between activations from positive and negative style prompts (Turner et al.
+2023 ActAdd method). No normalization is applied to preserve natural scale.
+
+Perturbation budget annotations (left side):
+- alpha = 2.0 (steering strength)
+- ||v|| = 19.6 (raw ActAdd vector norm)
+- ||h|| approx 475 (residual stream norm at layer 12)
+- alpha * ||v|| / ||h|| approx 8.3%
+
+Phase boundaries:
+- < 2% perturbation: dead zone, no effect on output
+- 2-10% perturbation: effective steering (sweet spot)
+- > 12% perturbation: coherence collapse (garbage output)
+
+Color scheme: dark background (#0d1117), blue (#58a6ff) for standard
+architectural components, orange (#f0883e) with glow effect for the
+intervention point, green (#3fb950) for output tokens.
+
+Citation: Turner et al. (2023) Activation Addition

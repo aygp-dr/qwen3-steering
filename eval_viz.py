@@ -6,7 +6,7 @@ Tangled from eval_viz.org.  Reads eval_output/terse_verbose_full.json
 (no model, no Ollama — pure post-hoc analysis).
 
 Panels:
-  1. Descriptive   — KDE per feature with median lines
+  1. Descriptive   — KDE (n>=30) or strip plot (n<30) per feature with median lines + bootstrap CIs
   2. Elbow/Sil     — justifies k=3 without assuming it
   3. PCA scatter   — ground truth vs k-means, 2-sigma confidence ellipses
   4. Confusion     — raw and normalised side-by-side
@@ -55,6 +55,21 @@ def dark_ax(ax):
     return ax
 
 
+def bootstrap_ci(data, statistic=np.median, n_resamples=1000, confidence_level=0.95):
+    """Compute bootstrap confidence interval for a statistic using scipy.stats.bootstrap."""
+    data = np.asarray(data)
+    if len(data) < 2:
+        val = statistic(data)
+        return val, val, val
+    result = sp_stats.bootstrap(
+        (data,), statistic, n_resamples=n_resamples,
+        confidence_level=confidence_level, random_state=42,
+        method="percentile",
+    )
+    center = statistic(data)
+    return center, result.confidence_interval.low, result.confidence_interval.high
+
+
 def load_data(path=None):
     """Load the full eval JSON (with text) and build feature matrix."""
     p = path or OUTPUT_DIR / "terse_verbose_full.json"
@@ -73,31 +88,63 @@ def load_data(path=None):
 
 
 def plot_descriptive(X, labels, output_dir):
-    """KDE per feature with median vertical lines."""
+    """KDE (n>=30) or strip plot (n<30) per feature, with median lines + bootstrap CIs."""
     feature_names = ["Word Count", "Token Count", "Char Count"]
+    n_per_group = int(np.sum(labels == LABEL_ORDER[0]))
+    use_strip = n_per_group < 30
+
     fig, axes = plt.subplots(1, 3, figsize=(15, 4))
     fig.patch.set_facecolor(DARK_BG)
 
     for col, (ax, fname) in enumerate(zip(axes, feature_names)):
         dark_ax(ax)
-        for direction in LABEL_ORDER:
-            mask = labels == direction
-            vals = X[mask, col]
-            sns.kdeplot(vals, ax=ax, color=COLORS[direction],
-                        label=direction, fill=True, alpha=0.25, linewidth=1.5)
-            med = np.median(vals)
-            ax.axvline(med, color=COLORS[direction], linestyle="--",
-                       linewidth=1, alpha=0.8)
-            ax.text(med, ax.get_ylim()[1] * 0.92, f"{med:.0f}",
-                    color=COLORS[direction], fontsize=7, ha="center")
-        ax.set_xlabel(fname, color=TEXT_CLR)
-        ax.set_ylabel("Density" if col == 0 else "", color=TEXT_CLR)
-        ax.set_title(fname, color=TEXT_CLR, fontsize=10)
-        if col == 0:
-            ax.legend(facecolor=PANEL_BG, edgecolor=GRID_CLR, labelcolor=TEXT_CLR,
-                      fontsize=8)
+        if use_strip:
+            # Build a dataframe-like structure for stripplot
+            import pandas as pd
+            df = pd.DataFrame({
+                "value": X[:, col],
+                "direction": labels,
+            })
+            sns.stripplot(data=df, x="direction", y="value", hue="direction",
+                          order=LABEL_ORDER, hue_order=LABEL_ORDER,
+                          palette=COLORS, ax=ax, jitter=0.25, size=6, alpha=0.7,
+                          legend=False)
+            # Median lines + bootstrap CI shaded regions
+            for idx, direction in enumerate(LABEL_ORDER):
+                vals = X[labels == direction, col]
+                med, ci_lo, ci_hi = bootstrap_ci(vals)
+                ax.hlines(med, idx - 0.3, idx + 0.3, color=COLORS[direction],
+                          linestyle="--", linewidth=2, alpha=0.9)
+                ax.fill_between([idx - 0.3, idx + 0.3], ci_lo, ci_hi,
+                                color=COLORS[direction], alpha=0.15)
+                ax.text(idx + 0.35, med, f"{med:.0f} [{ci_lo:.0f}-{ci_hi:.0f}]",
+                        color=COLORS[direction], fontsize=6, va="center")
+            ax.set_xlabel("Direction", color=TEXT_CLR)
+            ax.set_ylabel(fname if col == 0 else "", color=TEXT_CLR)
+        else:
+            for direction in LABEL_ORDER:
+                mask = labels == direction
+                vals = X[mask, col]
+                sns.kdeplot(vals, ax=ax, color=COLORS[direction],
+                            label=direction, fill=True, alpha=0.25, linewidth=1.5)
+                med, ci_lo, ci_hi = bootstrap_ci(vals)
+                ax.axvline(med, color=COLORS[direction], linestyle="--",
+                           linewidth=1, alpha=0.8)
+                # Shaded CI region on median
+                ax.axvspan(ci_lo, ci_hi, color=COLORS[direction], alpha=0.08)
+                ax.text(med, ax.get_ylim()[1] * 0.92,
+                        f"{med:.0f} [{ci_lo:.0f}-{ci_hi:.0f}]",
+                        color=COLORS[direction], fontsize=6, ha="center")
+            ax.set_xlabel(fname, color=TEXT_CLR)
+            ax.set_ylabel("Density" if col == 0 else "", color=TEXT_CLR)
+            if col == 0:
+                ax.legend(facecolor=PANEL_BG, edgecolor=GRID_CLR, labelcolor=TEXT_CLR,
+                          fontsize=8)
 
-    fig.suptitle("Descriptive: KDE of Surface Features per Steering Direction",
+        ax.set_title(fname, color=TEXT_CLR, fontsize=10)
+
+    plot_type = "Strip Plot" if use_strip else "KDE"
+    fig.suptitle(f"Descriptive: {plot_type} of Surface Features (n={n_per_group}/group, 95% CI)",
                  color=TEXT_CLR, fontsize=12)
     plt.tight_layout(rect=[0, 0, 1, 0.93])
     path = output_dir / "01_descriptive_kde.png"
@@ -323,20 +370,42 @@ def plot_dashboard(X, labels, pred_labels, ari, output_dir):
     pca = PCA(n_components=2)
     X2 = pca.fit_transform(X)
 
-    # ── Panel 1: KDE (word count only — the money plot) ──────────────────
+    # ── Panel 1: KDE or Strip (word count only — the money plot) ────────
     ax1 = fig.add_subplot(gs[0, 0])
     dark_ax(ax1)
-    for direction in LABEL_ORDER:
-        mask = labels == direction
-        vals = X[mask, 0]
-        sns.kdeplot(vals, ax=ax1, color=COLORS[direction],
-                    label=direction, fill=True, alpha=0.25, linewidth=1.5)
-        med = np.median(vals)
-        ax1.axvline(med, color=COLORS[direction], linestyle="--", linewidth=1, alpha=0.8)
-    ax1.set_xlabel("Word Count", color=TEXT_CLR)
-    ax1.set_ylabel("Density", color=TEXT_CLR)
-    ax1.set_title("A. Word Count KDE", color=TEXT_CLR, fontsize=10)
-    ax1.legend(facecolor=PANEL_BG, edgecolor=GRID_CLR, labelcolor=TEXT_CLR, fontsize=7)
+    n_per_group = int(np.sum(labels == LABEL_ORDER[0]))
+    use_strip = n_per_group < 30
+
+    if use_strip:
+        import pandas as pd
+        df = pd.DataFrame({"value": X[:, 0], "direction": labels})
+        sns.stripplot(data=df, x="direction", y="value", hue="direction",
+                      order=LABEL_ORDER, hue_order=LABEL_ORDER,
+                      palette=COLORS, ax=ax1, jitter=0.25, size=5, alpha=0.7,
+                      legend=False)
+        for idx, direction in enumerate(LABEL_ORDER):
+            vals = X[labels == direction, 0]
+            med, ci_lo, ci_hi = bootstrap_ci(vals)
+            ax1.hlines(med, idx - 0.3, idx + 0.3, color=COLORS[direction],
+                       linestyle="--", linewidth=2, alpha=0.9)
+            ax1.fill_between([idx - 0.3, idx + 0.3], ci_lo, ci_hi,
+                             color=COLORS[direction], alpha=0.15)
+        ax1.set_xlabel("Direction", color=TEXT_CLR)
+        ax1.set_ylabel("Word Count", color=TEXT_CLR)
+        ax1.set_title(f"A. Word Count Strip (n={n_per_group})", color=TEXT_CLR, fontsize=10)
+    else:
+        for direction in LABEL_ORDER:
+            mask = labels == direction
+            vals = X[mask, 0]
+            sns.kdeplot(vals, ax=ax1, color=COLORS[direction],
+                        label=direction, fill=True, alpha=0.25, linewidth=1.5)
+            med, ci_lo, ci_hi = bootstrap_ci(vals)
+            ax1.axvline(med, color=COLORS[direction], linestyle="--", linewidth=1, alpha=0.8)
+            ax1.axvspan(ci_lo, ci_hi, color=COLORS[direction], alpha=0.08)
+        ax1.set_xlabel("Word Count", color=TEXT_CLR)
+        ax1.set_ylabel("Density", color=TEXT_CLR)
+        ax1.set_title("A. Word Count KDE", color=TEXT_CLR, fontsize=10)
+        ax1.legend(facecolor=PANEL_BG, edgecolor=GRID_CLR, labelcolor=TEXT_CLR, fontsize=7)
 
     # ── Panel 2: Elbow + Silhouette ──────────────────────────────────────
     ax2 = fig.add_subplot(gs[0, 1])
@@ -405,26 +474,36 @@ def plot_dashboard(X, labels, pred_labels, ari, output_dir):
     plt.setp(ax5.get_xticklabels(), color=TEXT_CLR)
     plt.setp(ax5.get_yticklabels(), color=TEXT_CLR)
 
-    # ── Panel 6: summary text ────────────────────────────────────────────
+    # ── Panel 6: summary text with bootstrap CIs ─────────────────────────
     ax6 = fig.add_subplot(gs[1, 2])
     ax6.set_facecolor(PANEL_BG)
     ax6.axis("off")
     n_per = len(X) // 3
+
+    # Compute bootstrap CIs for median word count per direction
+    ci_lines = []
+    for direction in LABEL_ORDER:
+        vals = X[labels == direction, 0]
+        med, ci_lo, ci_hi = bootstrap_ci(vals)
+        label_padded = f"{direction.capitalize():9s}"
+        ci_lines.append(
+            f"{label_padded} med={med:.0f} [{ci_lo:.0f}-{ci_hi:.0f}]"
+        )
+
     summary_lines = [
         f"n = {n_per} prompts x 3 directions",
         f"ARI = {ari:.3f}",
         f"C-28: {'PROOF' if ari >= 0.50 else 'REFUTATION'}",
         "",
-        "Terse:    \u03bc={:.0f} words".format(np.mean(X[labels == "terse", 0])),
-        "Baseline: \u03bc={:.0f} words".format(np.mean(X[labels == "baseline", 0])),
-        "Verbose:  \u03bc={:.0f} words".format(np.mean(X[labels == "verbose", 0])),
+        "Word count (median, 95% CI):",
+    ] + ci_lines + [
         "",
         "Burke: terse/baseline bleed,",
         "       verbose screen is clean.",
     ]
-    ax6.text(0.1, 0.9, "\n".join(summary_lines),
+    ax6.text(0.1, 0.95, "\n".join(summary_lines),
              transform=ax6.transAxes, color=TEXT_CLR,
-             fontsize=10, verticalalignment="top", fontfamily="monospace")
+             fontsize=9, verticalalignment="top", fontfamily="monospace")
     ax6.set_title("F. Summary", color=TEXT_CLR, fontsize=10)
 
     fig.suptitle(f"Surface Features Recover Terse Screen but Not Verbose (C-28, ARI={ari:.3f})",
