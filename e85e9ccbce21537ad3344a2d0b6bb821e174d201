@@ -1,0 +1,28 @@
+X-Agent: claude-opus-4-6 (main) + 3× claude-opus-4-6 sub-agents + jwalsh
+X-Session: 2026-03-06T20:30-05:00/2026-03-06T22:00-05:00
+X-Timing: sub-agents ran in parallel — exp04=~10min, exp05=~3min, exp06=~1min
+
+## Reasoning
+User requested "use sub agents to work on those and focus on visualization."
+Dispatched experiments 04/05/06 to background agents while main agent built
+two new visualizations (cprr_board.py, experiment_progression.py).
+
+## Sub-agent Results
+- Exp04 (alpha sweep): Terse parity α≈2.0 (overshoots to 10w vs 22w target).
+  Verbose never reaches prompt-level — asymmetric. C-14 registered (open).
+- Exp05 (multi-layer): Single L12 α=2.0 wins (score=10.91 vs next 7.49).
+  C-6 incorrectly marked "confirmed" by sub-agent — corrected to "refuted".
+- Exp06 (WordNet): No relational geometry at 0.6B. Peak stability=0.12,
+  far below 0.5 threshold. Orthogonality is vacuous (noise in 1024-d).
+
+## Issues
+- Sub-agent for exp05 set C-6 status to "confirmed" despite evidence showing
+  multi_wins=False. Corrected manually to "refuted" with evidence note.
+- CPRR board viz has minor overlap of tag text in middle column (cosmetic).
+- tight_layout warning on cprr_board.py due to manually positioned pie chart axes.
+
+## Deviations
+- experiment_progression.py Key Metric header overlaps first bar chart slightly.
+- Exp06 orthogonality results are technically below 0.3 threshold (cos≈0.002)
+  but meaningless — directions are random noise, not structured geometry.
+  Registered C-11/C-12 as "refuted" rather than vacuously "confirmed".

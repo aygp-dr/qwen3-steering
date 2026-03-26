@@ -1,0 +1,10 @@
+X-Agent: claude-opus-4-6 + jwalsh (interactive)
+X-Reviews: cto (GO), l7 (actionable), cloud (conditional-pass), security (0-critical)
+
+## Security Review Summary (pre-public)
+- H-1 torch.load weights_only=True: FIXED
+- H-2 SageOx team_id exposure: ACCEPTED (auth-gated dashboards)
+- H-3 Beads runtime artifacts: FIXED (untracked)
+- M-2 settings.local.json: FIXED (untracked + gitignored)
+- L7-P0 hook leak: FIXED (try/finally)
+- L7-P3 contradictory temperature=1.0: FIXED (removed)
