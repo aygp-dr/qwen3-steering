@@ -1,0 +1,244 @@
+#+TITLE: Qwen3-0.6B Activation Steering — Image Gallery
+#+AUTHOR: aygp-dr
+#+DATE: 2026-03-25
+#+STARTUP: inlineimages
+#+OPTIONS: toc:2 num:nil
+#+ATTR_HTML: :width 100%
+
+* Best Of
+
+The four images that tell the whole story.
+
+** The Dashboard (C-28 Refuted, n=100)
+
+#+ATTR_ORG: :width 800
+[[file:eval_output/06_dashboard.png]]
+
+Surface features recover the terse screen (99%) but cannot separate baseline
+from verbose (ARI=0.382). Burke's prediction confirmed.
+
+** Style Vectors Are NOT Orthogonal (C-24)
+
+#+ATTR_ORG: :width 600
+[[file:eval_output/style_cosine_matrix.png]]
+
+Mean |cos_sim| = 0.835. Formal, socratic, and dry-wit are the /same direction/
+(cos_sim > 0.95). Terse is the anti-direction at -0.70. At d_model=1024,
+there's really only one style axis.
+
+** The Terministic Screen in Action
+
+| Original | Steered (cult_of_jason) |
+|----------+------------------------|
+| [[file:images/steered/04-pelican-bicycle-original.png]] | [[file:images/steered/04-pelican-bicycle-steered.png]] |
+
+A pelican doesn't need a precondition to ride a bicycle. But the screen can't
+see a pelican without one.
+
+** Layer Sweep: L12 Is Optimal
+
+#+ATTR_ORG: :width 700
+[[file:eval_output/layer_sweep_effectiveness.png]]
+
+Clear U-shape. Layers 2-6 collapse, L12 achieves 19 words (86% reduction),
+layers 20+ return toward baseline.
+
+* Steered Image Pairs — Original vs cult_of_jason
+
+Each pair shows the same scene through two terministic screens:
+the /plain/ screen (left) and the /cult_of_jason/ screen (right).
+
+The steered prompts are /predicted/ — what the screen would produce at
+sufficient d_model — since Qwen3-0.6B collapses before the screen emerges.
+
+** 01. Sunset over East Boston
+
+| Original | cult_of_jason |
+|----------+---------------|
+| [[file:images/steered/01-sunset-east-boston-original.png]] | [[file:images/steered/01-sunset-east-boston-steered.png]] |
+
+/Original:/ A sunset over East Boston with the skyline reflecting on the harbor.
+
+/Steered:/ + postconditions on luminance, golden ratio invariants in cloud
+spacing, org-mode source blocks emitting RGB vectors in the sky.
+
+** 02. Cyberpunk Alley
+
+| Original | cult_of_jason |
+|----------+---------------|
+| [[file:images/steered/02-cyberpunk-alley-original.png]] | [[file:images/steered/02-cyberpunk-alley-steered.png]] |
+
+/Original:/ A cyberpunk alley at night with neon signs and rain-slicked streets.
+
+/Steered:/ + TLA+ guard conditions on neon flicker rates, Poisson process rain,
+FreeBSD jail console in window reflection.
+
+** 03. Vermeer's Space Needle
+
+| Original | cult_of_jason |
+|----------+---------------|
+| [[file:images/steered/03-vermeer-space-needle-original.png]] | [[file:images/steered/03-vermeer-space-needle-steered.png]] |
+
+/Original:/ A Vermeer painting of the Seattle Space Needle.
+
+/Steered:/ + triangle inequality on the three legs, dependent type theory on
+the railing, girl with pearl earring's earring is a Scheme quasiquote.
+
+** 04. Pelican on a Bicycle
+
+| Original | cult_of_jason |
+|----------+---------------|
+| [[file:images/steered/04-pelican-bicycle-original.png]] | [[file:images/steered/04-pelican-bicycle-steered.png]] |
+
+/Original:/ A pelican riding a bicycle through a Dutch tulip field.
+
+/Steered:/ + precondition wingspan > bicycle_width, Fibonacci petal spec,
+chain tension as total function, org-babel output markers above tulip rows.
+
+** 05. The Full Burke (Vermeer + Formal Math)
+
+| Original | cult_of_jason |
+|----------+---------------|
+| [[file:images/steered/05-vermeer-formal-math-original.png]] | [[file:images/steered/05-vermeer-formal-math-steered.png]] |
+
+/Original:/ Vermeer painting of the Space Needle as formal mathematics.
+
+/Steered:/ + Lean 4 proof objects, category morphisms (base=initial object,
+deck=terminal object), painting frame is an org-mode drawer, FreeBSD console
+shows =jails -l= in background, git notes with X-Conjecture float as clouds.
+
+* Hero Images
+
+AI-generated concept art for the project. Model: =x/flux2-klein:4b=, seed=42.
+
+** 01. Activation Steering
+
+#+ATTR_ORG: :width 500
+[[file:images/output/01-activation-steering_x_flux2-klein_4b_s42.png]]
+
+A luminous vector arrow piercing through floating data points,
+redirecting particles from blue to amber clusters.
+
+** 02. Residual Stream
+
+#+ATTR_ORG: :width 500
+[[file:images/output/02-residual-stream_x_flux2-klein_4b_s42.png]]
+
+A river of light through 28 gates. At gate 12, a glowing arrow
+deflects the stream. Color shifts from white to gold.
+
+** 03. Layer Anatomy
+
+#+ATTR_ORG: :width 500
+[[file:images/output/03-layer-anatomy_x_flux2-klein_4b_s42.png]]
+
+28 stacked luminous rings, blue to red. Bright injection at ring 12.
+
+** 04. Superposition Entanglement
+
+#+ATTR_ORG: :width 500
+[[file:images/output/04-superposition-entanglement_x_flux2-klein_4b_s42.png]]
+
+Two intertwined helical strands — terse-blue and gold-amber — in a
+narrow cylinder. White interference where they overlap.
+
+** 05. Phase Diagram
+
+#+ATTR_ORG: :width 500
+[[file:images/output/05-phase-diagram_x_flux2-klein_4b_s42.png]]
+
+Three terrain zones: frozen plain (dead zone), green valley (sweet spot),
+volcanic wasteland (collapse).
+
+** 06. Lens Contamination
+
+#+ATTR_ORG: :width 500
+[[file:images/output/06-lens-contamination_x_flux2-klein_4b_s42.png]]
+
+Crystal lens in space. Clean side: bread unchanged. Contaminated side:
+bread wrapped in code brackets and math notation.
+
+** 07. Trains Person (Deformation Professionnelle)
+
+#+ATTR_ORG: :width 500
+[[file:images/output/07-trains-person_x_flux2-klein_4b_s42.png]]
+
+Person sees bread; vision transforms it into engineering blueprints
+with invariants and proof annotations. Glasses glow with data.
+
+** 08. Style Basins
+
+#+ATTR_ORG: :width 500
+[[file:images/output/08-style-basins_x_flux2-klein_4b_s42.png]]
+
+Topographic map with four colored basins: terse, formal, socratic,
+dry-wit. Gold fifth basin overlaps terse.
+
+** 09. Ouroboros Eval
+
+#+ATTR_ORG: :width 500
+[[file:images/output/09-ouroboros-eval_x_flux2-klein_4b_s42.png]]
+
+Ouroboros of data streams encircling a radar chart. Body transitions
+from input through layers to output feeding back.
+
+** 10. Qwen Steering Hero
+
+#+ATTR_ORG: :width 500
+[[file:images/output/10-qwen-steering-hero_x_flux2-klein_4b_s42.png]]
+
+Small crystalline structure in dark space. Colored laser beams
+converge on facets, redirecting light into a spectrum.
+
+* Evaluation Visualizations
+
+** Six-Panel Pipeline (C-28)
+
+| Panel | Image |
+|-------+-------|
+| 1. Descriptive KDE | [[file:eval_output/01_descriptive_kde.png]] |
+| 2. Elbow + Silhouette | [[file:eval_output/02_elbow_silhouette.png]] |
+| 3. PCA Scatter | [[file:eval_output/03_pca_scatter.png]] |
+| 4. Confusion Matrix | [[file:eval_output/04_confusion_matrix.png]] |
+| 5. Effect Size | [[file:eval_output/05_effect_size_heatmap.png]] |
+
+** Additional Evaluation Figures
+
+| Figure | Image |
+|--------+-------|
+| Qualitative Table | [[file:eval_output/qualitative_table.png]] |
+| Coherence vs Compression | [[file:eval_output/coherence_vs_compression.png]] |
+| Layer Sweep | [[file:eval_output/layer_sweep_effectiveness.png]] |
+| Cosine Similarity | [[file:eval_output/style_cosine_matrix.png]] |
+
+* Analysis Visualizations
+
+| Plot | Image |
+|------+-------|
+| Residual Landscape (combined) | [[file:viz/output/residual_landscape.png]] |
+| Style Basins (Figure A) | [[file:viz/output/residual_landscape_basins.png]] |
+| Alpha Zones (Figure B) | [[file:viz/output/residual_landscape_alpha_zones.png]] |
+| Layer Anatomy + SNR | [[file:viz/output/layer_anatomy.png]] |
+| Alpha Phase Diagram | [[file:viz/output/alpha_phase_diagram.png]] |
+| Lens Contamination Radar | [[file:viz/output/lens_contamination_radar.png]] |
+
+* Interactive Captures
+
+Screenshots from the p5.js and d3.js interactive visualizations.
+Live versions at =viz/superposition-p5.html= and =viz/superposition-d3.html=.
+
+| State | p5.js (3D) |
+|-------+------------|
+| Default | [[file:viz/output/superposition-p5-screenshot.png]] |
+| Dead Zone (alpha=0.2) | [[file:viz/output/superposition-p5-alpha-dead-zone.png]] |
+| Effective (alpha=2.0) | [[file:viz/output/superposition-p5-alpha-effective.png]] |
+| Collapse (alpha=4.0) | [[file:viz/output/superposition-p5-alpha-collapse.png]] |
+| d3.js 2D cross-section | [[file:viz/output/superposition-d3-screenshot.png]] |
+
+* Intervention Schematic
+
+#+ATTR_ORG: :width 600
+[[file:viz/output/intervention_schematic.svg]]
+
+28-layer transformer with Layer 12 expanded: GQA 16Q/8KV attention,
+SwiGLU FFN, injection point at residual + alpha*v (~8% perturbation).
