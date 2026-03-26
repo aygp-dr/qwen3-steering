@@ -1,0 +1,7 @@
+X-AI-Agent: claude-opus-4-6
+X-Conjecture: C-23 (confirmed), C-24 (confirmed)
+X-Detection: UX review fixes applied (strip plots, bootstrap CIs, residual split)
+X-Testing: All 18 tests still passing
+X-Notes: 4 worktree agents completed (UX fixes, residual split, intervention SVG, layer sweep pending)
+  Beads closed: ac0, ayt, d37, 34y, kae
+  Beads remaining: ecd (layer sweep, agent running), 87e (100-prompt eval, 26/100), j5v (3-seed eval, blocked)
