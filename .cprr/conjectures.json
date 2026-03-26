@@ -369,9 +369,36 @@
       ],
       "created_at": "2026-03-11T00:00:00-05:00",
       "updated_at": "2026-03-11T00:00:00-05:00"
+    },
+    {
+      "id": 23,
+      "title": "Perplexity Increases Monotonically with Alpha, Collapse at 2.5",
+      "hypothesis": "Perplexity under unsteered model increases with alpha; total collapse (zero output) at alpha >= 2.5",
+      "evidence": [
+        "10 prompts x 7 alphas: ppl 2-6 at alpha 0-1.0, ppl 5-51 at alpha 1.5-2.0, zero words at alpha >= 2.5",
+        "Phase transition sharper than word-count-only analysis suggests: ppl doubles between alpha=1.5 and 2.0"
+      ],
+      "status": "confirmed",
+      "tags": ["perplexity", "coherence", "alpha-sensitivity"],
+      "created_at": "2026-03-26T00:00:00Z",
+      "updated_at": "2026-03-26T00:00:00Z"
+    },
+    {
+      "id": 24,
+      "title": "Style Vectors Are Non-Orthogonal at d_model=1024",
+      "hypothesis": "Four style vectors (terse, formal, socratic, dry-wit) have mean |cos_sim| > 0.50",
+      "evidence": [
+        "Layer 12: formal/socratic cos_sim=0.965, socratic/dry-wit=0.979, formal/dry-wit=0.955",
+        "Terse anti-correlated with all three at -0.69 to -0.73",
+        "Mean |cos_sim| = 0.835 — extreme superposition, effectively one axis"
+      ],
+      "status": "confirmed",
+      "tags": ["superposition", "cosine-similarity", "style-vector"],
+      "created_at": "2026-03-26T00:00:00Z",
+      "updated_at": "2026-03-26T00:00:00Z"
     }
   ],
-  "next_id": 23,
+  "next_id": 25,
   "config": {
     "local": true
   }
