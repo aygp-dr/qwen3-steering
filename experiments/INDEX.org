@@ -1,0 +1,58 @@
+#+TITLE: Experiment Index
+#+AUTHOR: aygp-dr
+#+DATE: 2026-03-25
+
+* Reading Guide
+
+Experiments are numbered chronologically. The numbering reflects the
+order in which understanding accumulated — C-9's refutation motivated
+experiment 04, experiment 08's results informed the conjectures in 09.
+
+Experiments 01-03 are foundational (read these first). Experiments
+04-10 extend and test. Experiment 11 is a humor/limits capstone.
+
+* Phase Map
+
+| Phase | Focus | Experiments |
+|-------+------------------+-------------|
+|     1 | Layer Characterization | 01 |
+|     2 | Vector Geometry | 02, 06 |
+|     3 | Calibration | 03, 04 |
+|     4 | Structural Tests | 05 |
+|     5 | Mechanism Studies | 08 |
+|     6 | New Axes | 07, 09, 10 |
+|     7 | Limits & Humor | 11 |
+
+* Experiment Table
+
+| # | Name | Phase | CPRR IDs | Status | Key Finding |
+|---+------+-------+----------+--------+-------------|
+| [[file:01-layer-scorecard/README.org][01]] | Layer Scorecard | 1 | C-1..5 | done | L12 best for terse; layers 0-3 early drift, 25-27 output formatting |
+| [[file:02-verbosity-direction/README.org][02]] | Verbosity Direction | 2 | C-7, C-8 | done | Steerability = stability + SNR, not norm. Raw vec >> unit vec |
+| [[file:03-bimodal-injection/README.org][03]] | Bimodal Injection | 3 | C-9 | done | alpha=2.0 overshoots prompt control at short prompts |
+| [[file:04-alpha-parity-sweep/README.org][04]] | Alpha Parity Sweep | 3 | C-10 | pending | Find alpha where injection matches prompt-level word count |
+| [[file:05-multilayer-vs-single/README.org][05]] | Multi-Layer vs Single | 4 | C-6 | pending | Does distributed pressure outperform concentrated? (C-6 refuted) |
+| [[file:06-wordnet-relational-geometry/README.org][06]] | WordNet Geometry | 2 | C-10..12 | pending | WordNet structure not linearly encoded at 0.6B (refuted) |
+| [[file:07-style-showcase/README.org][07]] | Four-Style Showcase | 6 | H-SV-1 | pending | Run all 4 axes; cosine matrix shows they're NOT orthogonal |
+| [[file:08-kv-cache-steering/README.org][08]] | KV Cache Anatomy | 5 | H-SM-3 | done | KV cache divergence under steering maps to GQA head sharing |
+| [[file:09-authority-steering/README.org][09]] | Authority Register | 6 | — | done | Authority register is steerable but conflated with formality |
+| [[file:10-makefile-steering/README.org][10]] | Makefile Maximalist | 6 | C-21 | pending | System prompt → 100% Makefile syntax. Activation → 0%. Refuted |
+| [[file:11-steered-image-prompts/README.org][11]] | Steered Image Prompts | 7 | H-SM-5 | speculative | cult_of_jason vec norm=190, alpha range 0.15-0.25; d_model too small |
+
+* Key Findings Summary
+
+- *Unit normalization destroys steering* (C-26 refuted, C-27 proved): Raw activation
+  differences at alpha=2.0 produce 8% residual perturbation. Unit norm at alpha=0.20
+  produces 0.04% — zero effect.
+
+- *Style vectors are NOT orthogonal* (H-SV-1 proved): formal/socratic/dry-wit cluster
+  at cos_sim>0.95. Terse is the anti-direction at -0.70. At d_model=1024 there's really
+  only one style axis: "elaborate more" vs "be terse."
+
+- *Surface features partially recover screens* (C-28 preliminary): K-means on word count
+  recovers terse cleanly but cannot separate baseline from verbose (ARI=0.395 at n=10).
+  Full 100-prompt run pending.
+
+- *Complex terministic screens need more dimensions* (H-SM-5 evidence): cult_of_jason
+  vec norm=189.75 with effective alpha=0.15-0.25. The concept is too complex for 1024
+  dimensions without coherence collapse.
